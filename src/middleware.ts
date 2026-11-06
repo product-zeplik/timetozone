@@ -1,7 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 export const config = {
-  matcher: ["/((?!_next/|api/|.*\\.(?:svg|png|ico|txt|xml|webmanifest|js|css|json)$).*)"],
+  // `.txt` is deliberately NOT excluded: the IndexNow key file is served from
+  // this middleware, because a `/[key].txt` route would collide with `/[pair]`.
+  matcher: ["/((?!_next/|api/|.*\\.(?:svg|png|ico|xml|webmanifest|js|css|json)$).*)"],
 };
 
 /**
