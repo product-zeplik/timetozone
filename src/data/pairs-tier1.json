@@ -1,0 +1,2327 @@
+[
+  {
+    "slug": "est-to-ist",
+    "url": "/est-to-ist",
+    "from": "est",
+    "to": "ist",
+    "primaryKeyword": "est to ist",
+    "totalMeasuredVolume": 204000,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/ist-to-est",
+    "keywords": [
+      {
+        "keyword": "est to ist",
+        "market": "IN",
+        "volume": 135000,
+        "kd": 48,
+        "slot": "primary"
+      },
+      {
+        "keyword": "est to ist converter",
+        "market": "IN",
+        "volume": 27100,
+        "kd": 46,
+        "slot": "title"
+      },
+      {
+        "keyword": "est to ist",
+        "market": "US",
+        "volume": 22200,
+        "kd": 50,
+        "slot": "primary"
+      },
+      {
+        "keyword": "est to india time",
+        "market": "US",
+        "volume": 9900,
+        "kd": 51,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "et to ist",
+        "market": "IN",
+        "volume": 5400,
+        "kd": 43,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "edt to ist",
+        "market": "IN",
+        "volume": 4400,
+        "kd": 30,
+        "slot": "synonym"
+      }
+    ]
+  },
+  {
+    "slug": "pst-to-est",
+    "url": "/pst-to-est",
+    "from": "pst",
+    "to": "est",
+    "primaryKeyword": "pst to est",
+    "totalMeasuredVolume": 188500,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/est-to-pst",
+    "keywords": [
+      {
+        "keyword": "pst to est",
+        "market": "US",
+        "volume": 74000,
+        "kd": 41,
+        "slot": "primary"
+      },
+      {
+        "keyword": "pt to est",
+        "market": "US",
+        "volume": 33100,
+        "kd": 42,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "pacific time to eastern time",
+        "market": "US",
+        "volume": 27100,
+        "kd": 49,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "pst to est",
+        "market": "CA",
+        "volume": 22200,
+        "kd": 55,
+        "slot": "primary"
+      },
+      {
+        "keyword": "pt to et",
+        "market": "US",
+        "volume": 8100,
+        "kd": 49,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "pst to est converter",
+        "market": "US",
+        "volume": 8100,
+        "kd": 54,
+        "slot": "title"
+      },
+      {
+        "keyword": "pst time to est",
+        "market": "US",
+        "volume": 8100,
+        "kd": 48,
+        "slot": "h2"
+      },
+      {
+        "keyword": "pst to est time",
+        "market": "US",
+        "volume": 5400,
+        "kd": 50,
+        "slot": "h2"
+      },
+      {
+        "keyword": "pst to eastern time",
+        "market": "US",
+        "volume": 2400,
+        "kd": 50,
+        "slot": "synonym"
+      }
+    ]
+  },
+  {
+    "slug": "cst-to-est",
+    "url": "/cst-to-est",
+    "from": "cst",
+    "to": "est",
+    "primaryKeyword": "cst to est",
+    "totalMeasuredVolume": 117000,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/est-to-cst",
+    "keywords": [
+      {
+        "keyword": "cst to est",
+        "market": "US",
+        "volume": 74000,
+        "kd": 26,
+        "slot": "primary"
+      },
+      {
+        "keyword": "central time to eastern time",
+        "market": "US",
+        "volume": 33100,
+        "kd": 43,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "cst to est",
+        "market": "CA",
+        "volume": 9900,
+        "kd": 57,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "est-to-cst",
+    "url": "/est-to-cst",
+    "from": "est",
+    "to": "cst",
+    "primaryKeyword": "est to cst",
+    "totalMeasuredVolume": 89200,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/cst-to-est",
+    "keywords": [
+      {
+        "keyword": "est to cst",
+        "market": "US",
+        "volume": 49500,
+        "kd": 45,
+        "slot": "primary"
+      },
+      {
+        "keyword": "eastern time to central time",
+        "market": "US",
+        "volume": 33100,
+        "kd": 47,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "est vs cst",
+        "market": "US",
+        "volume": 6600,
+        "kd": 46,
+        "slot": "faq"
+      }
+    ]
+  },
+  {
+    "slug": "pst-to-ist",
+    "url": "/pst-to-ist",
+    "from": "pst",
+    "to": "ist",
+    "primaryKeyword": "pst to ist",
+    "totalMeasuredVolume": 66600,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/ist-to-pst",
+    "keywords": [
+      {
+        "keyword": "pst to ist",
+        "market": "IN",
+        "volume": 49500,
+        "kd": 35,
+        "slot": "primary"
+      },
+      {
+        "keyword": "pdt to ist",
+        "market": "IN",
+        "volume": 8100,
+        "kd": 23,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "pst to ist",
+        "market": "US",
+        "volume": 5400,
+        "kd": 30,
+        "slot": "primary"
+      },
+      {
+        "keyword": "pt to ist",
+        "market": "IN",
+        "volume": 3600,
+        "kd": 35,
+        "slot": "synonym"
+      }
+    ]
+  },
+  {
+    "slug": "utc-to-ist",
+    "url": "/utc-to-ist",
+    "from": "utc",
+    "to": "ist",
+    "primaryKeyword": "utc to ist",
+    "totalMeasuredVolume": 62900,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/ist-to-utc",
+    "keywords": [
+      {
+        "keyword": "utc to ist",
+        "market": "IN",
+        "volume": 60500,
+        "kd": 37,
+        "slot": "primary"
+      },
+      {
+        "keyword": "utc to ist",
+        "market": "US",
+        "volume": 2400,
+        "kd": 32,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "ist-to-est",
+    "url": "/ist-to-est",
+    "from": "ist",
+    "to": "est",
+    "primaryKeyword": "ist to est",
+    "totalMeasuredVolume": 60500,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/est-to-ist",
+    "keywords": [
+      {
+        "keyword": "ist to est",
+        "market": "IN",
+        "volume": 40500,
+        "kd": 27,
+        "slot": "primary"
+      },
+      {
+        "keyword": "ist to est",
+        "market": "US",
+        "volume": 18100,
+        "kd": 30,
+        "slot": "primary"
+      },
+      {
+        "keyword": "ist to edt",
+        "market": "IN",
+        "volume": 1900,
+        "kd": 22,
+        "slot": "synonym"
+      }
+    ]
+  },
+  {
+    "slug": "utc-to-est",
+    "url": "/utc-to-est",
+    "from": "utc",
+    "to": "est",
+    "primaryKeyword": "utc to est",
+    "totalMeasuredVolume": 59400,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/est-to-utc",
+    "keywords": [
+      {
+        "keyword": "utc to est",
+        "market": "US",
+        "volume": 49500,
+        "kd": 14,
+        "slot": "primary"
+      },
+      {
+        "keyword": "utc to est",
+        "market": "CA",
+        "volume": 9900,
+        "kd": 50,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "cst-to-ist",
+    "url": "/cst-to-ist",
+    "from": "cst",
+    "to": "ist",
+    "primaryKeyword": "cst to ist",
+    "totalMeasuredVolume": 52600,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/ist-to-cst",
+    "keywords": [
+      {
+        "keyword": "cst to ist",
+        "market": "IN",
+        "volume": 40500,
+        "kd": 19,
+        "slot": "primary"
+      },
+      {
+        "keyword": "cst to ist",
+        "market": "US",
+        "volume": 6600,
+        "kd": 22,
+        "slot": "primary"
+      },
+      {
+        "keyword": "cdt to ist",
+        "market": "IN",
+        "volume": 3600,
+        "kd": 28,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "ct to ist",
+        "market": "IN",
+        "volume": 1900,
+        "kd": 33,
+        "slot": "synonym"
+      }
+    ]
+  },
+  {
+    "slug": "cet-to-ist",
+    "url": "/cet-to-ist",
+    "from": "cet",
+    "to": "ist",
+    "primaryKeyword": "cet to ist",
+    "totalMeasuredVolume": 50220,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/ist-to-cet",
+    "keywords": [
+      {
+        "keyword": "cet to ist",
+        "market": "IN",
+        "volume": 49500,
+        "kd": 30,
+        "slot": "primary"
+      },
+      {
+        "keyword": "cet to ist",
+        "market": "US",
+        "volume": 720,
+        "kd": 26,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "pst-to-cst",
+    "url": "/pst-to-cst",
+    "from": "pst",
+    "to": "cst",
+    "primaryKeyword": "pst to cst",
+    "totalMeasuredVolume": 49500,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/cst-to-pst",
+    "keywords": [
+      {
+        "keyword": "pst to cst",
+        "market": "US",
+        "volume": 49500,
+        "kd": 34,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "mst-to-est",
+    "url": "/mst-to-est",
+    "from": "mst",
+    "to": "est",
+    "primaryKeyword": "mst to est",
+    "totalMeasuredVolume": 48600,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/est-to-mst",
+    "keywords": [
+      {
+        "keyword": "mst to est",
+        "market": "US",
+        "volume": 40500,
+        "kd": 39,
+        "slot": "primary"
+      },
+      {
+        "keyword": "mst to est",
+        "market": "CA",
+        "volume": 8100,
+        "kd": 39,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "gmt-to-ist",
+    "url": "/gmt-to-ist",
+    "from": "gmt",
+    "to": "ist",
+    "primaryKeyword": "gmt to ist",
+    "totalMeasuredVolume": 35700,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/ist-to-gmt",
+    "keywords": [
+      {
+        "keyword": "gmt to ist",
+        "market": "IN",
+        "volume": 33100,
+        "kd": 29,
+        "slot": "primary"
+      },
+      {
+        "keyword": "gmt to ist",
+        "market": "US",
+        "volume": 1300,
+        "kd": 12,
+        "slot": "primary"
+      },
+      {
+        "keyword": "gmt to ist",
+        "market": "UK",
+        "volume": 1300,
+        "kd": 16,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "est-to-pst",
+    "url": "/est-to-pst",
+    "from": "est",
+    "to": "pst",
+    "primaryKeyword": "est to pst",
+    "totalMeasuredVolume": 35300,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/pst-to-est",
+    "keywords": [
+      {
+        "keyword": "est to pst",
+        "market": "US",
+        "volume": 22200,
+        "kd": 36,
+        "slot": "primary"
+      },
+      {
+        "keyword": "eastern time to pacific time",
+        "market": "US",
+        "volume": 12100,
+        "kd": 22,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "time difference between est and pst",
+        "market": "US",
+        "volume": 1000,
+        "kd": 50,
+        "slot": "h2"
+      }
+    ]
+  },
+  {
+    "slug": "utc-to-pst",
+    "url": "/utc-to-pst",
+    "from": "utc",
+    "to": "pst",
+    "primaryKeyword": "utc to pst",
+    "totalMeasuredVolume": 27100,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/pst-to-utc",
+    "keywords": [
+      {
+        "keyword": "utc to pst",
+        "market": "US",
+        "volume": 27100,
+        "kd": 35,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "gmt-to-est",
+    "url": "/gmt-to-est",
+    "from": "gmt",
+    "to": "est",
+    "primaryKeyword": "gmt to est",
+    "totalMeasuredVolume": 25800,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/est-to-gmt",
+    "keywords": [
+      {
+        "keyword": "gmt to est",
+        "market": "US",
+        "volume": 22200,
+        "kd": 14,
+        "slot": "primary"
+      },
+      {
+        "keyword": "gmt to est",
+        "market": "UK",
+        "volume": 3600,
+        "kd": 27,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "uk-time-to-ist",
+    "url": "/uk-time-to-ist",
+    "from": "uk-time",
+    "to": "ist",
+    "primaryKeyword": "uk time to ist",
+    "totalMeasuredVolume": 24500,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/ist-to-uk-time",
+    "keywords": [
+      {
+        "keyword": "uk time to ist",
+        "market": "IN",
+        "volume": 14800,
+        "kd": 31,
+        "slot": "primary"
+      },
+      {
+        "keyword": "time difference between india and uk",
+        "market": "IN",
+        "volume": 8100,
+        "kd": 34,
+        "slot": "h2"
+      },
+      {
+        "keyword": "uk time to india time",
+        "market": "UK",
+        "volume": 1600,
+        "kd": 32,
+        "slot": "synonym"
+      }
+    ]
+  },
+  {
+    "slug": "utc-to-cst",
+    "url": "/utc-to-cst",
+    "from": "utc",
+    "to": "cst",
+    "primaryKeyword": "utc to cst",
+    "totalMeasuredVolume": 22200,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/cst-to-utc",
+    "keywords": [
+      {
+        "keyword": "utc to cst",
+        "market": "US",
+        "volume": 22200,
+        "kd": 36,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "india-time-to-est",
+    "url": "/india-time-to-est",
+    "from": "india-time",
+    "to": "est",
+    "primaryKeyword": "time difference between india and usa",
+    "totalMeasuredVolume": 22080,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/est-to-india-time",
+    "keywords": [
+      {
+        "keyword": "time difference between india and usa",
+        "market": "IN",
+        "volume": 12100,
+        "kd": 29,
+        "slot": "h2"
+      },
+      {
+        "keyword": "india time to est",
+        "market": "US",
+        "volume": 6600,
+        "kd": 39,
+        "slot": "primary"
+      },
+      {
+        "keyword": "time difference between india and canada",
+        "market": "IN",
+        "volume": 2900,
+        "kd": 30,
+        "slot": "faq"
+      },
+      {
+        "keyword": "time difference between india and usa",
+        "market": "US",
+        "volume": 480,
+        "kd": 32,
+        "slot": "h2"
+      }
+    ]
+  },
+  {
+    "slug": "ist-to-pst",
+    "url": "/ist-to-pst",
+    "from": "ist",
+    "to": "pst",
+    "primaryKeyword": "ist to pst",
+    "totalMeasuredVolume": 20700,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/pst-to-ist",
+    "keywords": [
+      {
+        "keyword": "ist to pst",
+        "market": "IN",
+        "volume": 12100,
+        "kd": 38,
+        "slot": "primary"
+      },
+      {
+        "keyword": "ist to pst",
+        "market": "US",
+        "volume": 4400,
+        "kd": 26,
+        "slot": "primary"
+      },
+      {
+        "keyword": "india time to pst",
+        "market": "US",
+        "volume": 2900,
+        "kd": 37,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "ist to pdt",
+        "market": "IN",
+        "volume": 1300,
+        "kd": 27,
+        "slot": "synonym"
+      }
+    ]
+  },
+  {
+    "slug": "pst-to-philippine-time",
+    "url": "/pst-to-philippine-time",
+    "from": "pst",
+    "to": "philippine-time",
+    "primaryKeyword": "pst to manila time",
+    "totalMeasuredVolume": 20100,
+    "hourPages": true,
+    "indexed": true,
+    "reverse": "/philippine-time-to-pst",
+    "keywords": [
+      {
+        "keyword": "pst to manila time",
+        "market": "PH",
+        "volume": 12100,
+        "kd": 37,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "pst to philippine time",
+        "market": "PH",
+        "volume": 5400,
+        "kd": 31,
+        "slot": "primary"
+      },
+      {
+        "keyword": "pst to pht",
+        "market": "PH",
+        "volume": 1600,
+        "kd": 38,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "pst to ph time",
+        "market": "PH",
+        "volume": 1000,
+        "kd": 34,
+        "slot": "synonym"
+      }
+    ]
+  },
+  {
+    "slug": "cst-to-pst",
+    "url": "/cst-to-pst",
+    "from": "cst",
+    "to": "pst",
+    "primaryKeyword": "cst to pst",
+    "totalMeasuredVolume": 18100,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/pst-to-cst",
+    "keywords": [
+      {
+        "keyword": "cst to pst",
+        "market": "US",
+        "volume": 18100,
+        "kd": 32,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "mst-to-pst",
+    "url": "/mst-to-pst",
+    "from": "mst",
+    "to": "pst",
+    "primaryKeyword": "mst to pst",
+    "totalMeasuredVolume": 18100,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/pst-to-mst",
+    "keywords": [
+      {
+        "keyword": "mst to pst",
+        "market": "US",
+        "volume": 18100,
+        "kd": 32,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "pdt-to-est",
+    "url": "/pdt-to-est",
+    "from": "pdt",
+    "to": "est",
+    "primaryKeyword": "pdt to est",
+    "totalMeasuredVolume": 18100,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/est-to-pdt",
+    "keywords": [
+      {
+        "keyword": "pdt to est",
+        "market": "US",
+        "volume": 18100,
+        "kd": 32,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "est-to-gmt",
+    "url": "/est-to-gmt",
+    "from": "est",
+    "to": "gmt",
+    "primaryKeyword": "est to gmt",
+    "totalMeasuredVolume": 18000,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/gmt-to-est",
+    "keywords": [
+      {
+        "keyword": "est to gmt",
+        "market": "UK",
+        "volume": 9900,
+        "kd": 29,
+        "slot": "primary"
+      },
+      {
+        "keyword": "est to gmt",
+        "market": "US",
+        "volume": 8100,
+        "kd": 24,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "ist-to-cst",
+    "url": "/ist-to-cst",
+    "from": "ist",
+    "to": "cst",
+    "primaryKeyword": "ist to cst",
+    "totalMeasuredVolume": 17500,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/cst-to-ist",
+    "keywords": [
+      {
+        "keyword": "ist to cst",
+        "market": "IN",
+        "volume": 12100,
+        "kd": 36,
+        "slot": "primary"
+      },
+      {
+        "keyword": "ist to cst",
+        "market": "US",
+        "volume": 5400,
+        "kd": 27,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "est-to-philippine-time",
+    "url": "/est-to-philippine-time",
+    "from": "est",
+    "to": "philippine-time",
+    "primaryKeyword": "est to philippine time",
+    "totalMeasuredVolume": 16800,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/philippine-time-to-est",
+    "keywords": [
+      {
+        "keyword": "est to philippine time",
+        "market": "PH",
+        "volume": 12100,
+        "kd": 30,
+        "slot": "primary"
+      },
+      {
+        "keyword": "est to pht",
+        "market": "PH",
+        "volume": 2400,
+        "kd": 30,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "est to ph time",
+        "market": "PH",
+        "volume": 1300,
+        "kd": 33,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "est to manila time",
+        "market": "PH",
+        "volume": 1000,
+        "kd": 32,
+        "slot": "synonym"
+      }
+    ]
+  },
+  {
+    "slug": "ist-to-utc",
+    "url": "/ist-to-utc",
+    "from": "ist",
+    "to": "utc",
+    "primaryKeyword": "ist to utc",
+    "totalMeasuredVolume": 16100,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/utc-to-ist",
+    "keywords": [
+      {
+        "keyword": "ist to utc",
+        "market": "IN",
+        "volume": 14800,
+        "kd": 34,
+        "slot": "primary"
+      },
+      {
+        "keyword": "ist to utc",
+        "market": "US",
+        "volume": 1300,
+        "kd": 28,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "edt-to-est",
+    "url": "/edt-to-est",
+    "from": "edt",
+    "to": "est",
+    "primaryKeyword": "edt to est",
+    "totalMeasuredVolume": 14800,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/est-to-edt",
+    "keywords": [
+      {
+        "keyword": "edt to est",
+        "market": "US",
+        "volume": 14800,
+        "kd": 33,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "cet-to-est",
+    "url": "/cet-to-est",
+    "from": "cet",
+    "to": "est",
+    "primaryKeyword": "cet to est",
+    "totalMeasuredVolume": 12100,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/est-to-cet",
+    "keywords": [
+      {
+        "keyword": "cet to est",
+        "market": "US",
+        "volume": 12100,
+        "kd": 26,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "pst-to-gmt",
+    "url": "/pst-to-gmt",
+    "from": "pst",
+    "to": "gmt",
+    "primaryKeyword": "pst to gmt",
+    "totalMeasuredVolume": 11000,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/gmt-to-pst",
+    "keywords": [
+      {
+        "keyword": "pst to gmt",
+        "market": "UK",
+        "volume": 6600,
+        "kd": 27,
+        "slot": "primary"
+      },
+      {
+        "keyword": "pst to gmt",
+        "market": "US",
+        "volume": 4400,
+        "kd": 24,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "aest-to-ist",
+    "url": "/aest-to-ist",
+    "from": "aest",
+    "to": "ist",
+    "primaryKeyword": "aest to ist",
+    "totalMeasuredVolume": 10920,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/ist-to-aest",
+    "keywords": [
+      {
+        "keyword": "aest to ist",
+        "market": "IN",
+        "volume": 6600,
+        "kd": 25,
+        "slot": "primary"
+      },
+      {
+        "keyword": "time difference between india and australia",
+        "market": "IN",
+        "volume": 3600,
+        "kd": 28,
+        "slot": "h2"
+      },
+      {
+        "keyword": "aest to ist",
+        "market": "AU",
+        "volume": 720,
+        "kd": 26,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "est-to-uk-time",
+    "url": "/est-to-uk-time",
+    "from": "est",
+    "to": "uk-time",
+    "primaryKeyword": "est to uk time",
+    "totalMeasuredVolume": 10400,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/uk-time-to-est",
+    "keywords": [
+      {
+        "keyword": "est to uk time",
+        "market": "UK",
+        "volume": 6600,
+        "kd": 35,
+        "slot": "primary"
+      },
+      {
+        "keyword": "est to london time",
+        "market": "US",
+        "volume": 1900,
+        "kd": 17,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "est to uk time",
+        "market": "US",
+        "volume": 1900,
+        "kd": 37,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "est-to-mst",
+    "url": "/est-to-mst",
+    "from": "est",
+    "to": "mst",
+    "primaryKeyword": "est to mst",
+    "totalMeasuredVolume": 9900,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/mst-to-est",
+    "keywords": [
+      {
+        "keyword": "est to mst",
+        "market": "US",
+        "volume": 9900,
+        "kd": 17,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "est-to-utc",
+    "url": "/est-to-utc",
+    "from": "est",
+    "to": "utc",
+    "primaryKeyword": "est to utc",
+    "totalMeasuredVolume": 9900,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/utc-to-est",
+    "keywords": [
+      {
+        "keyword": "est to utc",
+        "market": "US",
+        "volume": 9900,
+        "kd": 29,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "mst-to-cst",
+    "url": "/mst-to-cst",
+    "from": "mst",
+    "to": "cst",
+    "primaryKeyword": "mst to cst",
+    "totalMeasuredVolume": 9900,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/cst-to-mst",
+    "keywords": [
+      {
+        "keyword": "mst to cst",
+        "market": "US",
+        "volume": 9900,
+        "kd": 31,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "bst-to-est",
+    "url": "/bst-to-est",
+    "from": "bst",
+    "to": "est",
+    "primaryKeyword": "bst to est",
+    "totalMeasuredVolume": 9500,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/est-to-bst",
+    "keywords": [
+      {
+        "keyword": "bst to est",
+        "market": "US",
+        "volume": 6600,
+        "kd": 26,
+        "slot": "primary"
+      },
+      {
+        "keyword": "bst to est",
+        "market": "UK",
+        "volume": 2900,
+        "kd": 30,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "gmt-to-pst",
+    "url": "/gmt-to-pst",
+    "from": "gmt",
+    "to": "pst",
+    "primaryKeyword": "gmt to pst",
+    "totalMeasuredVolume": 8820,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/pst-to-gmt",
+    "keywords": [
+      {
+        "keyword": "gmt to pst",
+        "market": "US",
+        "volume": 8100,
+        "kd": 18,
+        "slot": "primary"
+      },
+      {
+        "keyword": "gmt to pst",
+        "market": "UK",
+        "volume": 720,
+        "kd": 30,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "utc-to-gmt",
+    "url": "/utc-to-gmt",
+    "from": "utc",
+    "to": "gmt",
+    "primaryKeyword": "utc to gmt",
+    "totalMeasuredVolume": 8300,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/gmt-to-utc",
+    "keywords": [
+      {
+        "keyword": "utc to gmt",
+        "market": "UK",
+        "volume": 5400,
+        "kd": 35,
+        "slot": "primary"
+      },
+      {
+        "keyword": "gmt vs utc",
+        "market": "US",
+        "volume": 2900,
+        "kd": 43,
+        "slot": "faq"
+      }
+    ]
+  },
+  {
+    "slug": "est-to-aest",
+    "url": "/est-to-aest",
+    "from": "est",
+    "to": "aest",
+    "primaryKeyword": "est to aest",
+    "totalMeasuredVolume": 8180,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/aest-to-est",
+    "keywords": [
+      {
+        "keyword": "est to aest",
+        "market": "AU",
+        "volume": 5400,
+        "kd": 32,
+        "slot": "primary"
+      },
+      {
+        "keyword": "est to aest",
+        "market": "US",
+        "volume": 1900,
+        "kd": 29,
+        "slot": "primary"
+      },
+      {
+        "keyword": "est to aedt",
+        "market": "AU",
+        "volume": 880,
+        "kd": 29,
+        "slot": "synonym"
+      }
+    ]
+  },
+  {
+    "slug": "cst-to-mst",
+    "url": "/cst-to-mst",
+    "from": "cst",
+    "to": "mst",
+    "primaryKeyword": "cst to mst",
+    "totalMeasuredVolume": 8100,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/mst-to-cst",
+    "keywords": [
+      {
+        "keyword": "cst to mst",
+        "market": "US",
+        "volume": 8100,
+        "kd": 29,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "pdt-to-cst",
+    "url": "/pdt-to-cst",
+    "from": "pdt",
+    "to": "cst",
+    "primaryKeyword": "pdt to cst",
+    "totalMeasuredVolume": 8100,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/cst-to-pdt",
+    "keywords": [
+      {
+        "keyword": "pdt to cst",
+        "market": "US",
+        "volume": 8100,
+        "kd": 30,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "pst-to-utc",
+    "url": "/pst-to-utc",
+    "from": "pst",
+    "to": "utc",
+    "primaryKeyword": "pst to utc",
+    "totalMeasuredVolume": 8100,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/utc-to-pst",
+    "keywords": [
+      {
+        "keyword": "pst to utc",
+        "market": "US",
+        "volume": 8100,
+        "kd": 31,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "jst-to-est",
+    "url": "/jst-to-est",
+    "from": "jst",
+    "to": "est",
+    "primaryKeyword": "jst to est",
+    "totalMeasuredVolume": 7200,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/est-to-jst",
+    "keywords": [
+      {
+        "keyword": "jst to est",
+        "market": "US",
+        "volume": 3600,
+        "kd": 27,
+        "slot": "primary"
+      },
+      {
+        "keyword": "japan time to est",
+        "market": "US",
+        "volume": 3600,
+        "kd": 30,
+        "slot": "synonym"
+      }
+    ]
+  },
+  {
+    "slug": "kst-to-est",
+    "url": "/kst-to-est",
+    "from": "kst",
+    "to": "est",
+    "primaryKeyword": "kst to est",
+    "totalMeasuredVolume": 6800,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/est-to-kst",
+    "keywords": [
+      {
+        "keyword": "kst to est",
+        "market": "US",
+        "volume": 4400,
+        "kd": 12,
+        "slot": "primary"
+      },
+      {
+        "keyword": "korea time to est",
+        "market": "US",
+        "volume": 2400,
+        "kd": 27,
+        "slot": "synonym"
+      }
+    ]
+  },
+  {
+    "slug": "ist-to-cet",
+    "url": "/ist-to-cet",
+    "from": "ist",
+    "to": "cet",
+    "primaryKeyword": "ist to cet",
+    "totalMeasuredVolume": 6770,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/cet-to-ist",
+    "keywords": [
+      {
+        "keyword": "ist to cet",
+        "market": "IN",
+        "volume": 6600,
+        "kd": 28,
+        "slot": "primary"
+      },
+      {
+        "keyword": "ist to cet",
+        "market": "US",
+        "volume": 170,
+        "kd": 19,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "bst-to-ist",
+    "url": "/bst-to-ist",
+    "from": "bst",
+    "to": "ist",
+    "primaryKeyword": "bst to ist",
+    "totalMeasuredVolume": 6700,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/ist-to-bst",
+    "keywords": [
+      {
+        "keyword": "bst to ist",
+        "market": "IN",
+        "volume": 5400,
+        "kd": 29,
+        "slot": "primary"
+      },
+      {
+        "keyword": "bst to ist",
+        "market": "UK",
+        "volume": 1300,
+        "kd": 25,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "cst-to-philippine-time",
+    "url": "/cst-to-philippine-time",
+    "from": "cst",
+    "to": "philippine-time",
+    "primaryKeyword": "cst to philippine time",
+    "totalMeasuredVolume": 6700,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/philippine-time-to-cst",
+    "keywords": [
+      {
+        "keyword": "cst to philippine time",
+        "market": "PH",
+        "volume": 5400,
+        "kd": 30,
+        "slot": "primary"
+      },
+      {
+        "keyword": "cst to pht",
+        "market": "PH",
+        "volume": 1300,
+        "kd": 23,
+        "slot": "synonym"
+      }
+    ]
+  },
+  {
+    "slug": "ist-to-gmt",
+    "url": "/ist-to-gmt",
+    "from": "ist",
+    "to": "gmt",
+    "primaryKeyword": "ist to gmt",
+    "totalMeasuredVolume": 5880,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/gmt-to-ist",
+    "keywords": [
+      {
+        "keyword": "ist to gmt",
+        "market": "IN",
+        "volume": 5400,
+        "kd": 31,
+        "slot": "primary"
+      },
+      {
+        "keyword": "ist to gmt",
+        "market": "US",
+        "volume": 480,
+        "kd": 26,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "est-to-bst",
+    "url": "/est-to-bst",
+    "from": "est",
+    "to": "bst",
+    "primaryKeyword": "est to bst",
+    "totalMeasuredVolume": 5700,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/bst-to-est",
+    "keywords": [
+      {
+        "keyword": "est to bst",
+        "market": "UK",
+        "volume": 4400,
+        "kd": 24,
+        "slot": "primary"
+      },
+      {
+        "keyword": "est to bst",
+        "market": "US",
+        "volume": 1300,
+        "kd": 23,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "ist-to-jst",
+    "url": "/ist-to-jst",
+    "from": "ist",
+    "to": "jst",
+    "primaryKeyword": "ist to jst",
+    "totalMeasuredVolume": 5400,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/jst-to-ist",
+    "keywords": [
+      {
+        "keyword": "ist to jst",
+        "market": "IN",
+        "volume": 5400,
+        "kd": 23,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "utc-to-mst",
+    "url": "/utc-to-mst",
+    "from": "utc",
+    "to": "mst",
+    "primaryKeyword": "utc to mst",
+    "totalMeasuredVolume": 5400,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/mst-to-utc",
+    "keywords": [
+      {
+        "keyword": "utc to mst",
+        "market": "US",
+        "volume": 5400,
+        "kd": 10,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "pst-to-mst",
+    "url": "/pst-to-mst",
+    "from": "pst",
+    "to": "mst",
+    "primaryKeyword": "pst to mst",
+    "totalMeasuredVolume": 4400,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/mst-to-pst",
+    "keywords": [
+      {
+        "keyword": "pst to mst",
+        "market": "CA",
+        "volume": 4400,
+        "kd": 36,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "utc-to-aest",
+    "url": "/utc-to-aest",
+    "from": "utc",
+    "to": "aest",
+    "primaryKeyword": "utc to aest",
+    "totalMeasuredVolume": 4400,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/aest-to-utc",
+    "keywords": [
+      {
+        "keyword": "utc to aest",
+        "market": "AU",
+        "volume": 4400,
+        "kd": 27,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "aest-to-est",
+    "url": "/aest-to-est",
+    "from": "aest",
+    "to": "est",
+    "primaryKeyword": "aest to est",
+    "totalMeasuredVolume": 3600,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/est-to-aest",
+    "keywords": [
+      {
+        "keyword": "aest to est",
+        "market": "US",
+        "volume": 1600,
+        "kd": 30,
+        "slot": "primary"
+      },
+      {
+        "keyword": "australia time to est",
+        "market": "US",
+        "volume": 1000,
+        "kd": 39,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "aest to est",
+        "market": "AU",
+        "volume": 1000,
+        "kd": 29,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "cet-to-gmt",
+    "url": "/cet-to-gmt",
+    "from": "cet",
+    "to": "gmt",
+    "primaryKeyword": "cet to gmt",
+    "totalMeasuredVolume": 3600,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/gmt-to-cet",
+    "keywords": [
+      {
+        "keyword": "cet to gmt",
+        "market": "UK",
+        "volume": 3600,
+        "kd": 28,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "pst-to-aest",
+    "url": "/pst-to-aest",
+    "from": "pst",
+    "to": "aest",
+    "primaryKeyword": "pst to aest",
+    "totalMeasuredVolume": 3600,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/aest-to-pst",
+    "keywords": [
+      {
+        "keyword": "pst to aest",
+        "market": "AU",
+        "volume": 3600,
+        "kd": 25,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "uk-time-to-est",
+    "url": "/uk-time-to-est",
+    "from": "uk-time",
+    "to": "est",
+    "primaryKeyword": "uk time to est",
+    "totalMeasuredVolume": 3280,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/est-to-uk-time",
+    "keywords": [
+      {
+        "keyword": "uk time to est",
+        "market": "US",
+        "volume": 2400,
+        "kd": 18,
+        "slot": "primary"
+      },
+      {
+        "keyword": "london time to est",
+        "market": "US",
+        "volume": 880,
+        "kd": 27,
+        "slot": "synonym"
+      }
+    ]
+  },
+  {
+    "slug": "utc-to-bst",
+    "url": "/utc-to-bst",
+    "from": "utc",
+    "to": "bst",
+    "primaryKeyword": "utc to bst",
+    "totalMeasuredVolume": 2900,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/bst-to-utc",
+    "keywords": [
+      {
+        "keyword": "utc to bst",
+        "market": "UK",
+        "volume": 2900,
+        "kd": 23,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "philippine-time-to-pst",
+    "url": "/philippine-time-to-pst",
+    "from": "philippine-time",
+    "to": "pst",
+    "primaryKeyword": "philippine time to pst",
+    "totalMeasuredVolume": 2490,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/pst-to-philippine-time",
+    "keywords": [
+      {
+        "keyword": "philippine time to pst",
+        "market": "PH",
+        "volume": 1900,
+        "kd": 30,
+        "slot": "primary"
+      },
+      {
+        "keyword": "pht to pst",
+        "market": "PH",
+        "volume": 590,
+        "kd": 28,
+        "slot": "synonym"
+      }
+    ]
+  },
+  {
+    "slug": "cst-to-gmt",
+    "url": "/cst-to-gmt",
+    "from": "cst",
+    "to": "gmt",
+    "primaryKeyword": "cst to gmt",
+    "totalMeasuredVolume": 2400,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/gmt-to-cst",
+    "keywords": [
+      {
+        "keyword": "cst to gmt",
+        "market": "UK",
+        "volume": 2400,
+        "kd": 22,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "us-time-to-philippine-time",
+    "url": "/us-time-to-philippine-time",
+    "from": "us-time",
+    "to": "philippine-time",
+    "primaryKeyword": "us time to ph time",
+    "totalMeasuredVolume": 2400,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/philippine-time-to-us-time",
+    "keywords": [
+      {
+        "keyword": "us time to ph time",
+        "market": "PH",
+        "volume": 2400,
+        "kd": 34,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "ist-to-aest",
+    "url": "/ist-to-aest",
+    "from": "ist",
+    "to": "aest",
+    "primaryKeyword": "ist to aest",
+    "totalMeasuredVolume": 2300,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/aest-to-ist",
+    "keywords": [
+      {
+        "keyword": "ist to aest",
+        "market": "IN",
+        "volume": 1300,
+        "kd": 30,
+        "slot": "primary"
+      },
+      {
+        "keyword": "ist to aest",
+        "market": "AU",
+        "volume": 1000,
+        "kd": 29,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "edt-to-bst",
+    "url": "/edt-to-bst",
+    "from": "edt",
+    "to": "bst",
+    "primaryKeyword": "edt to bst",
+    "totalMeasuredVolume": 1900,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/bst-to-edt",
+    "keywords": [
+      {
+        "keyword": "edt to bst",
+        "market": "UK",
+        "volume": 1900,
+        "kd": 22,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "est-to-cet",
+    "url": "/est-to-cet",
+    "from": "est",
+    "to": "cet",
+    "primaryKeyword": "est to cet",
+    "totalMeasuredVolume": 1900,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/cet-to-est",
+    "keywords": [
+      {
+        "keyword": "est to cet",
+        "market": "US",
+        "volume": 1900,
+        "kd": 29,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "gmt-to-aest",
+    "url": "/gmt-to-aest",
+    "from": "gmt",
+    "to": "aest",
+    "primaryKeyword": "gmt to aest",
+    "totalMeasuredVolume": 1900,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/aest-to-gmt",
+    "keywords": [
+      {
+        "keyword": "gmt to aest",
+        "market": "AU",
+        "volume": 1900,
+        "kd": 24,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "pst-to-bst",
+    "url": "/pst-to-bst",
+    "from": "pst",
+    "to": "bst",
+    "primaryKeyword": "pst to bst",
+    "totalMeasuredVolume": 1900,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/bst-to-pst",
+    "keywords": [
+      {
+        "keyword": "pst to bst",
+        "market": "UK",
+        "volume": 1900,
+        "kd": 26,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "bst-to-pst",
+    "url": "/bst-to-pst",
+    "from": "bst",
+    "to": "pst",
+    "primaryKeyword": "bst to pst",
+    "totalMeasuredVolume": 1600,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/pst-to-bst",
+    "keywords": [
+      {
+        "keyword": "bst to pst",
+        "market": "UK",
+        "volume": 1600,
+        "kd": 28,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "ist-to-bst",
+    "url": "/ist-to-bst",
+    "from": "ist",
+    "to": "bst",
+    "primaryKeyword": "ist to bst",
+    "totalMeasuredVolume": 1600,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/bst-to-ist",
+    "keywords": [
+      {
+        "keyword": "ist to bst",
+        "market": "IN",
+        "volume": 1600,
+        "kd": 22,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "est-to-jst",
+    "url": "/est-to-jst",
+    "from": "est",
+    "to": "jst",
+    "primaryKeyword": "est to jst",
+    "totalMeasuredVolume": 1300,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/jst-to-est",
+    "keywords": [
+      {
+        "keyword": "est to jst",
+        "market": "US",
+        "volume": 1300,
+        "kd": 25,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "ist-to-sgt",
+    "url": "/ist-to-sgt",
+    "from": "ist",
+    "to": "sgt",
+    "primaryKeyword": "ist to sgt",
+    "totalMeasuredVolume": 1300,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/sgt-to-ist",
+    "keywords": [
+      {
+        "keyword": "ist to sgt",
+        "market": "IN",
+        "volume": 1300,
+        "kd": 25,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "awst-to-aest",
+    "url": "/awst-to-aest",
+    "from": "awst",
+    "to": "aest",
+    "primaryKeyword": "awst to aest",
+    "totalMeasuredVolume": 1180,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/aest-to-awst",
+    "keywords": [
+      {
+        "keyword": "awst to aest",
+        "market": "AU",
+        "volume": 590,
+        "kd": 21,
+        "slot": "primary"
+      },
+      {
+        "keyword": "perth to sydney time",
+        "market": "AU",
+        "volume": 590,
+        "kd": 39,
+        "slot": "synonym"
+      }
+    ]
+  },
+  {
+    "slug": "philippine-time-to-est",
+    "url": "/philippine-time-to-est",
+    "from": "philippine-time",
+    "to": "est",
+    "primaryKeyword": "pht to est",
+    "totalMeasuredVolume": 1180,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/est-to-philippine-time",
+    "keywords": [
+      {
+        "keyword": "pht to est",
+        "market": "PH",
+        "volume": 590,
+        "kd": 30,
+        "slot": "synonym"
+      },
+      {
+        "keyword": "philippine time to est",
+        "market": "PH",
+        "volume": 590,
+        "kd": 30,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "gmt-to-utc",
+    "url": "/gmt-to-utc",
+    "from": "gmt",
+    "to": "utc",
+    "primaryKeyword": "gmt to utc",
+    "totalMeasuredVolume": 1000,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/utc-to-gmt",
+    "keywords": [
+      {
+        "keyword": "gmt to utc",
+        "market": "UK",
+        "volume": 1000,
+        "kd": 38,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "hst-to-pst",
+    "url": "/hst-to-pst",
+    "from": "hst",
+    "to": "pst",
+    "primaryKeyword": "hst to pst",
+    "totalMeasuredVolume": 1000,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/pst-to-hst",
+    "keywords": [
+      {
+        "keyword": "hst to pst",
+        "market": "US",
+        "volume": 1000,
+        "kd": 19,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "london-time-to-new-york-time",
+    "url": "/london-time-to-new-york-time",
+    "from": "london-time",
+    "to": "new-york-time",
+    "primaryKeyword": "time difference between london and new york",
+    "totalMeasuredVolume": 1000,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/new-york-time-to-london-time",
+    "keywords": [
+      {
+        "keyword": "time difference between london and new york",
+        "market": "US",
+        "volume": 1000,
+        "kd": 32,
+        "slot": "h2"
+      }
+    ]
+  },
+  {
+    "slug": "utc-to-philippine-time",
+    "url": "/utc-to-philippine-time",
+    "from": "utc",
+    "to": "philippine-time",
+    "primaryKeyword": "utc to pht",
+    "totalMeasuredVolume": 1000,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/philippine-time-to-utc",
+    "keywords": [
+      {
+        "keyword": "utc to pht",
+        "market": "PH",
+        "volume": 1000,
+        "kd": 23,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "aest-to-utc",
+    "url": "/aest-to-utc",
+    "from": "aest",
+    "to": "utc",
+    "primaryKeyword": "aest to utc",
+    "totalMeasuredVolume": 880,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/utc-to-aest",
+    "keywords": [
+      {
+        "keyword": "aest to utc",
+        "market": "AU",
+        "volume": 880,
+        "kd": 29,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "cst-to-aest",
+    "url": "/cst-to-aest",
+    "from": "cst",
+    "to": "aest",
+    "primaryKeyword": "cst to aest",
+    "totalMeasuredVolume": 880,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/aest-to-cst",
+    "keywords": [
+      {
+        "keyword": "cst to aest",
+        "market": "AU",
+        "volume": 880,
+        "kd": 24,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "gmt-to-cet",
+    "url": "/gmt-to-cet",
+    "from": "gmt",
+    "to": "cet",
+    "primaryKeyword": "gmt to cet",
+    "totalMeasuredVolume": 880,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/cet-to-gmt",
+    "keywords": [
+      {
+        "keyword": "gmt to cet",
+        "market": "UK",
+        "volume": 880,
+        "kd": 26,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "ast-to-est",
+    "url": "/ast-to-est",
+    "from": "ast",
+    "to": "est",
+    "primaryKeyword": "ast to est",
+    "totalMeasuredVolume": 720,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/est-to-ast",
+    "keywords": [
+      {
+        "keyword": "ast to est",
+        "market": "CA",
+        "volume": 720,
+        "kd": 32,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "bst-to-utc",
+    "url": "/bst-to-utc",
+    "from": "bst",
+    "to": "utc",
+    "primaryKeyword": "bst to utc",
+    "totalMeasuredVolume": 720,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/utc-to-bst",
+    "keywords": [
+      {
+        "keyword": "bst to utc",
+        "market": "UK",
+        "volume": 720,
+        "kd": 22,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "gmt-to-cst",
+    "url": "/gmt-to-cst",
+    "from": "gmt",
+    "to": "cst",
+    "primaryKeyword": "gmt to cst",
+    "totalMeasuredVolume": 720,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/cst-to-gmt",
+    "keywords": [
+      {
+        "keyword": "gmt to cst",
+        "market": "UK",
+        "volume": 720,
+        "kd": 30,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "aest-to-gmt",
+    "url": "/aest-to-gmt",
+    "from": "aest",
+    "to": "gmt",
+    "primaryKeyword": "aest to gmt",
+    "totalMeasuredVolume": 590,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/gmt-to-aest",
+    "keywords": [
+      {
+        "keyword": "aest to gmt",
+        "market": "AU",
+        "volume": 590,
+        "kd": 22,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "gmt-to-philippine-time",
+    "url": "/gmt-to-philippine-time",
+    "from": "gmt",
+    "to": "philippine-time",
+    "primaryKeyword": "gmt to pht",
+    "totalMeasuredVolume": 590,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/philippine-time-to-gmt",
+    "keywords": [
+      {
+        "keyword": "gmt to pht",
+        "market": "PH",
+        "volume": 590,
+        "kd": 18,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "pst-to-pdt",
+    "url": "/pst-to-pdt",
+    "from": "pst",
+    "to": "pdt",
+    "primaryKeyword": "pst to pdt",
+    "totalMeasuredVolume": 590,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/pdt-to-pst",
+    "keywords": [
+      {
+        "keyword": "pst to pdt",
+        "market": "US",
+        "volume": 590,
+        "kd": 31,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "sydney-time-to-london-time",
+    "url": "/sydney-time-to-london-time",
+    "from": "sydney-time",
+    "to": "london-time",
+    "primaryKeyword": "sydney to london time",
+    "totalMeasuredVolume": 590,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/london-time-to-sydney-time",
+    "keywords": [
+      {
+        "keyword": "sydney to london time",
+        "market": "AU",
+        "volume": 590,
+        "kd": 25,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "est-to-pkt",
+    "url": "/est-to-pkt",
+    "from": "est",
+    "to": "pkt",
+    "primaryKeyword": "est to pkt",
+    "totalMeasuredVolume": 320,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/pkt-to-est",
+    "keywords": [
+      {
+        "keyword": "est to pkt",
+        "market": "US",
+        "volume": 320,
+        "kd": 24,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "sgt-to-est",
+    "url": "/sgt-to-est",
+    "from": "sgt",
+    "to": "est",
+    "primaryKeyword": "sgt to est",
+    "totalMeasuredVolume": 320,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/est-to-sgt",
+    "keywords": [
+      {
+        "keyword": "sgt to est",
+        "market": "US",
+        "volume": 320,
+        "kd": 17,
+        "slot": "primary"
+      }
+    ]
+  },
+  {
+    "slug": "pkt-to-est",
+    "url": "/pkt-to-est",
+    "from": "pkt",
+    "to": "est",
+    "primaryKeyword": "pkt to est",
+    "totalMeasuredVolume": 170,
+    "hourPages": false,
+    "indexed": true,
+    "reverse": "/est-to-pkt",
+    "keywords": [
+      {
+        "keyword": "pkt to est",
+        "market": "US",
+        "volume": 170,
+        "kd": 17,
+        "slot": "primary"
+      }
+    ]
+  }
+]

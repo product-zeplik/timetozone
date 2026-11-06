@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>TimeToZone</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #fff;
+        --bg-soft: #f7f7f7;
+        --line: #e5e5e5;
+        --line-strong: #c9c9c9;
+        --text: #080808;
+        --muted: #5f6368;
+        --accent: #080808;
+        --on-accent: #fff;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          color-scheme: dark;
+          --bg: #080808;
+          --bg-soft: #121212;
+          --line: #292929;
+          --line-strong: #3d3d3d;
+          --text: #f7f7f7;
+          --muted: #a6a6a6;
+          --accent: #f7f7f7;
+          --on-accent: #080808;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        width: 340px;
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        font-variant-numeric: tabular-nums;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+      header svg { width: 18px; height: 18px; fill: currentColor; display: block; }
+      .name { font-weight: 700; letter-spacing: -0.03em; font-size: 15px; }
+      .spacer { flex: 1; }
+      button {
+        font: inherit;
+        color: var(--text);
+        background: var(--bg);
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        padding: 5px 9px;
+        cursor: pointer;
+        min-height: 30px;
+      }
+      button:hover { background: var(--bg-soft); }
+      button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+      button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+      .fmt { display: flex; gap: 2px; }
+      .fmt button { border-radius: 8px; padding: 4px 7px; font-size: 12px; min-height: 26px; }
+      .slide { padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--bg-soft); }
+      .slide label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+      .slide .row { display: flex; align-items: center; gap: 8px; }
+      input[type="range"] { flex: 1; accent-color: var(--accent); min-height: 28px; }
+      .offs { font-family: var(--mono); font-size: 12px; color: var(--muted); min-width: 96px; text-align: right; }
+      ul { list-style: none; margin: 0; padding: 0; }
+      li { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+      .who { min-width: 0; flex: 1; }
+      .lab { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .sub { font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .clock { font-family: var(--mono); font-size: 20px; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap; }
+      .rm { border: 0; background: none; color: var(--muted); font-size: 16px; padding: 2px 4px; min-height: 24px; }
+      .rm:hover { color: var(--text); background: none; }
+      .add { display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+      .add input { flex: 1; font: inherit; padding: 6px 8px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--bg); color: var(--text); min-height: 30px; }
+      footer { display: flex; align-items: center; gap: 8px; padding: 10px 12px; }
+      footer a { color: var(--muted); font-size: 12px; text-decoration: none; }
+      footer a:hover { color: var(--text); text-decoration: underline; }
+      .review { padding: 10px 12px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); display: none; }
+      .review.on { display: block; }
+      .review a { color: var(--text); }
+      @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
+  </head>
+  <body>
+    <header>
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M6 14H48V27H34V86H20V27H6Z" />
+        <path d="M52 14H94V27H69L94 73V86H52V73H77L52 27Z" />
+      </svg>
+      <span class="name">TimeToZone</span>
+      <span class="spacer"></span>
+      <div class="fmt" role="group" aria-label="Clock format">
+        <button id="h12" type="button">12h</button>
+        <button id="h24" type="button">24h</button>
+      </div>
+    </header>
+
+    <div class="slide">
+      <label for="slider" id="slabel">Now</label>
+      <div class="row">
+        <input id="slider" type="range" min="-720" max="720" step="15" value="0" aria-describedby="slabel" />
+        <span class="offs" id="offs">Now</span>
+      </div>
+    </div>
+
+    <ul id="rows" aria-live="polite"></ul>
+
+    <div class="add">
+      <input id="addin" list="zonelist" placeholder="Add a zone or city (max 8)" aria-label="Add a zone or city" />
+      <datalist id="zonelist"></datalist>
+      <button id="addbtn" type="button">Add</button>
+    </div>
+
+    <footer>
+      <button id="reset" type="button">Reset to now</button>
+      <span class="spacer"></span>
+      <a id="full" href="#" target="_blank" rel="noopener">Open full converter ↗</a>
+    </footer>
+
+    <div class="review" id="review">
+      Finding this useful? <a id="reviewlink" href="#" target="_blank" rel="noopener">Leave a review</a> ·
+      <button id="reviewno" type="button" style="border:0;background:none;padding:0;color:inherit;text-decoration:underline;min-height:0">no thanks</button>
+    </div>
+
+    <script src="popup.js" type="module"></script>
+  </body>
+</html>

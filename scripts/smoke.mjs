@@ -1,0 +1,191 @@
+#!/usr/bin/env node
+/**
+ * Smoke test against a running server. docs/11 §11.3.
+ *   node scripts/smoke.mjs [baseUrl]
+ * Default base: http://127.0.0.1:3000
+ */
+const BASE = (process.argv[2] || process.env.SMOKE_BASE || "http://127.0.0.1:3000").replace(/\/+$/, "");
+
+const OK_200 = [
+  "/",
+  "/pst-to-est",
+  "/est-to-ist",
+  "/pst-to-est/9am",
+  "/time/uk/london",
+  "/time/usa/texas",
+  "/time-zone/texas",
+  "/zones/est",
+  "/time/india",
+  "/india-time-to-est",
+  "/us-time-to-philippine-time",
+  "/est-to-philippine-time",
+  "/time-zone-map",
+  "/time-zone-map/usa",
+  "/daylight-saving-time",
+  "/daylight-saving-time/usa",
+  "/meeting-planner",
+  "/time/japan/osaka",
+  "/lagos-time-to-est",
+  "/world-clock",
+  "/what-time-zone-am-i-in",
+  "/military-time-converter",
+  "/unix-timestamp-converter",
+  "/time-calculator",
+  "/time-unit-converter",
+  "/time-zones",
+  "/about",
+  "/contact",
+  "/privacy",
+  "/terms",
+];
+
+const MACHINE_200 = [
+  "/sitemap/0.xml",
+  "/sitemap/1.xml",
+  "/sitemap/2.xml",
+  "/sitemap/3.xml",
+  "/sitemap/4.xml",
+  "/robots.txt",
+  "/llms.txt",
+  "/api/search",
+  "/api/health",
+  "/og?t=Test",
+  "/map/world.svg",
+  "/map/usa.svg",
+  "/manifest.webmanifest",
+  "/ads.txt",
+  "/icon.svg",
+];
+
+const EXPECT_404 = ["/nonexistent-to-x", "/time/narnia", "/zones/zzz", "/pst-to-est/25am", "/time-zone/france"];
+
+const EXPECT_308 = [
+  ["/pt-to-et", "/pst-to-est"],
+  ["/edt-to-pst", "/est-to-pst"],
+  ["/est-to-pht", "/est-to-philippine-time"],
+  ["/usa-time-to-philippine-time", "/us-time-to-philippine-time"],
+  ["/japan-time-to-est", "/jst-to-est"],
+  ["/pst-to-est/09am", "/pst-to-est/9am"],
+  ["/pst-to-est/9AM", "/pst-to-est/9am"],
+];
+
+let pass = 0;
+const fails = [];
+
+const check = (ok, label, detail) => {
+  if (ok) pass++;
+  else fails.push(`${label}${detail ? ` — ${detail}` : ""}`);
+};
+
+async function get(path, headers = {}) {
+  const r = await fetch(BASE + path, { redirect: "manual", headers, keepalive: false });
+  // Capture the body and the header we care about before the connection is
+  // reused: leaving a redirect body unread corrupts later keep-alive reads.
+  const text = r.status === 200 || r.status === 404 || r.status >= 500 ? await r.text() : (await r.arrayBuffer(), "");
+  return { status: r.status, headers: r.headers, location: r.headers.get("location") || "", text };
+}
+
+console.log(`smoke: ${BASE}\n`);
+
+for (const p of OK_200) {
+  const r = await get(p);
+  const body = r.text;
+  check(r.status === 200, `200 ${p}`, `got ${r.status}`);
+  if (r.status === 200) {
+    check(/<h1[^>]*>/.test(body), `h1 on ${p}`);
+    check(/class="answer"/.test(body), `answer on ${p}`);
+    check(/rel="canonical"/.test(body), `canonical on ${p}`);
+    const kb = Buffer.byteLength(body) / 1024;
+    if (p.startsWith("/time-zone-map")) {
+      check(kb < 100, `${p} size`, `${kb.toFixed(0)} KB`);
+    }
+  }
+}
+
+for (const p of MACHINE_200) {
+  const r = await get(p, { accept: "*/*" });
+  check(r.status === 200, `200 ${p}`, `got ${r.status}`);
+  if (p === "/api/health" && r.status === 200) {
+    const j = JSON.parse(r.text);
+    check(!!j.tzdata, "health reports tzdata", JSON.stringify(j).slice(0, 120));
+    console.log(`  health: tzdata ${j.tzdata}, node ${j.node}, ${JSON.stringify(j.counts)}`);
+  }
+  if (p === "/robots.txt" && r.status === 200) {
+    const t = r.text;
+    const prod = process.env.SITE_ENV === "production";
+    check(prod ? /Allow: \/$/m.test(t) : /Disallow: \/$/m.test(t), "robots matches SITE_ENV", t.slice(0, 80));
+  }
+  if (p === "/map/world.svg" && r.status === 200) {
+    const t = r.text;
+    const kb = Buffer.byteLength(t) / 1024;
+    check(kb < 140, "world.svg size", `${kb.toFixed(0)} KB`);
+    console.log(`  world.svg: ${kb.toFixed(0)} KB`);
+  }
+  if (p === "/map/usa.svg" && r.status === 200) {
+    const kb = Buffer.byteLength(r.text) / 1024;
+    check(kb < 140, "usa.svg size", `${kb.toFixed(0)} KB`);
+    console.log(`  usa.svg: ${kb.toFixed(0)} KB`);
+  }
+}
+
+for (const p of EXPECT_404) {
+  const r = await get(p);
+  check(r.status === 404, `404 ${p}`, `got ${r.status}`);
+}
+
+for (const [from, to] of EXPECT_308) {
+  const r = await get(from);
+  const loc = r.location;
+  const ok = (r.status === 308 || r.status === 301) && loc.replace(/^https?:\/\/[^/]+/, "") === to;
+  check(ok, `redirect ${from} -> ${to}`, `got ${r.status} ${loc}`);
+}
+
+// uppercase 301 built from the forwarded host, not localhost (docs/14 #6)
+{
+  const r = await get("/PST-to-EST", { "x-forwarded-host": "timetozone.com", "x-forwarded-proto": "https" });
+  const loc = r.location;
+  check(r.status === 301 && loc === "https://timetozone.com/pst-to-est", "301 uppercase uses forwarded host", `got ${r.status} ${loc}`);
+}
+
+// X-Robots-Tag off production
+{
+  const r = await get("/pst-to-est");
+  const tag = r.headers.get("x-robots-tag") || "";
+  if (process.env.SITE_ENV === "production") {
+    check(!tag.includes("noindex"), "no noindex header on production", tag);
+  } else {
+    check(tag.includes("noindex"), "noindex header off production", tag || "(absent)");
+  }
+}
+
+// no current clock time baked into cached HTML, and no hydration-unsafe markup
+{
+  const r = await get("/pst-to-est");
+  const body = r.text;
+  check(body.includes("--:--"), "converter renders --:-- placeholders on the server");
+  check(!/\bclass="zrow-clock"[^>]*>\d/.test(body), "no live clock value in cached HTML");
+}
+
+// HTML size budget
+{
+  const r = await get("/india-time-to-est");
+  const kb = Buffer.byteLength(r.text) / 1024;
+  check(kb <= 62, "pair page HTML <= 62 KB", `${kb.toFixed(1)} KB`);
+  console.log(`  /india-time-to-est: ${kb.toFixed(1)} KB`);
+}
+
+// security headers
+{
+  const r = await get("/");
+  check(r.headers.get("x-content-type-options") === "nosniff", "X-Content-Type-Options");
+  check((r.headers.get("referrer-policy") || "").includes("strict-origin"), "Referrer-Policy");
+  check(!r.headers.get("x-powered-by"), "no X-Powered-By");
+}
+
+console.log(`\n${pass} checks passed`);
+if (fails.length) {
+  console.log(`${fails.length} FAILED:`);
+  for (const f of fails) console.log(`  x ${f}`);
+  process.exit(1);
+}
+console.log("smoke: OK");

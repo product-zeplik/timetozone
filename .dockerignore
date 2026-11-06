@@ -1,0 +1,9 @@
+node_modules
+.next
+extension/dist
+*.zip
+.git
+.github
+.env
+.env.local
+*.log

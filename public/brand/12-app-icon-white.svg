@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="TimeToZone app icon">
+<rect width="100" height="100" rx="22" fill="#FFFFFF"/>
+<g transform="translate(10 10) scale(.8)" color="#000000">
+<g fill="currentColor">
+  <path d="M6 14H48V27H34V86H20V27H6Z"/>
+  <path d="M52 14H94V27H69L94 73V86H52V73H77L52 27Z"/>
+</g>
+</g>
+</svg>

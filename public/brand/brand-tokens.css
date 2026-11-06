@@ -1,0 +1,15 @@
+/* TimeToZone brand tokens */
+:root {
+ color-scheme: light;
+ --ttz-bg:#FFFFFF; --ttz-surface:#F7F7F7; --ttz-surface-raised:#FFFFFF;
+ --ttz-text:#080808; --ttz-text-secondary:#5F6368; --ttz-border:#E5E5E5; --ttz-focus:#080808;
+ --ttz-font-ui:"Geist",Arial,Helvetica,sans-serif;
+ --ttz-font-numeric:"Geist Mono",ui-monospace,SFMono-Regular,Consolas,monospace;
+ --ttz-radius-sm:8px; --ttz-radius-md:12px; --ttz-radius-lg:18px; --ttz-radius-xl:24px;
+ --ttz-motion-fast:120ms; --ttz-motion:180ms; --ttz-motion-slow:260ms;
+}
+[data-theme="dark"] {
+ color-scheme:dark;
+ --ttz-bg:#080808; --ttz-surface:#121212; --ttz-surface-raised:#191919;
+ --ttz-text:#F7F7F7; --ttz-text-secondary:#A6A6A6; --ttz-border:#292929; --ttz-focus:#FFFFFF;
+}

@@ -1,0 +1,48 @@
+{
+  "name": "timetozone",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TimeToZone.com - the fastest, most correct time zone converter on the web.",
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "scripts": {
+    "data": "node scripts/build-data.mjs",
+    "dev": "npm run data && next dev",
+    "build": "npm run data && next build",
+    "start": "next start",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "seo:lint": "node scripts/seo-lint.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "indexnow": "node scripts/indexnow.mjs",
+    "dst:watch": "node scripts/dst-watch.mjs",
+    "ext:build": "node extension/build.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "d3-geo": "^3.1.1",
+    "i18n-iso-countries": "^7.14.0",
+    "next": "15.5.29",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "redis": "^4.7.0",
+    "topojson-client": "^3.1.0",
+    "topojson-simplify": "^3.0.3",
+    "us-atlas": "^3.0.1",
+    "world-atlas": "^2.0.2"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "@types/d3-geo": "^3.1.0",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/topojson-client": "^3.1.5",
+    "city-timezones": "^1.2.1",
+    "countries-and-timezones": "^3.6.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

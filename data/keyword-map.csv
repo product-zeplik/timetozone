@@ -1,0 +1,352 @@
+keyword,market,volume,kd,target_url,slot
+what time is it,US,2740000,100,/,secondary (local clock)
+time zone converter,US,1500000,93,/,primary
+current time,US,135000,94,/,secondary (local clock)
+time now,US,110000,100,/,secondary (local clock)
+time zone converter,IN,110000,75,/,primary
+time converter,US,40500,97,/,secondary
+time zone converter,UK,33100,82,/,primary
+time zone calculator,US,12100,76,/,secondary
+time converter,IN,12100,63,/,secondary
+time difference,US,9900,83,/,secondary
+time converter,UK,9900,83,/,secondary
+time difference,UK,5400,78,/,secondary
+convert time zones,US,3600,0,/,secondary
+aest to est,US,1600,30,/aest-to-est,primary
+australia time to est,US,1000,39,/aest-to-est,synonym
+aest to est,AU,1000,29,/aest-to-est,primary
+aest to gmt,AU,590,22,/aest-to-gmt,primary
+aest to ist,IN,6600,25,/aest-to-ist,primary
+time difference between india and australia,IN,3600,28,/aest-to-ist,h2
+aest to ist,AU,720,26,/aest-to-ist,primary
+aest to utc,AU,880,29,/aest-to-utc,primary
+ast to est,CA,720,32,/ast-to-est,primary
+awst to aest,AU,590,21,/awst-to-aest,primary
+perth to sydney time,AU,590,39,/awst-to-aest,synonym
+bst to est,US,6600,26,/bst-to-est,primary
+bst to est,UK,2900,30,/bst-to-est,primary
+bst to ist,IN,5400,29,/bst-to-ist,primary
+bst to ist,UK,1300,25,/bst-to-ist,primary
+bst to pst,UK,1600,28,/bst-to-pst,primary
+bst to utc,UK,720,22,/bst-to-utc,primary
+cet to est,US,12100,26,/cet-to-est,primary
+cet to gmt,UK,3600,28,/cet-to-gmt,primary
+cet to ist,IN,49500,30,/cet-to-ist,primary
+cet to ist,US,720,26,/cet-to-ist,primary
+cst to aest,AU,880,24,/cst-to-aest,primary
+cst to est,US,74000,26,/cst-to-est,primary
+central time to eastern time,US,33100,43,/cst-to-est,synonym
+cst to est,CA,9900,57,/cst-to-est,primary
+12pm cst to est,US,9900,34,/cst-to-est/12pm,primary
+cst to gmt,UK,2400,22,/cst-to-gmt,primary
+cst to ist,IN,40500,19,/cst-to-ist,primary
+cst to ist,US,6600,22,/cst-to-ist,primary
+cdt to ist,IN,3600,28,/cst-to-ist,synonym
+ct to ist,IN,1900,33,/cst-to-ist,synonym
+cst to mst,US,8100,29,/cst-to-mst,primary
+cst to philippine time,PH,5400,30,/cst-to-philippine-time,primary
+cst to pht,PH,1300,23,/cst-to-philippine-time,synonym
+cst to pst,US,18100,32,/cst-to-pst,primary
+daylight savings 2026,AU,90500,37,/daylight-saving-time/australia,primary
+daylight saving time,US,135000,93,/daylight-saving-time/usa,primary
+when do clocks change,US,12100,65,/daylight-saving-time/usa,secondary
+when does daylight saving time end,US,5400,13,/daylight-saving-time/usa,faq
+edt to bst,UK,1900,22,/edt-to-bst,primary
+edt to est,US,14800,33,/edt-to-est,primary
+est to aest,AU,5400,32,/est-to-aest,primary
+est to aest,US,1900,29,/est-to-aest,primary
+est to aedt,AU,880,29,/est-to-aest,synonym
+est to bst,UK,4400,24,/est-to-bst,primary
+est to bst,US,1300,23,/est-to-bst,primary
+est to cet,US,1900,29,/est-to-cet,primary
+est to cst,US,49500,45,/est-to-cst,primary
+eastern time to central time,US,33100,47,/est-to-cst,synonym
+est vs cst,US,6600,46,/est-to-cst,faq
+3pm est to cst,US,12100,34,/est-to-cst/3pm,primary
+est to gmt,UK,9900,29,/est-to-gmt,primary
+est to gmt,US,8100,24,/est-to-gmt,primary
+est to ist,IN,135000,48,/est-to-ist,primary
+est to ist converter,IN,27100,46,/est-to-ist,title
+est to ist,US,22200,50,/est-to-ist,primary
+est to india time,US,9900,51,/est-to-ist,synonym
+et to ist,IN,5400,43,/est-to-ist,synonym
+edt to ist,IN,4400,30,/est-to-ist,synonym
+10am est to ist,US,2400,53,/est-to-ist/10am,primary
+8pm est to ist,US,2400,20,/est-to-ist/8pm,primary
+9am est to ist,US,4400,55,/est-to-ist/9am,primary
+est to jst,US,1300,25,/est-to-jst,primary
+est to mst,US,9900,17,/est-to-mst,primary
+est to philippine time,PH,12100,30,/est-to-philippine-time,primary
+est to pht,PH,2400,30,/est-to-philippine-time,synonym
+est to ph time,PH,1300,33,/est-to-philippine-time,synonym
+est to manila time,PH,1000,32,/est-to-philippine-time,synonym
+est to pkt,US,320,24,/est-to-pkt,primary
+est to pst,US,22200,36,/est-to-pst,primary
+eastern time to pacific time,US,12100,22,/est-to-pst,synonym
+time difference between est and pst,US,1000,50,/est-to-pst,h2
+12pm est to pst,US,14800,30,/est-to-pst/12pm,primary
+est to uk time,UK,6600,35,/est-to-uk-time,primary
+est to london time,US,1900,17,/est-to-uk-time,synonym
+est to uk time,US,1900,37,/est-to-uk-time,primary
+est to utc,US,9900,29,/est-to-utc,primary
+gmt to aest,AU,1900,24,/gmt-to-aest,primary
+gmt to cet,UK,880,26,/gmt-to-cet,primary
+gmt to cst,UK,720,30,/gmt-to-cst,primary
+gmt to est,US,22200,14,/gmt-to-est,primary
+gmt to est,UK,3600,27,/gmt-to-est,primary
+gmt to ist,IN,33100,29,/gmt-to-ist,primary
+gmt to ist,US,1300,12,/gmt-to-ist,primary
+gmt to ist,UK,1300,16,/gmt-to-ist,primary
+gmt to pht,PH,590,18,/gmt-to-philippine-time,primary
+gmt to pst,US,8100,18,/gmt-to-pst,primary
+gmt to pst,UK,720,30,/gmt-to-pst,primary
+gmt to utc,UK,1000,38,/gmt-to-utc,primary
+hst to pst,US,1000,19,/hst-to-pst,primary
+time difference between india and usa,IN,12100,29,/india-time-to-est,h2
+india time to est,US,6600,39,/india-time-to-est,primary
+time difference between india and canada,IN,2900,30,/india-time-to-est,faq
+time difference between india and usa,US,480,32,/india-time-to-est,h2
+ist to aest,IN,1300,30,/ist-to-aest,primary
+ist to aest,AU,1000,29,/ist-to-aest,primary
+ist to bst,IN,1600,22,/ist-to-bst,primary
+ist to cet,IN,6600,28,/ist-to-cet,primary
+ist to cet,US,170,19,/ist-to-cet,primary
+ist to cst,IN,12100,36,/ist-to-cst,primary
+ist to cst,US,5400,27,/ist-to-cst,primary
+ist to est,IN,40500,27,/ist-to-est,primary
+ist to est,US,18100,30,/ist-to-est,primary
+ist to edt,IN,1900,22,/ist-to-est,synonym
+ist to gmt,IN,5400,31,/ist-to-gmt,primary
+ist to gmt,US,480,26,/ist-to-gmt,primary
+ist to jst,IN,5400,23,/ist-to-jst,primary
+ist to pst,IN,12100,38,/ist-to-pst,primary
+ist to pst,US,4400,26,/ist-to-pst,primary
+india time to pst,US,2900,37,/ist-to-pst,synonym
+ist to pdt,IN,1300,27,/ist-to-pst,synonym
+ist to sgt,IN,1300,25,/ist-to-sgt,primary
+ist to utc,IN,14800,34,/ist-to-utc,primary
+ist to utc,US,1300,28,/ist-to-utc,primary
+jst to est,US,3600,27,/jst-to-est,primary
+japan time to est,US,3600,30,/jst-to-est,synonym
+kst to est,US,4400,12,/kst-to-est,primary
+korea time to est,US,2400,27,/kst-to-est,synonym
+time difference between london and new york,US,1000,32,/london-time-to-new-york-time,h2
+meeting planner,US,4400,72,/meeting-planner,primary
+military time,US,301000,50,/military-time-converter,primary
+military time converter,US,22200,26,/military-time-converter,secondary
+24 hour time converter,US,1000,51,/military-time-converter,secondary
+mst to cst,US,9900,31,/mst-to-cst,primary
+mst to est,US,40500,39,/mst-to-est,primary
+mst to est,CA,8100,39,/mst-to-est,primary
+mst to pst,US,18100,32,/mst-to-pst,primary
+pdt to cst,US,8100,30,/pdt-to-cst,primary
+pdt to est,US,18100,32,/pdt-to-est,primary
+pht to est,PH,590,30,/philippine-time-to-est,synonym
+philippine time to est,PH,590,30,/philippine-time-to-est,primary
+philippine time to pst,PH,1900,30,/philippine-time-to-pst,primary
+pht to pst,PH,590,28,/philippine-time-to-pst,synonym
+pkt to est,US,170,17,/pkt-to-est,primary
+pst to aest,AU,3600,25,/pst-to-aest,primary
+pst to bst,UK,1900,26,/pst-to-bst,primary
+pst to cst,US,49500,34,/pst-to-cst,primary
+pst to est,US,74000,41,/pst-to-est,primary
+pt to est,US,33100,42,/pst-to-est,synonym
+pacific time to eastern time,US,27100,49,/pst-to-est,synonym
+pst to est,CA,22200,55,/pst-to-est,primary
+pt to et,US,8100,49,/pst-to-est,synonym
+pst to est converter,US,8100,54,/pst-to-est,title
+pst time to est,US,8100,48,/pst-to-est,h2
+pst to est time,US,5400,50,/pst-to-est,h2
+pst to eastern time,US,2400,50,/pst-to-est,synonym
+10am pst to est,US,18100,47,/pst-to-est/10am,primary
+10pm pst to est,US,9900,49,/pst-to-est/10pm,primary
+11:30 am pst to est,US,1900,39,/pst-to-est/11am,quarter-hour block
+12 am pst to est,US,2900,45,/pst-to-est/12am,primary
+12pm pst to est,US,18100,53,/pst-to-est/12pm,primary
+12 pm pst to est,US,14800,41,/pst-to-est/12pm,primary
+1pm pt to est,US,14800,47,/pst-to-est/1pm,primary
+2pm pst to est,US,12100,53,/pst-to-est/2pm,primary
+2pm pt to est,US,12100,47,/pst-to-est/2pm,primary
+3pm pst to est,US,14800,59,/pst-to-est/3pm,primary
+6pm pt to est,US,12100,47,/pst-to-est/6pm,primary
+7pm pst to est,US,12100,30,/pst-to-est/7pm,primary
+8pm pt to est,US,6600,49,/pst-to-est/8pm,primary
+9am pst to est,US,33100,53,/pst-to-est/9am,primary
+9 am pst to est,US,12100,54,/pst-to-est/9am,primary
+pst to gmt,UK,6600,27,/pst-to-gmt,primary
+pst to gmt,US,4400,24,/pst-to-gmt,primary
+pst to ist,IN,49500,35,/pst-to-ist,primary
+pdt to ist,IN,8100,23,/pst-to-ist,synonym
+pst to ist,US,5400,30,/pst-to-ist,primary
+pt to ist,IN,3600,35,/pst-to-ist,synonym
+pst to mst,CA,4400,36,/pst-to-mst,primary
+pst to pdt,US,590,31,/pst-to-pdt,primary
+pst to manila time,PH,12100,37,/pst-to-philippine-time,synonym
+pst to philippine time,PH,5400,31,/pst-to-philippine-time,primary
+pst to pht,PH,1600,38,/pst-to-philippine-time,synonym
+pst to ph time,PH,1000,34,/pst-to-philippine-time,synonym
+pst to utc,US,8100,31,/pst-to-utc,primary
+sgt to est,US,320,17,/sgt-to-est,primary
+sydney to london time,AU,590,25,/sydney-time-to-london-time,primary
+time zone map,US,201000,61,/time-zone-map,primary
+world time zone map,US,12100,87,/time-zone-map,secondary
+us time zone map,US,60500,50,/time-zone-map/usa,primary
+us time zones,US,49500,72,/time-zone-map/usa,secondary
+how many time zones in the us,US,2900,48,/time-zone-map/usa,faq
+canada time zones,CA,5400,59,/time-zone/canada,primary
+what time zone is florida,US,14800,55,/time-zone/florida,primary
+what time zone is indiana,US,9900,50,/time-zone/indiana,primary
+what time zone is michigan,US,18100,39,/time-zone/michigan,primary
+what time zone is tennessee,US,4400,41,/time-zone/tennessee,primary
+what time zone is texas,US,33100,54,/time-zone/texas,primary
+time zones,UK,12100,98,/time-zones,primary
+time zone abbreviations,US,1300,26,/time-zones,secondary
+australia time,IN,165000,75,/time/australia,secondary
+time in australia,US,135000,76,/time/australia,primary
+australia time,UK,40500,69,/time/australia,secondary
+adelaide time,AU,40500,36,/time/australia/adelaide,primary
+time in adelaide,AU,33100,35,/time/australia/adelaide,secondary
+brisbane time,AU,74000,41,/time/australia/brisbane,primary
+time in brisbane,AU,49500,42,/time/australia/brisbane,secondary
+melbourne time,AU,60500,75,/time/australia/melbourne,secondary
+time in melbourne,AU,60500,74,/time/australia/melbourne,primary
+perth time,AU,74000,43,/time/australia/perth,secondary
+time in perth,AU,74000,41,/time/australia/perth,primary
+sydney time,AU,74000,61,/time/australia/sydney,secondary
+time in sydney,AU,74000,60,/time/australia/sydney,primary
+sydney time,UK,40500,55,/time/australia/sydney,secondary
+time in brazil,US,49500,73,/time/brazil,primary
+canada time,IN,246000,64,/time/canada,primary
+canada time,UK,22200,66,/time/canada,primary
+time in alberta,CA,18100,42,/time/canada/alberta,primary
+calgary time,CA,40500,43,/time/canada/calgary,secondary
+time in calgary,CA,33100,36,/time/canada/calgary,primary
+edmonton time,CA,22200,38,/time/canada/edmonton,primary
+halifax time,CA,14800,32,/time/canada/halifax,primary
+montreal time,CA,12100,41,/time/canada/montreal,primary
+newfoundland time,CA,9900,46,/time/canada/newfoundland,primary
+time in toronto,CA,60500,60,/time/canada/toronto,primary
+toronto time,CA,60500,49,/time/canada/toronto,secondary
+time in toronto,US,22200,50,/time/canada/toronto,primary
+toronto time,UK,14800,25,/time/canada/toronto,secondary
+what time zone is toronto,CA,6600,52,/time/canada/toronto,h2
+vancouver time,CA,60500,42,/time/canada/vancouver,secondary
+time in vancouver,CA,40500,41,/time/canada/vancouver,primary
+winnipeg time,CA,18100,33,/time/canada/winnipeg,primary
+time in china,US,135000,67,/time/china,primary
+time in paris,US,110000,31,/time/france/paris,primary
+time in germany,US,135000,74,/time/germany,primary
+germany time,IN,90500,,/time/germany,secondary
+time in india,US,1000000,75,/time/india,primary
+india time,CA,201000,70,/time/india,secondary
+what time is it in india,US,135000,75,/time/india,secondary
+india time,UK,135000,70,/time/india,secondary
+time in israel,US,74000,46,/time/israel,primary
+time in japan,US,301000,77,/time/japan,primary
+japan time,IN,110000,,/time/japan,secondary
+japan time,UK,33100,59,/time/japan,secondary
+time in kenya,US,90500,39,/time/kenya,primary
+time in mexico,US,40500,19,/time/mexico,primary
+time in new zealand,US,201000,56,/time/new-zealand,primary
+nz time,AU,18100,43,/time/new-zealand,secondary
+time in nigeria,US,135000,62,/time/nigeria,primary
+time in pakistan,US,90500,60,/time/pakistan,primary
+ph time,PH,165000,77,/time/philippines,secondary
+time in philippines,US,135000,28,/time/philippines,primary
+philippine time,PH,110000,82,/time/philippines,secondary
+philippines time,CA,49500,77,/time/philippines,secondary
+time in singapore,US,110000,56,/time/singapore,primary
+singapore time,IN,110000,46,/time/singapore,secondary
+time in korea,US,135000,76,/time/south-korea,primary
+dubai time,IN,201000,46,/time/uae/dubai,secondary
+time in dubai,US,110000,61,/time/uae/dubai,primary
+dubai time,UK,49500,34,/time/uae/dubai,secondary
+uk time,IN,301000,69,/time/uk,primary
+uk time,CA,49500,82,/time/uk,primary
+time in london,US,301000,81,/time/uk/london,primary
+what time is it in london,US,246000,78,/time/uk/london,secondary
+london time,IN,201000,74,/time/uk/london,secondary
+london time,CA,40500,64,/time/uk/london,secondary
+usa time,IN,90500,74,/time/usa,primary
+us time,UK,8100,26,/time/usa,secondary
+time in arizona,US,90500,53,/time/usa/arizona,primary
+what time zone is arizona,US,22200,38,/time/usa/arizona,h2
+what time is it in california,US,550000,77,/time/usa/california,primary
+time in california,PH,90500,77,/time/usa/california,secondary
+what time zone is california,US,40500,78,/time/usa/california,h2
+time in chicago,US,90500,49,/time/usa/chicago,primary
+what time zone is chicago,US,22200,46,/time/usa/chicago,h2
+what time zone is colorado,US,5400,34,/time/usa/colorado,h2
+time in florida,US,74000,72,/time/usa/florida,primary
+time in hawaii,US,246000,43,/time/usa/hawaii,primary
+la time,AU,27100,54,/time/usa/los-angeles,primary
+los angeles time,UK,6600,49,/time/usa/los-angeles,secondary
+time in new york,US,201000,68,/time/usa/new-york,primary
+new york time,IN,74000,,/time/usa/new-york,secondary
+new york time,UK,49500,32,/time/usa/new-york,secondary
+what time zone is new york,US,6600,53,/time/usa/new-york,h2
+time in texas,US,110000,74,/time/usa/texas,primary
+uk time to est,US,2400,18,/uk-time-to-est,primary
+london time to est,US,880,27,/uk-time-to-est,synonym
+uk time to ist,IN,14800,31,/uk-time-to-ist,primary
+time difference between india and uk,IN,8100,34,/uk-time-to-ist,h2
+uk time to india time,UK,1600,32,/uk-time-to-ist,synonym
+epoch converter,US,27100,62,/unix-timestamp-converter,secondary
+unix timestamp converter,US,18100,65,/unix-timestamp-converter,primary
+us time to ph time,PH,2400,34,/us-time-to-philippine-time,primary
+utc to aest,AU,4400,27,/utc-to-aest,primary
+utc to bst,UK,2900,23,/utc-to-bst,primary
+utc to cst,US,22200,36,/utc-to-cst,primary
+utc to est,US,49500,14,/utc-to-est,primary
+utc to est,CA,9900,50,/utc-to-est,primary
+utc to gmt,UK,5400,35,/utc-to-gmt,primary
+gmt vs utc,US,2900,43,/utc-to-gmt,faq
+utc to ist,IN,60500,37,/utc-to-ist,primary
+utc to ist,US,2400,32,/utc-to-ist,primary
+utc to mst,US,5400,10,/utc-to-mst,primary
+utc to pht,PH,1000,23,/utc-to-philippine-time,primary
+utc to pst,US,27100,35,/utc-to-pst,primary
+what time zone am i in,US,135000,55,/what-time-zone-am-i-in,primary
+time zone,US,40500,92,/what-time-zone-am-i-in,secondary
+world clock,US,823000,100,/world-clock,primary
+world clock,IN,110000,95,/world-clock,primary
+world clock,UK,49500,84,/world-clock,primary
+world time,US,22200,100,/world-clock,secondary
+aedt time,AU,14800,45,/zones/aedt,primary
+aest time,AU,27100,70,/zones/aest,primary
+atlantic time,CA,6600,41,/zones/at,primary
+awst time,AU,4400,25,/zones/awst,primary
+bst time,UK,22200,66,/zones/bst,primary
+cst time,US,90500,64,/zones/cst,primary
+cst time,IN,27100,52,/zones/cst,primary
+central time,US,201000,72,/zones/ct,primary
+central time now,US,49500,72,/zones/ct,secondary
+est time,US,135000,82,/zones/est,primary
+est time,IN,74000,66,/zones/est,primary
+est time,UK,40500,76,/zones/est,primary
+time in est,US,18100,83,/zones/est,secondary
+what is est,US,9900,45,/zones/est,intro
+eastern time,US,110000,88,/zones/et,primary
+eastern time now,US,60500,82,/zones/et,secondary
+eastern time,UK,18100,79,/zones/et,primary
+est vs edt,US,14800,46,/zones/et,faq
+gmt time,US,90500,67,/zones/gmt,primary
+gmt time,UK,27100,59,/zones/gmt,primary
+what is gmt,US,9900,49,/zones/gmt,intro
+gmt now,US,6600,69,/zones/gmt,secondary
+ist time,US,368000,67,/zones/ist,primary
+mst time,US,110000,41,/zones/mst,primary
+mountain time,US,165000,28,/zones/mt,primary
+mountain time,CA,22200,54,/zones/mt,primary
+pst time,US,135000,69,/zones/pst,primary
+pst time,IN,49500,52,/zones/pst,primary
+time in pst,US,22200,51,/zones/pst,secondary
+pst time,UK,18100,48,/zones/pst,primary
+pacific time,US,165000,67,/zones/pt,primary
+pacific time now,US,49500,64,/zones/pt,secondary
+pst vs pdt,US,5400,46,/zones/pt,faq
+utc time,US,246000,89,/zones/utc,primary
+utc time,IN,135000,83,/zones/utc,primary
+utc time,UK,49500,77,/zones/utc,primary
+utc now,US,14800,86,/zones/utc,secondary
+what is utc,US,14800,67,/zones/utc,intro

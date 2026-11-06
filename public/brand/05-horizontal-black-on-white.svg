@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 140" role="img" aria-label="TimeToZone horizontal logo">
+<rect width="620" height="140" rx="20" fill="#FFFFFF"/>
+<g transform="translate(10 20) scale(1)" color="#080808">
+<g fill="currentColor">
+  <path d="M6 14H48V27H34V86H20V27H6Z"/>
+  <path d="M52 14H94V27H69L94 73V86H52V73H77L52 27Z"/>
+</g>
+</g>
+<text x="130" y="91" fill="#080808" font-family="Geist, Arial, Helvetica, sans-serif" font-size="48" font-weight="700" letter-spacing="-2.1">TimeToZone</text>
+</svg>

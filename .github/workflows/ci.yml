@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: typecheck · test · build · seo-lint · smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SITE_URL: https://timetozone.com
+      SITE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generate data
+        run: npm run data
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Production build
+        run: npm run build
+
+      - name: SEO lint
+        run: npm run seo:lint
+
+      - name: Build the Chrome extension
+        run: npm run ext:build
+
+      - name: Smoke test the standalone server
+        run: |
+          cp -r public .next/standalone/
+          mkdir -p .next/standalone/.next
+          cp -r .next/static .next/standalone/.next/
+          (cd .next/standalone && PORT=3010 HOSTNAME=127.0.0.1 node server.js &) 
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:3010/api/health > /dev/null && break
+            sleep 1
+          done
+          node scripts/smoke.mjs http://127.0.0.1:3010
+
+      - name: Upload the extension zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrome-extension
+          path: extension/timetozone-extension-*.zip
+          if-no-files-found: error
