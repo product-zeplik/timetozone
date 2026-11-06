@@ -2,6 +2,9 @@
 
 **Time, translated.** The fastest, most correct time zone converter on the web.
 
+**Live: [timetozone.com](https://timetozone.com)** — see [LAUNCH.md](./LAUNCH.md) for deployment
+state and the remaining launch steps.
+
 A conversion-first time zone utility: Next.js 15 (App Router) + React 19, deployed on Railway behind
 Cloudflare, with a Manifest V3 Chrome extension that reuses the same engine. Every offset, abbreviation,
 daylight-saving date and conversion is computed at render time from the IANA tz database — nothing is
@@ -36,6 +39,9 @@ npm run seo:lint    # lint the rendered HTML in .next/server/app  (exits 1 on er
 npm run smoke       # smoke-test a running server (statuses, redirects, headers, sizes)
 npm run ext:build   # esbuild -> extension/dist + a zip for the Web Store
 npm run typecheck   # tsc --noEmit
+npm run purge       # purge the Cloudflare cache (needs CF_ZONE_ID + CF_API_TOKEN)
+npm run indexnow    # submit changed URLs to IndexNow (Bing, Yandex)
+npm run dst:watch   # the cron job: revalidate + purge around a DST transition
 ```
 
 ## Local development

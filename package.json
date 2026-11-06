@@ -17,6 +17,7 @@
     "smoke": "node scripts/smoke.mjs",
     "indexnow": "node scripts/indexnow.mjs",
     "dst:watch": "node scripts/dst-watch.mjs",
+    "purge": "node scripts/purge-cdn.mjs",
     "ext:build": "node extension/build.mjs",
     "typecheck": "tsc --noEmit"
   },
