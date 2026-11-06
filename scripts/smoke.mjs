@@ -151,13 +151,19 @@ for (const [from, to] of EXPECT_308) {
   const expectedHost = new URL(BASE).host;
   const r = await get("/PST-to-EST", { "x-forwarded-host": expectedHost, "x-forwarded-proto": "https" });
   const loc = r.location;
-  const ok =
-    r.status === 301 &&
-    /^https?:\/\//.test(loc) &&
-    !/localhost:3000|0\.0\.0\.0/.test(loc) &&
-    loc.endsWith("/pst-to-est") &&
-    new URL(loc).host === expectedHost;
-  check(ok, "301 uppercase uses the forwarded host, not the internal one", `got ${r.status} ${loc}`);
+  // Next normalises 127.0.0.1 to localhost locally, so compare the port and
+  // path rather than the literal hostname. What must never happen is a
+  // redirect to the container's internal port (docs/14 #6).
+  const expectedPort = new URL(BASE).port || (BASE.startsWith("https") ? "443" : "80");
+  let ok = false;
+  try {
+    const u = new URL(loc);
+    const port = u.port || (u.protocol === "https:" ? "443" : "80");
+    ok = r.status === 301 && u.pathname === "/pst-to-est" && port === expectedPort && u.hostname !== "0.0.0.0";
+  } catch {
+    ok = false;
+  }
+  check(ok, "301 uppercase is absolute and not on the internal host", `got ${r.status} ${loc}`);
 }
 
 // X-Robots-Tag off production
