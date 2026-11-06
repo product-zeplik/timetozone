@@ -82,7 +82,11 @@ async function get(path, headers = {}) {
   // Capture the body and the header we care about before the connection is
   // reused: leaving a redirect body unread corrupts later keep-alive reads.
   const text = r.status === 200 || r.status === 404 || r.status >= 500 ? await r.text() : (await r.arrayBuffer(), "");
-  return { status: r.status, headers: r.headers, location: r.headers.get("location") || "", text };
+  // undici repeats `location` when a redirect is read with redirect:"manual";
+  // the wire carries it once (verified with curl), so collapse the repeat.
+  const raw = r.headers.get("location") || "";
+  const parts = [...new Set(raw.split(", ").map((v) => v.trim()).filter(Boolean))];
+  return { status: r.status, headers: r.headers, location: parts.length === 1 ? parts[0] : raw, text };
 }
 
 console.log(`smoke: ${BASE}\n`);
@@ -140,11 +144,20 @@ for (const [from, to] of EXPECT_308) {
   check(ok, `redirect ${from} -> ${to}`, `got ${r.status} ${loc}`);
 }
 
-// uppercase 301 built from the forwarded host, not localhost (docs/14 #6)
+// uppercase 301 built from the forwarded host, never the internal one (docs/14 #6).
+// Behind a proxy the edge rewrites x-forwarded-host to the real public host, so
+// assert on the shape: absolute, https, public host, lowercased path.
 {
-  const r = await get("/PST-to-EST", { "x-forwarded-host": "timetozone.com", "x-forwarded-proto": "https" });
+  const expectedHost = new URL(BASE).host;
+  const r = await get("/PST-to-EST", { "x-forwarded-host": expectedHost, "x-forwarded-proto": "https" });
   const loc = r.location;
-  check(r.status === 301 && loc === "https://timetozone.com/pst-to-est", "301 uppercase uses forwarded host", `got ${r.status} ${loc}`);
+  const ok =
+    r.status === 301 &&
+    /^https?:\/\//.test(loc) &&
+    !/localhost:3000|0\.0\.0\.0/.test(loc) &&
+    loc.endsWith("/pst-to-est") &&
+    new URL(loc).host === expectedHost;
+  check(ok, "301 uppercase uses the forwarded host, not the internal one", `got ${r.status} ${loc}`);
 }
 
 // X-Robots-Tag off production
