@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import Script from "next/script";
 
 /**
  * GA4 for the App Router.
@@ -60,18 +59,18 @@ function PageViews({ gaId }: { gaId: string }) {
   return null;
 }
 
+/**
+ * Only the route-change tracker lives here. The gtag.js tag itself is rendered
+ * by the server layout as a plain script: next/script with afterInteractive
+ * emits a <link rel="preload"> and injects the real tag on the client, which
+ * Search Console's Google Analytics verification cannot see when it fetches
+ * the raw page.
+ */
 export function Analytics({ gaId }: { gaId: string }) {
   if (!gaId) return null;
   return (
-    <>
-      <Script id="ga-src" strategy="afterInteractive" src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} />
-      <Script id="ga-init" strategy="afterInteractive">
-        {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());` +
-          `gtag('config','${gaId}',{send_page_view:false});`}
-      </Script>
-      <Suspense fallback={null}>
-        <PageViews gaId={gaId} />
-      </Suspense>
-    </>
+    <Suspense fallback={null}>
+      <PageViews gaId={gaId} />
+    </Suspense>
   );
 }

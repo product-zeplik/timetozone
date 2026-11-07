@@ -153,7 +153,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <JsonLd data={graph([ld.organization(), ld.website()])} />
 
-        {/* A plain async script, not next/script: with strategy="afterInteractive"
+        {/* Plain async scripts, not next/script: with strategy="afterInteractive"
             Next emits only <link rel="preload"> into the HTML and injects the
             real tag on the client, which the AdSense crawler cannot see when it
             fetches the page. React 19 hoists this into <head>, which is where
@@ -164,6 +164,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             crossOrigin="anonymous"
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.adsenseClient}`}
           />
+        ) : null}
+
+        {SITE.gaId ? (
+          <>
+            <script async src={`https://www.googletagmanager.com/gtag/js?id=${SITE.gaId}`} />
+            <script
+              dangerouslySetInnerHTML={{
+                __html:
+                  `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}` +
+                  `gtag('js',new Date());gtag('config','${SITE.gaId}',{send_page_view:false});`,
+              }}
+            />
+          </>
         ) : null}
 
         <Analytics gaId={SITE.gaId} />
