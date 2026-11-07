@@ -40,6 +40,7 @@ const OK_200 = [
 ];
 
 const MACHINE_200 = [
+  "/sitemap.xml",
   "/sitemap/0.xml",
   "/sitemap/1.xml",
   "/sitemap/2.xml",

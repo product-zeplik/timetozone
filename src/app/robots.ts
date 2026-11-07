@@ -32,7 +32,7 @@ export default function robots(): MetadataRoute.Robots {
       },
       ...AI_AGENTS.map((userAgent) => ({ userAgent, allow: "/" })),
     ],
-    sitemap: [0, 1, 2, 3, 4].map((i) => `${SITE.url}/sitemap/${i}.xml`),
+    sitemap: [`${SITE.url}/sitemap.xml`, ...[0, 1, 2, 3, 4].map((i) => `${SITE.url}/sitemap/${i}.xml`)],
     host: SITE.url,
   };
 }
