@@ -7,6 +7,36 @@ Everything below reflects the state of the deployment, not a plan.
 
 ## Done
 
+### Interface
+The site was rebuilt around the answer after the first version was, fairly,
+called exhausting to read. `npm run audit:visual` drives Playwright over 13
+pages x 5 viewports x 2 themes: it went from **320 problems to 0**.
+
+| | before | after |
+|---|---|---|
+| Pair page, laptop | 4,791px | 4,058px |
+| 24-hour table, laptop | 1,187px | 337px |
+| /time-zones, phone | 13,945px | 8,635px |
+| /time-zone-map, phone | 11,914px | 7,809px |
+| Lighthouse accessibility | 96 | **100** |
+| CLS on a pair page | 0.062 | **0.001** |
+
+Lighthouse mobile over 10 templates, run against the live domain:
+**performance 97-99, accessibility 100, best practices 100, SEO 100**, CLS
+0.000-0.009, TBT 0-73ms.
+
+### Search presence
+| | state |
+|---|---|
+| Search Console | property `https://timetozone.com/` **verified** (HTML tag), all 5 sitemaps submitted |
+| Bing Webmaster Tools | site **verified** (HTML tag), all 5 sitemaps submitted, 0 errors |
+| Google Analytics 4 | property **TimeToZone**, stream `TimeToZone web`, `G-Q1PZTJFKG1` live on the site |
+| IndexNow | key live, 16 URLs submitted (202) |
+
+Both search properties and the GA4 property were created under
+**asadmalik901@gmail.com**, which is the Google account signed into this
+Chrome — not `product@zeplik.com`. See the first item under "Remaining".
+
 ### Build and content
 - 2,375 pages pre-rendered; 7,695 indexable pair URLs; ISR (24 h) for everything else.
 - `npm test` — 125 checks green (engine vectors, 870-pair matrix against `toLocaleString`
@@ -79,22 +109,23 @@ wants to see during review.
 Slots are already reserved in the layout (3 on pair pages, 2 on hour and place pages, 1 on zone
 and tool pages), with fixed heights so CLS stays at 0, and **never above the answer line**.
 
-### 4. Google Analytics 4
-Set `NEXT_PUBLIC_GA_ID=G-…` on Railway and redeploy. Events already instrumented:
-`convert`, `swap`, `add_zone`, `copy`, `share`, `ics`.
-
-### 5. Search Console and Bing (do this first — it starts the indexing clock)
-1. GSC: add the **domain property** `timetozone.com`, verify by DNS TXT (Cloudflare).
-2. Submit all five sitemaps: `https://timetozone.com/sitemap/0.xml` … `/4.xml`.
-3. Request indexing for `/` and the top 20 pairs.
-4. Bing Webmaster Tools: import from GSC, submit the same five sitemaps.
-   IndexNow is already live and will keep Bing (and therefore ChatGPT search) fresh.
-
-### 6. Chrome Web Store
+### 5. Chrome Web Store
 `npm run ext:build` produces `extension/timetozone-extension-1.0.0.zip`. Load
 `extension/dist` unpacked once to sanity-check the popup, `chrome.storage.sync` and the
 right-click toast, then publish. Afterwards set `NEXT_PUBLIC_CHROME_STORE_URL` on Railway —
 that switches on the site-wide extension CTA and adds the listing to the Organization `sameAs`.
+
+## Already handled, for reference
+- **Cloudflare**: cache rule active and verified `cf-cache-status: HIT`, SSL
+  **Full (Strict)**, Brotli + HTTP/3 + Early Hints on, Rocket Loader off,
+  `CF_ZONE_ID`/`CF_API_TOKEN` set on both services so `npm run purge` and the
+  daily DST cron purge work.
+- **GA4** is live: `G-Q1PZTJFKG1`, with `convert`, `swap`, `add_zone`, `copy`,
+  `share` and `ics` already instrumented.
+- **Search Console and Bing** are verified and have all five sitemaps.
+  GSC may show "Couldn't fetch" for a few hours after submission; the sitemaps
+  are valid XML, served as `application/xml`, and listed in `robots.txt`
+  (checked).
 
 ## Deviations from the spec, and why
 
@@ -126,10 +157,17 @@ that switches on the site-wide extension CTA and adds the listing to the Organiz
 ```bash
 npm run build && npm run seo:lint     # must be 0 errors before any deploy
 npm run smoke -- https://timetozone.com
-npm run purge                         # after a deploy, once CF_API_TOKEN is set
+npm run audit:visual                  # 13 pages x 5 viewports x 2 themes
+npm run audit:links                   # orphans, depth, inbound link counts
+npm run audit:lighthouse              # perf/a11y/best-practices/SEO + CLS
+npm run purge                         # after a deploy: Cloudflare caches for 24 h
 npm run indexnow                      # ping Bing/Yandex with changed URLs
 npm run dst:watch -- --force          # force a revalidate + purge cycle
 ```
+
+**Always `npm run purge` after a deploy.** Cloudflare respects the origin's
+24-hour `s-maxage`, so without a purge it keeps serving the previous build —
+it served a stale 404 for 25 minutes during setup before this was noticed.
 
 Monthly, per docs/07: export GSC queries, add any query with ≥100 impressions to
 `src/data/keyword-map.csv` mapped to an **existing** URL, and re-run the build.
