@@ -192,15 +192,27 @@ for (const [from, to] of EXPECT_308) {
 // a header guard is what keeps any future one from becoming a second
 // crawlable copy of the site.
 {
-  // x-forwarded-host, not host: Node's fetch forbids setting Host, and behind
-  // Railway it is x-forwarded-host that carries the real name anyway.
-  const foreign = await get("/pst-to-est", { "x-forwarded-host": "web-production-58416.up.railway.app" });
-  const tag = foreign.headers.get("x-robots-tag") || "";
-  check(/noindex/i.test(tag), "a non-canonical host is served noindex", tag || "<no header>");
-
-  const loopback = await get("/pst-to-est");
-  const okTag = loopback.headers.get("x-robots-tag") || "";
+  // The canonical host must stay indexable. True everywhere, so always checked.
+  const canonical = await get("/pst-to-est");
+  const okTag = canonical.headers.get("x-robots-tag") || "";
   check(!/noindex/i.test(okTag), "the canonical host is still indexable", okTag || "<no header>");
+
+  // The off-host guard can only be exercised where the request reaches the app
+  // unmodified. Through Cloudflare the injected x-forwarded-host is replaced
+  // with the real one before the origin sees it -- which is the behaviour you
+  // want in production, and which also means the header cannot be spoofed, but
+  // it leaves nothing to assert from out here.
+  //
+  // x-forwarded-host rather than host: Node's fetch forbids setting Host, and
+  // behind Railway it is x-forwarded-host that carries the real name anyway.
+  const direct = /^https?:\/\/(127\.0\.0\.1|localhost|\[::1\])/.test(BASE);
+  if (direct) {
+    const foreign = await get("/pst-to-est", { "x-forwarded-host": "web-production-58416.up.railway.app" });
+    const tag = foreign.headers.get("x-robots-tag") || "";
+    check(/noindex/i.test(tag), "a non-canonical host is served noindex", tag || "<no header>");
+  } else {
+    console.log("  - off-host noindex guard: not assertable through a proxy that rewrites x-forwarded-host");
+  }
 }
 
 // HTML size budget.
