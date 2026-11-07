@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.webmanifest",
   verification: {
-    ...(SITE.googleVerification ? { google: SITE.googleVerification } : {}),
+    ...(SITE.googleVerification.length ? { google: SITE.googleVerification } : {}),
     ...(SITE.bingVerification ? { other: { "msvalidate.01": SITE.bingVerification } } : {}),
   },
   formatDetection: { telephone: false, date: false, address: false, email: false },
