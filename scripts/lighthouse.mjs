@@ -31,8 +31,24 @@ const port = 9222;
  * third-party cookies and logs its own console errors, and neither is under
  * this site's control. The score is still reported, and the target without ads
  * is 95. Run with ADS=off to measure the site's own code.
+ *
+ * Whether ads are live is read from the page being measured, not from this
+ * shell's environment: auditing production from a laptop that has no
+ * NEXT_PUBLIC_ADSENSE_CLIENT set would otherwise grade a site that does serve
+ * ads against the no-ads target and fail for the wrong reason.
  */
-const ADS = process.env.NEXT_PUBLIC_ADSENSE_CLIENT && process.env.ADS !== "off";
+async function adsLive() {
+  if (process.env.ADS === "off") return false;
+  if (process.env.ADS === "on") return true;
+  try {
+    const html = await (await fetch(BASE + "/")).text();
+    return html.includes("adsbygoogle.js");
+  } catch {
+    return Boolean(process.env.NEXT_PUBLIC_ADSENSE_CLIENT);
+  }
+}
+const ADS = await adsLive();
+console.log(`ads ${ADS ? "live on the target — best-practices target 70" : "off — best-practices target 95"}\n`);
 const TARGET = { performance: 95, seo: 100, accessibility: 95, "best-practices": ADS ? 70 : 95 };
 const fails = [];
 const table = [];

@@ -352,8 +352,8 @@ export function pairsTo(key: string, limit = 8, exclude?: string): string[] {
   return spread(all, limit, `to:${exclude ?? key}`);
 }
 
-/** Any indexed pair touching `key`, in either direction. */
-export function pairsWith(key: string, limit = 24): string[] {
+/** Any indexed pair touching `key`, in either direction. Ranked by volume. */
+export function pairsWith(key: string, limit = Number.POSITIVE_INFINITY): string[] {
   const out: string[] = [];
   for (const slug of rankedPairs()) {
     if (out.length >= limit) break;

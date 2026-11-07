@@ -33,7 +33,7 @@ import {
   wallTime,
 } from "@/engine/tz";
 import { diffMinutes, dstInfo } from "@/engine/pair";
-import { dstCountries, isIndexedPair, pairsWith } from "@/seo/gate";
+import { dstCountries, isIndexedPair, multiZoneEntities, pairsWith } from "@/seo/gate";
 import { clip, firstThatFits, title as brandTitle } from "@/seo/meta";
 import { familyName, tLabel } from "./labels";
 import type { FaqItem } from "@/components/Blocks";
@@ -46,6 +46,101 @@ export type PlaceTarget =
   | { kind: "city"; place: Place; country: Country };
 
 /** Resolve `/time/{...segments}` to an entity, or null for a 404. */
+/* ------------------------------------------------- nearby-city link graph */
+
+/**
+ * Every city links to its eight nearest by great-circle distance, and every
+ * city it names links back, so the relation is symmetric by construction.
+ *
+ * That symmetry is the point. A city in a sparsely-covered country -- Doha,
+ * Lusaka, Antananarivo -- is otherwise linked only from its country page and
+ * its region page, which leaves it under the five inbound links docs/11
+ * requires. Linking by shared time zone does not help, because Asia/Baku has
+ * no other city on it at all; and linking only *from* sparse cities does not
+ * help either, because it creates outbound links where the shortage is
+ * inbound. Closing the relation both ways gives every city eight inbound
+ * links whatever its country looks like.
+ *
+ * Selection keeps the best eight as it scans rather than sorting all 2,859
+ * candidates per city, which keeps the whole graph well under a second.
+ */
+const NEARBY_LINKS = 8;
+
+function haversine(a: Place, b: Place): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const s =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * Math.asin(Math.min(1, Math.sqrt(s)));
+}
+
+let nearbyCache: Map<string, Place[]> | null = null;
+function nearbyCities(): Map<string, Place[]> {
+  if (nearbyCache) return nearbyCache;
+  const key = (p: Place) => `${p.countrySlug}/${p.slug}`;
+  const out = new Map<string, Place[]>();
+  const add = (k: string, p: Place) => {
+    const list = out.get(k) ?? [];
+    if (!list.some((q) => key(q) === key(p))) list.push(p);
+    out.set(k, list);
+  };
+
+  for (const city of PLACES) {
+    const best: { p: Place; d: number }[] = [];
+    for (const other of PLACES) {
+      // Cities in the same country are skipped: the country page already links
+      // them all, so they add no new inbound source. In a sparsely covered
+      // region -- Zambia, Madagascar, Cameroon -- the eight nearest cities are
+      // otherwise all countrymen, and the block changes nothing.
+      if (other === city || other.countrySlug === city.countrySlug) continue;
+      const d = haversine(city, other);
+      if (best.length < NEARBY_LINKS) {
+        best.push({ p: other, d });
+        best.sort((a, b) => a.d - b.d);
+      } else if (d < best[best.length - 1].d) {
+        best[best.length - 1] = { p: other, d };
+        best.sort((a, b) => a.d - b.d);
+      }
+    }
+    for (const n of best) {
+      add(key(city), n.p);
+      add(key(n.p), city); // the link back, which is what creates inbound
+    }
+  }
+  nearbyCache = out;
+  return out;
+}
+
+/**
+ * The IANA area of a zone id ("Europe/Tbilisi" -> "Europe"). IANA areas are
+ * continents and oceans, so they group countries geographically without
+ * introducing a second, hand-maintained country-to-continent table.
+ */
+function ianaArea(iana: string): string {
+  return iana.split("/")[0];
+}
+
+const AREA_LABEL: Record<string, string> = {
+  Africa: "Africa",
+  America: "the Americas",
+  Antarctica: "Antarctica",
+  Arctic: "the Arctic",
+  Asia: "Asia",
+  Atlantic: "the Atlantic",
+  Australia: "Australia",
+  Europe: "Europe",
+  Indian: "the Indian Ocean",
+  Pacific: "the Pacific",
+};
+
+/** Reader-facing name for a zone's IANA area, for link-block headings. */
+function areaLabel(iana: string): string {
+  const area = ianaArea(iana);
+  return AREA_LABEL[area] ?? area.replace(/_/g, " ");
+}
+
 export function resolvePlace(segments: string[]): PlaceTarget | null {
   if (segments.length === 0 || segments.length > 2) return null;
   const country = COUNTRY_BY_SLUG.get(segments[0]);
@@ -415,6 +510,19 @@ export function buildPlace(t: PlaceTarget, now: number = Date.now()): PlaceConte
   /* ------------------------------------------------------------- children */
 
   const children: { heading: string; items: { href: string; label: string }[] }[] = [];
+
+  // Conversions that use this place as one side. Place-keyed pairs such as
+  // /uk-time-to-thailand-time are not reachable from a zone page, because a
+  // zone page only covers zone keys, so the place's own page is the natural
+  // home for them.
+  const placePairs = pairsWith(side.key).map((slug) => {
+    const at = slug.indexOf("-to-");
+    const q = pairFromKeys(slug.slice(0, at), slug.slice(at + 4));
+    return { href: `/${slug}`, label: q ? `${tLabel(q.from)} to ${tLabel(q.to)}` : slug };
+  });
+  if (placePairs.length) {
+    children.push({ heading: `Convert ${names.name} time`, items: placePairs });
+  }
   if (t.kind === "country") {
     const regions = REGIONS.filter((r) => r.countrySlug === t.country.slug);
     if (regions.length) {
@@ -431,6 +539,19 @@ export function buildPlace(t: PlaceTarget, now: number = Date.now()): PlaceConte
         items: cities.map((p) => ({ href: `/time/${p.countrySlug}/${p.slug}`, label: p.name })),
       });
     }
+    // Countries sharing this one's IANA area. A small country is otherwise
+    // linked only from the map hub, which left 140 of them under the five
+    // inbound links docs/11 asks for. The IANA area is a geographic grouping
+    // that is already in the data, so this needs no new source of truth.
+    const peers = COUNTRIES.filter(
+      (c) => c.slug !== t.country.slug && ianaArea(c.primary) === ianaArea(names.primary)
+    );
+    if (peers.length) {
+      children.push({
+        heading: `Other countries in ${areaLabel(names.primary)}`,
+        items: peers.map((c) => ({ href: `/time/${c.slug}`, label: c.name })),
+      });
+    }
   } else if (t.kind === "region") {
     const cities = PLACES.filter(
       (p) => p.countrySlug === t.region.countrySlug && p.regionSlug === slugOfRegion(t.region)
@@ -439,6 +560,17 @@ export function buildPlace(t: PlaceTarget, now: number = Date.now()): PlaceConte
       children.push({
         heading: `Cities in ${names.name}`,
         items: cities.map((p) => ({ href: `/time/${p.countrySlug}/${p.slug}`, label: p.name })),
+      });
+    }
+    // Sibling regions. A region page previously linked only downwards to its
+    // own cities, so every region depended on its country page alone.
+    const siblings = REGIONS.filter(
+      (r) => r.countrySlug === t.region.countrySlug && slugOfRegion(r) !== slugOfRegion(t.region)
+    );
+    if (siblings.length) {
+      children.push({
+        heading: `Other states and regions of ${names.countryShort}`,
+        items: siblings.map((r) => ({ href: `/time/${r.countrySlug}/${r.slug}`, label: r.name })),
       });
     }
   } else {
@@ -465,6 +597,36 @@ export function buildPlace(t: PlaceTarget, now: number = Date.now()): PlaceConte
         items: cities.map((p) => ({ href: `/time/${p.countrySlug}/${p.slug}`, label: p.name })),
       });
     }
+    // Nearest cities, from the symmetric graph above. Present on a page either
+    // because this city is in a sparsely-covered country, or because a city in
+    // one named it — the second case is what supplies the inbound links.
+    const nearby = nearbyCities().get(`${t.place.countrySlug}/${t.place.slug}`) ?? [];
+    if (nearby.length) {
+      children.push({
+        heading: `Nearest cities to ${t.place.name}`,
+        items: nearby.map((p) => ({
+          href: `/time/${p.countrySlug}/${p.slug}`,
+          label: `${p.name}, ${p.countryShort}`,
+        })),
+      });
+    }
+  }
+
+  // The US map page is reachable only from the map hub otherwise. Every US
+  // page is a natural place to offer it.
+  const inUsa =
+    (t.kind === "country" && t.country.slug === "usa") ||
+    (t.kind === "region" && t.region.countrySlug === "usa") ||
+    (t.kind === "city" && t.place.countrySlug === "usa");
+  if (inUsa && targetPath(t) !== "/time/usa") {
+    children.push({
+      heading: "United States time zones",
+      items: [
+        { href: "/time-zone-map/usa", label: "US time zone map" },
+        { href: "/time/usa", label: "Current time in the United States" },
+        { href: "/time-zone/usa", label: "US time zones explained" },
+      ],
+    });
   }
 
   /* ------------------------------------------------------------------ FAQ */
@@ -575,6 +737,7 @@ export interface MultiZoneContent {
   faqs: FaqItem[];
   placeHref: string;
   dstHref: string | null;
+  siblings: { href: string; label: string }[];
   updatedDate: string;
 }
 
@@ -661,6 +824,18 @@ export function buildMultiZone(t: MultiZoneTarget, now: number = Date.now()): Mu
     faqs,
     placeHref: base.path,
     dstHref: base.dstHref,
+    // Other countries and states that span several zones. These pages sat on
+    // one or two inbound links each, from the map hub and their own place
+    // page, so they cross-link to each other as a set.
+    siblings: multiZoneEntities()
+      // multiZoneEntities keys regions by `entity`, not by the region slug.
+      .filter((e) => e.slug !== (t.kind === "country" ? t.country.slug : t.region.entity))
+      .map((e) => {
+        const r = resolveMultiZone(e.slug);
+        const label = !r ? e.slug : r.kind === "country" ? r.country.name : r.region.name;
+        return { href: `/time-zone/${e.slug}`, label };
+      })
+      .sort((a, b) => a.label.localeCompare(b.label)),
     updatedDate: base.updatedDate,
   };
 }
@@ -686,6 +861,8 @@ export interface ZoneContent {
   dstHeading: string;
   dstText: string;
   conversions: { href: string; label: string }[];
+  moreConversions: { href: string; label: string }[];
+  siblingZones: { href: string; label: string }[];
   faqs: FaqItem[];
   updatedDate: string;
   offsetText: string;
@@ -771,14 +948,34 @@ export function buildZone(zone: Zone, now: number = Date.now()): ZoneContent {
 
   /* ----------------------------------------------------------- conversions */
 
-  // Every indexed pair that touches this zone, not a top-24 sample: a pair
-  // outside everyone else's top eight would otherwise have no inbound link at
-  // all, and 232 of them were unreachable from the home page.
-  const conversions = pairsWith(zone.slug, 150).map((slug) => {
+  // Every indexed pair that touches this zone, not a sample. A zone page sits
+  // two clicks from home, so it is the only page that can put its pairs within
+  // the three-click budget in docs/11. Capping the list left the pairs whose
+  // BOTH sides are high-volume zones -- /sgt-to-bst, /gmt-to-bst, /mst-to-sgt
+  // -- outside every cap at once, which is why 412 of them sat four clicks
+  // deep. Only twelve keys have more than 150 pairs; for the other 286 this
+  // list was already complete.
+  const allConversions = pairsWith(zone.slug).map((slug) => {
     const at = slug.indexOf("-to-");
     const q = pairFromKeys(slug.slice(0, at), slug.slice(at + 4));
     return { href: `/${slug}`, label: q ? `${tLabel(q.from)} to ${tLabel(q.to)}` : slug };
   });
+  // The popular ones stay in plain sight; the tail goes behind a disclosure so
+  // a 585-link zone page still reads calmly. Both are in the server-rendered
+  // HTML, so crawlers follow them either way.
+  const conversions = allConversions.slice(0, 48);
+  const moreConversions = allConversions.slice(48);
+
+  // Sibling zones. A zone page was linked from the zones hub and from the
+  // "Learn more" block of pair pages that happen to use it, which left 28 of
+  // the 62 under five inbound links.
+  // Generic zones (ET, CT, MT, PT) are included: their pairs are filed under
+  // the alias (est, cst, ...), so no conversion block ever points at them and
+  // they were the last four zone pages under five inbound links.
+  const siblingZones = ZONES.filter((z) => z.slug !== zone.slug).map((z) => ({
+    href: `/zones/${z.slug}`,
+    label: `${z.abbr} – ${z.name}`,
+  }));
 
   /* ------------------------------------------------------------------ FAQ */
 
@@ -839,6 +1036,8 @@ export function buildZone(zone: Zone, now: number = Date.now()): ZoneContent {
     dstHeading: `${zone.abbr} and daylight saving time`,
     dstText,
     conversions,
+    moreConversions,
+    siblingZones,
     faqs,
     updatedDate: fmtDate(wallTime(zone.iana, now), true),
     offsetText,

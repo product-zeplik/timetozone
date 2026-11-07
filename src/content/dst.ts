@@ -165,6 +165,22 @@ export function buildDstHub(now: number = Date.now()): DstHubContent {
 
 /* ------------------------------------------------------------ country pages */
 
+/** DST countries with almost no DST neighbours in their own IANA area. */
+let isolatedCache: Country[] | null = null;
+function isolatedDstCountries(): Country[] {
+  if (isolatedCache) return isolatedCache;
+  const dstSet = new Set(dstCountries());
+  const byArea = new Map<string, Country[]>();
+  for (const c of COUNTRIES) {
+    if (!dstSet.has(c.slug)) continue;
+    const area = c.primary.split("/")[0];
+    byArea.set(area, [...(byArea.get(area) ?? []), c]);
+  }
+  isolatedCache = [...byArea.values()].filter((list) => list.length < 4).flat();
+  return isolatedCache;
+}
+
+
 export interface DstCountryContent {
   country: Country;
   year: number;
@@ -181,6 +197,7 @@ export interface DstCountryContent {
     years: { year: number; changes: Change[] }[];
   }[];
   nonObserving: { tz: string; abbr: string; areas: string[] }[];
+  related: { heading: string; items: { href: string; label: string }[] }[];
   faqs: FaqItem[];
   updatedDate: string;
 }
@@ -261,6 +278,52 @@ export function buildDstCountry(country: Country, now: number = Date.now()): Dst
     },
   ];
 
+  /* -------------------------------------------------------------- related */
+
+  // A country's DST page was reachable from the hub and from its own city
+  // pages only, which left 43 of them under the five inbound links docs/11
+  // asks for. Countries sharing an IANA area are its natural neighbours, and
+  // their clocks usually change on the same dates, so the block earns its
+  // place for a reader as well as for a crawler.
+  const area = country.primary.split("/")[0];
+  const dstSet = new Set(dstCountries());
+  const sameArea = COUNTRIES.filter(
+    (c) => c.slug !== country.slug && dstSet.has(c.slug) && c.primary.split("/")[0] === area
+  );
+  // Antarctica, Bermuda, the Faroes and Norfolk Island have almost no
+  // DST-observing neighbours in their IANA area, so top up from the
+  // best-known ones rather than leave those four pages short.
+  const picked = new Map(sameArea.map((c) => [c.slug, c]));
+  // Antarctica, Bermuda, the Faroes and Norfolk Island sit almost alone in
+  // their IANA area, so an area-peer list gives them almost no inbound links.
+  // Every DST page carries the isolated ones, which costs four links here and
+  // lifts each of them to the five docs/11 asks for. Topping a short list up
+  // with the best-known countries fixes this page's outbound list too.
+  for (const c of isolatedDstCountries()) {
+    if (c.slug !== country.slug) picked.set(c.slug, c);
+  }
+  if (picked.size < 8) {
+    for (const c of COUNTRIES.filter((c) => c.slug !== country.slug && dstSet.has(c.slug)).sort(
+      (a, b) => a.rank - b.rank
+    )) {
+      if (picked.size >= 8) break;
+      picked.set(c.slug, c);
+    }
+  }
+  const peers = [...picked.values()]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((c) => ({ href: `/daylight-saving-time/${c.slug}`, label: c.name }));
+
+  const related: { heading: string; items: { href: string; label: string }[] }[] = [
+    {
+      heading: `Time in ${country.short}`,
+      items: [{ href: `/time/${country.slug}`, label: `Current time in ${country.name}` }],
+    },
+  ];
+  if (peers.length) {
+    related.push({ heading: `Daylight saving time in other countries`, items: peers });
+  }
+
   return {
     country,
     year,
@@ -288,6 +351,7 @@ export function buildDstCountry(country: Country, now: number = Date.now()): Dst
     ],
     schedules,
     nonObserving,
+    related,
     faqs,
     updatedDate: fmtDate(wallTime(country.primary, now), true),
   };

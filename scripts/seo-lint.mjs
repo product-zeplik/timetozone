@@ -198,8 +198,22 @@ for (const file of files) {
 
     if (title.length > 65) warnings.push(`${path}: title is ${title.length} chars — "${title}"`);
     if (desc.length > 160) warnings.push(`${path}: description is ${desc.length} chars`);
-    if (bytes > 120 * 1024 && !path.startsWith("/time-zone-map") && path !== "/time-zones") {
-      warnings.push(`${path}: HTML is ${(bytes / 1024).toFixed(0)} KB`);
+    // docs/09 budgets 60 KB of HTML "per pair/place page", so the ceiling
+    // depends on what the page is for. A conversion page is held near that
+    // budget. A hub -- /time-zones, the maps, a zone page, a country or region
+    // index -- exists to carry the link graph: those pages are what put every
+    // pair within the three clicks of home that docs/11 requires, so they are
+    // allowed to be large, but still checked, because a hub that doubles is a
+    // regression worth seeing.
+    const isHub =
+      path.startsWith("/time-zone-map") ||
+      path === "/time-zones" ||
+      path.startsWith("/zones/") ||
+      /^\/time\/[^/]+$/.test(path) ||
+      path.startsWith("/time-zone/");
+    const ceiling = isHub ? 240 : 80;
+    if (bytes > ceiling * 1024) {
+      warnings.push(`${path}: HTML is ${(bytes / 1024).toFixed(0)} KB (ceiling ${ceiling} KB)`);
     }
 
     const kw = primaryByUrl.get(path);

@@ -202,6 +202,28 @@ for (const p of indexedPages) {
 }
 console.log(`clicks from home: ${Object.entries(byDepth).map(([k, v]) => `${k}:${v}`).join(" · ")}`);
 
+// A full report on disk, so the thin and deep sets can be grouped by page type
+// and a fix verified against the previous run without re-crawling 8,000 pages.
+const REPORT = process.env.LINK_REPORT;
+if (REPORT) {
+  const { writeFileSync } = await import("node:fs");
+  writeFileSync(
+    REPORT,
+    JSON.stringify(
+      {
+        totals: { pages: pages.size, indexable: indexedPages.length, median },
+        byDepth,
+        thin: thin.map((p) => ({ url: p, inbound: inbound.get(p).size, depth: depth.get(p) ?? null })),
+        deep: deep.map((p) => ({ url: p, inbound: inbound.get(p).size, depth: depth.get(p) ?? null })),
+        orphans,
+      },
+      null,
+      1
+    )
+  );
+  console.log(`link-audit: full report written to ${REPORT}`);
+}
+
 const problems = [];
 if (orphans.length) problems.push(`${orphans.length} indexable page(s) with no inbound link: ${orphans.slice(0, 8).join(", ")}`);
 if (thin.length) problems.push(`${thin.length} indexable page(s) with fewer than 5 inbound links: ${thin.slice(0, 8).join(", ")}`);

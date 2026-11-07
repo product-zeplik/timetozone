@@ -14,7 +14,13 @@ export const metadata: Metadata = {
   description: SITE.descriptor,
   applicationName: SITE.name,
   icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    // The SVG covers modern browsers and follows the colour scheme. The .ico is
+    // the fallback that browsers, Google (which shows a favicon beside every
+    // result) and link-preview crawlers request at the root by default.
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "16x16 32x32 48x48", type: "image/x-icon" },
+    ],
     apple: [{ url: "/brand/app-icon-light-192.png", sizes: "192x192" }],
   },
   manifest: "/manifest.webmanifest",

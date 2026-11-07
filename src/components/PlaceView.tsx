@@ -257,6 +257,13 @@ export function MultiZoneView({ c, today }: { c: MultiZoneContent; today: string
         dstHref={c.dstHref}
       />
 
+      {c.siblings.length ? (
+        <section>
+          <h2>Other places that span several time zones</h2>
+          <LinkList items={c.siblings} cols tight />
+        </section>
+      ) : null}
+
       <Faq items={c.faqs} heading={`${c.names.name} time zone FAQ`} id="faq" />
 
       <p>
@@ -322,6 +329,21 @@ export function ZoneView({ c, today }: { c: ZoneContent; today: string }) {
         <section>
           <h2>Convert {c.zone.abbr} to other time zones</h2>
           <LinkList items={c.conversions} cols tight />
+          {c.moreConversions.length ? (
+            <details className="more">
+              <summary>
+                All {c.conversions.length + c.moreConversions.length} {c.zone.abbr} conversions
+              </summary>
+              <LinkList items={c.moreConversions} cols tight />
+            </details>
+          ) : null}
+        </section>
+      ) : null}
+
+      {c.siblingZones.length ? (
+        <section>
+          <h2>Other time zones</h2>
+          <LinkList items={c.siblingZones} cols tight />
         </section>
       ) : null}
 

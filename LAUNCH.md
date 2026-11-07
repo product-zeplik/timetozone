@@ -22,8 +22,11 @@ pages x 5 viewports x 2 themes: it went from **320 problems to 0**.
 | CLS on a pair page | 0.062 | **0.001** |
 
 Lighthouse mobile over 10 templates, run against the live domain:
-**performance 97-99, accessibility 100, best practices 100, SEO 100**, CLS
-0.000-0.009, TBT 0-73ms.
+**performance 99-100, accessibility 100, SEO 100**, CLS 0.000-0.009, LCP
+0.97-1.7s. Best practices reads **75 with ads live and 100 without** — the gap
+is entirely AdSense's own third-party cookies and console output, so
+`audit:lighthouse` detects whether ads are live on the target and grades
+against the right bar instead of failing for the wrong reason.
 
 ### Accounts — all live
 | | account | state |
@@ -33,25 +36,92 @@ Lighthouse mobile over 10 templates, run against the live domain:
 | **AdSense consent (EEA/UK/CH)** | asad@zeplik.com | `timetozone EEA consent` **published**, branded with the TZ lockup, privacy policy linked, **"Do not consent" enabled in every country**. |
 | **Search Console** | **product@zeplik.com** *and* asadmalik901@gmail.com | Both verified by HTML tag; the layout takes a comma-separated list of tokens so each account owns the property independently. 5 sitemaps + the index submitted. |
 | **Bing Webmaster Tools** | asadmalik901 session | Verified. **All 5 sitemaps Success, 0 errors, 12.2K URLs discovered.** |
+| **GA4 ↔ Search Console** | product@zeplik.com | **Linked**, as the other projects are, so organic queries and landing pages appear inside GA4. |
 | **IndexNow** | — | Key live, URLs submitted. |
 
-Google Search Console may show "Couldn't fetch" on the sitemaps for a while
-after submission. That is Google's own retry lag, not a fault: the files are
-valid XML, served as `application/xml`, listed in `robots.txt`, and return 200
-to a Googlebot user agent — and **Bing fetched all five successfully and found
-12.2K URLs**.
+Google Search Console shows **Success** on the sitemap index and "Couldn't
+fetch" on the five children. That is Google's own lag, not a fault, and
+Cloudflare's crawler log says why.
+
+### Who is actually crawling (Cloudflare AI Crawl Control, first 7 days)
+| Crawler | Requests | Blocked |
+|---|---|---|
+| ClaudeBot | **28.2k** | no |
+| GPTBot | **11.5k** | no |
+| Googlebot | **58** | no |
+| BingBot | 8 | no |
+
+Googlebot has made 58 requests in total, so it has simply not reached the
+sitemaps yet — the files return 200 with valid XML to a Googlebot user agent
+(12,209 URLs across the five), Bing fetched all five and found the same 12.2K,
+and the index itself read Success. Nothing is blocked at the edge: **Bot Fight
+Mode is off, AI Labyrinth is off, and every crawler's block toggle in AI Crawl
+Control is off**, which was worth confirming because Cloudflare blocks AI
+crawlers by default on newer zones and that would have silently undone the
+AEO/GEO work. The AI crawlers are the ones reading the site today.
+
+AdSense reports `Ads.txt status: Not found`. All three sites in that AdSense
+account report the same while they are in review, and `/ads.txt` returns 200
+with the right record to Google's own `Mediapartners-Google` agent, so this is
+AdSense's crawl lag rather than a fault here.
 
 ### Cloudflare — complete
 Cache rule active (`cf-cache-status: HIT` verified), SSL **Full (Strict)**,
 Brotli + HTTP/3 + Early Hints on, Rocket Loader off, and **`www` → apex 301
 with the query string preserved** (so shared `?t=&d=` links survive).
 
+### Internal linking — a Definition-of-Done failure, now fixed
+docs/11 §11.5 requires every URL to have **at least 5 inbound internal links
+and sit within 3 clicks of home**. It did not. `npm run audit:links` crawls the
+real server and found **412 pages four or five clicks deep and 753 under five
+inbound links**.
+
+The cause was one capped list. A zone page is the only page two clicks from
+home that can reach a pair, and it linked its top 150 pairs by volume. Only
+twelve keys have more than 150 pairs — gmt, utc, mst, sgt, cst, jst, pst, aest,
+est, ist, bst, cet — so a pair whose *both* sides were in that set, like
+`/sgt-to-bst` or `/gmt-to-bst`, fell outside every cap at once and could only
+be found by crawling from another pair.
+
+| | before | after |
+|---|---|---|
+| Pages more than 3 clicks from home | 412 | **0** |
+| Pages under 5 inbound links | 753 | **0** |
+| Median inbound links | 15 | **20** |
+| Pages reachable by crawling | 8,433 | **11,979** |
+
+`npm run audit:links` now reports **no problems found**.
+
+Zone pages carry every pair that touches them, with the popular ones in plain
+sight and the tail behind a disclosure so a 591-link page still reads calmly —
+both halves are server-rendered, so crawlers follow either way. The rest of the
+gap was pages that only linked downwards: region pages had no sibling links,
+small countries were reachable only from the map hub, DST country pages only
+from their hub, and the generic zones (ET, CT, MT, PT) were linked by nothing
+at all, because their pairs are filed under the alias (`est`, `cst`).
+
+The last cases were cities such as Doha, Lusaka and Antananarivo, in countries
+holding only a handful of cities. Two obvious fixes do not work on them:
+linking by shared time zone fails because `Asia/Baku` has no other city on it,
+and linking *from* sparse cities fails because the shortage is inbound, not
+outbound. Each city now links to its **eight nearest by great-circle distance,
+excluding its own countrymen — whom its country page already lists — and every
+city it names links back**. Closing the relation both ways makes eight inbound
+links a floor rather than a hope, and "Nearest cities" is worth having on a
+time-zone site anyway.
+
+That 3,546-page jump in what a crawler can reach matters more than usual here:
+Cloudflare shows Googlebot has made 58 requests in total, so the sitemaps are
+not doing this work yet.
+
 ### Build and content
 - 2,375 pages pre-rendered; 7,695 indexable pair URLs; ISR (24 h) for everything else.
 - `npm test` — 125 checks green (engine vectors, 870-pair matrix against `toLocaleString`
   at both sides of every 2027 transition, indexing gate, content builders, extension parser).
 - `npm run seo:lint` — **0 errors** over 2,374 rendered pages (4 warnings, all deliberate: see below).
-- `npm run smoke` — **161 checks green against https://timetozone.com**.
+- `npm run smoke` — **162 checks green against https://timetozone.com**.
+- `npm run audit:links` — **no problems found** (11,979 indexable pages crawled).
+- `npm run audit:visual` — **no problems found** (130 page/viewport/theme combinations).
 - Chrome extension builds: `popup.js` 17.0 KB, `background.js` 16.4 KB, zip 19.8 KB.
 
 ### Infrastructure
@@ -68,61 +138,51 @@ with the query string preserved** (so shared `?t=&d=` links survive).
 | Rocket Loader | off (it breaks hydration) |
 | IndexNow | key live at `/d286856505fee59961afcd64645ddf1d.txt`; 16 URLs submitted (202) |
 
-A 62 KB pair page is **9.8 KB over the wire** after Brotli.
+A pair page is 63.7 KB of HTML and **10 KB over the wire** after Brotli; about
+three quarters of the raw figure is React's RSC payload.
 
 ### Secrets already set on Railway
 `SITE_URL`, `SITE_ENV=production`, `PORT=3000`, `REDIS_URL`, `REVALIDATE_SECRET`, `INDEXNOW_KEY`.
 
-## Remaining — needs your account or your decision
+## Remaining
 
-### 1. `www` → apex redirect (5 min, Cloudflare)
-The DNS write was blocked by this session's permission policy, so it is the one Cloudflare
-item left. Today `www.timetozone.com` simply does not resolve, so there is **no duplicate-content
-risk** — this is polish, not a defect.
+### 1. Wait for the AdSense review
+The site is verified and in the queue; Google usually answers within a few days
+to two weeks. Nothing else is needed — the publisher id is already live, so ads
+begin serving on approval with no deploy.
 
-1. DNS → Add record: **CNAME**, name `www`, target `timetozone.com`, **Proxied**.
-2. Rules → Redirect Rules → Create: when `http.host eq "www.timetozone.com"`,
-   **Dynamic** redirect to `concat("https://timetozone.com", http.request.uri.path)`, status **301**,
-   preserve query string.
-3. Then remove the now-redundant `www.timetozone.com` custom domain from the Railway `web` service.
+Leave Auto ads **off** for the first 30 days, then A/B test "anchor + vignette
+only". Slots are already reserved in the layout (3 on pair pages, 2 on hour and
+place pages, 1 on zone and tool pages), at fixed heights so CLS stays 0, and
+**never above the answer line**.
 
-### 2. Cloudflare API token (enables automatic cache purging)
-Without it, after a DST transition Cloudflare keeps serving cached HTML until its TTL expires.
-The client-side converter already detects this and shows a note, and `revalidatePath` still runs,
-so the site stays *correct* — but the cached copy stays stale longer than it needs to.
-
-Create a token at **My Profile → API Tokens → Create Token → Edit zone DNS** template, then
-narrow it to: Zone → **Cache Purge** → Purge, scoped to `timetozone.com` only. Then set on Railway:
-
-```
-CF_ZONE_ID    = <the zone ID from the Cloudflare overview page sidebar>
-CF_API_TOKEN  = <the token>
-```
-on **both** `web` and `cron-dst-watch`. After that:
-- the daily cron purges automatically at a DST transition, and
-- `npm run purge` purges after any deploy (Cloudflare otherwise serves the previous build's HTML
-  for up to 24 h — this bit us once already during setup).
-
-### 3. AdSense (revenue)
-No ad code ships at all until `NEXT_PUBLIC_ADSENSE_CLIENT` is set, which is exactly what AdSense
-wants to see during review.
-
-1. Apply with the trust pages already live: `/about`, `/contact`, `/privacy`, `/terms`.
-   The privacy policy already names the AdSense cookies, the Google Ads Settings opt-out and the
-   EEA/UK/CH consent requirement.
-2. On approval: put the real `pub-…` id in `public/ads.txt` (it currently holds a clearly
-   commented placeholder), commit, and set `NEXT_PUBLIC_ADSENSE_CLIENT=ca-pub-…` on Railway.
-3. Turn on **AdSense → Privacy & messaging → European regulations** (Google's own certified CMP).
-4. Leave Auto ads **off** for the first 30 days, then A/B test "anchor + vignette only".
-
-Slots are already reserved in the layout (3 on pair pages, 2 on hour and place pages, 1 on zone
-and tool pages), with fixed heights so CLS stays at 0, and **never above the answer line**.
-
-### 4. Chrome Web Store
+### 2. Chrome Web Store (needs your account)
 `npm run ext:build` produces `extension/timetozone-extension-1.0.0.zip`. Load
-`extension/dist` unpacked once to sanity-check the popup, `chrome.storage.sync` and the
-right-click toast, then publish. Afterwards set `NEXT_PUBLIC_CHROME_STORE_URL` on Railway —
-that switches on the site-wide extension CTA and adds the listing to the Organization `sameAs`.
+`extension/dist` unpacked once to check the popup, `chrome.storage.sync` and the
+right-click toast, then publish — it needs the one-time developer registration
+fee, which is why I stopped here. Afterwards set
+`NEXT_PUBLIC_CHROME_STORE_URL` on Railway: that switches on the site-wide
+extension CTA and adds the listing to the Organization `sameAs`.
+
+### 3. GA4 ↔ AdSense link (needs asad@zeplik.com)
+The other product links are done, but this one cannot be made from
+product@zeplik.com: the only publisher it administers is
+`pub-2221739998993912`, not the site's `pub-7026096193684009`. Linking the one
+on offer would have wired GA4 to the wrong AdSense account, so I left it
+unlinked. To finish it, open GA4 → Admin → Product links → Google AdSense
+links while signed in as **asad@zeplik.com**, or add that address as an
+administrator on the TimeToZone GA4 property first. It only adds revenue
+figures to GA4 reporting — no tracking depends on it.
+
+### 4. Tidy-ups, none urgent
+- A stray GA4 property `TimeToZone` (`G-Q1PZTJFKG1`) is left on
+  **asadmalik901@gmail.com** from the first attempt. Nothing points at it;
+  delete it when convenient so it cannot be confused with the live property.
+- The Search Console property on asadmalik901 now duplicates the
+  product@zeplik.com one. Harmless — both are genuine verified owners.
+- `www.timetozone.com` is still attached as a custom domain on the Railway
+  `web` service. Cloudflare answers that hostname at the edge and 301s it, so
+  Railway never sees the traffic; it is an unused fallback.
 
 ## How the analytics are wired
 `gtag('config')` only sends a page_view on the **initial document load**. On a

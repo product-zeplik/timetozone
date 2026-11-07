@@ -1318,3 +1318,56 @@ select:focus {
     display: none;
   }
 }
+
+/* Disclosure for a long reference list — the 12 busiest zones carry well over
+   500 conversions, which belong in the HTML for crawlers but would swamp the
+   page if they were all on screen. Closed by default; the links are still
+   server-rendered inside it. */
+details.more {
+  margin-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+  padding-top: var(--sp-3);
+}
+details.more > summary {
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+}
+details.more > summary::-webkit-details-marker {
+  display: none;
+}
+details.more > summary::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+}
+details.more[open] > summary::before {
+  transform: rotate(45deg);
+}
+details.more > summary:hover {
+  color: var(--text);
+}
+details.more > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+details.more .links.cols {
+  margin-top: var(--sp-2);
+}
+@media (prefers-reduced-motion: reduce) {
+  details.more > summary::before {
+    transition: none;
+  }
+}

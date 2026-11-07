@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { buildDstCountry, resolveDstCountry } from "@/content/dst";
 import { dstCountries } from "@/seo/gate";
 import { pageMeta, graph, ld } from "@/seo/meta";
-import { Answer, Crumbs, Faq, JsonLd, Updated } from "@/components/Blocks";
+import { Answer, Crumbs, Faq, JsonLd, Related, Updated } from "@/components/Blocks";
 import { Ad } from "@/components/Ad";
 import { fmtOffset, isoDate, wallTime } from "@/engine/tz";
 
@@ -73,6 +73,8 @@ export default async function DstCountryPage({ params }: Params) {
           </ul>
         </section>
       ) : null}
+
+      <Related groups={c.related.map((g) => ({ ...g, cols: true }))} heading="More on daylight saving time" />
 
       <Faq items={c.faqs} heading={`Daylight saving time in ${c.country.short}: FAQ`} id="faq" />
 
