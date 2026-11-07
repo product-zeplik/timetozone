@@ -22,8 +22,9 @@ pages x 5 viewports x 2 themes: it went from **320 problems to 0**.
 | CLS on a pair page | 0.062 | **0.001** |
 
 Lighthouse mobile over 10 templates, run against the live domain:
-**performance 99-100, accessibility 100, SEO 100**, CLS 0.000-0.009, LCP
-0.97-1.7s. Best practices reads **75 with ads live and 100 without** — the gap
+**performance 95-99 (avg 98), accessibility 100, SEO 100**, CLS 0.000-0.009,
+LCP 1.6-2.4s — measured immediately after a full cache purge, so every request
+missed the edge; the same run locally averages 100. Best practices reads **75 with ads live and 100 without** — the gap
 is entirely AdSense's own third-party cookies and console output, so
 `audit:lighthouse` detects whether ads are live on the target and grades
 against the right bar instead of failing for the wrong reason.
