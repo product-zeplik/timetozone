@@ -6,6 +6,7 @@ import { SITE } from "@/site";
 import { graph, ld } from "@/seo/meta";
 import { JsonLd } from "@/components/Blocks";
 import { Lockup } from "@/components/Logo";
+import { Analytics } from "@/components/Analytics";
 import { FOOTER_PAIRS, FOOTER_PLACES, TOOL_LINKS } from "@/content/nav";
 
 export const metadata: Metadata = {
@@ -163,18 +164,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         ) : null}
 
-        {SITE.gaId ? (
-          <>
-            <Script
-              id="ga-src"
-              strategy="lazyOnload"
-              src={`https://www.googletagmanager.com/gtag/js?id=${SITE.gaId}`}
-            />
-            <Script id="ga-init" strategy="lazyOnload">
-              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${SITE.gaId}');`}
-            </Script>
-          </>
-        ) : null}
+        <Analytics gaId={SITE.gaId} />
       </body>
     </html>
   );
