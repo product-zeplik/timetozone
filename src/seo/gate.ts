@@ -313,26 +313,43 @@ export function rankedPairs(): string[] {
   return rankedCache;
 }
 
+/** Stable small hash, so the rotation below never changes between builds. */
+function hash(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+/**
+ * The highest-volume candidates first, then a window rotated by `seed` over
+ * the remainder. Readers still see the popular conversions; the long tail
+ * still receives inbound links instead of being reachable only by sitemap.
+ */
+function spread(candidates: string[], limit: number, seed: string, head = 8): string[] {
+  if (candidates.length <= limit) return candidates;
+  const top = candidates.slice(0, head);
+  const rest = candidates.slice(head);
+  const start = hash(seed) % rest.length;
+  const window: string[] = [];
+  for (let i = 0; i < rest.length && window.length < limit - top.length; i++) {
+    window.push(rest[(start + i) % rest.length]);
+  }
+  return [...top, ...window];
+}
+
 /** Indexed pairs that involve `key` as the source. */
 export function pairsFrom(key: string, limit = 8, exclude?: string): string[] {
-  const out: string[] = [];
-  for (const slug of rankedPairs()) {
-    if (out.length >= limit) break;
-    if (slug === exclude) continue;
-    if (slug.startsWith(`${key}-to-`)) out.push(slug);
-  }
-  return out;
+  const all = rankedPairs().filter((s) => s !== exclude && s.startsWith(`${key}-to-`));
+  return spread(all, limit, `from:${exclude ?? key}`);
 }
 
 /** Indexed pairs that involve `key` as the target. */
 export function pairsTo(key: string, limit = 8, exclude?: string): string[] {
-  const out: string[] = [];
-  for (const slug of rankedPairs()) {
-    if (out.length >= limit) break;
-    if (slug === exclude) continue;
-    if (slug.endsWith(`-to-${key}`)) out.push(slug);
-  }
-  return out;
+  const all = rankedPairs().filter((s) => s !== exclude && s.endsWith(`-to-${key}`));
+  return spread(all, limit, `to:${exclude ?? key}`);
 }
 
 /** Any indexed pair touching `key`, in either direction. */

@@ -33,7 +33,7 @@ import {
   wallTime,
 } from "@/engine/tz";
 import { diffMinutes, dstInfo } from "@/engine/pair";
-import { isIndexedPair, pairsWith } from "@/seo/gate";
+import { dstCountries, isIndexedPair, pairsWith } from "@/seo/gate";
 import { clip, firstThatFits, title as brandTitle } from "@/seo/meta";
 import { familyName, tLabel } from "./labels";
 import type { FaqItem } from "@/components/Blocks";
@@ -280,11 +280,21 @@ export function dstChangesFor(tz: string, year: number): DstChange[] {
   });
 }
 
+/** Countries with a clock change this year or next, for the DST cross-link. */
+let dstSlugCache: Set<string> | null = null;
+const dstSlugs = {
+  has(slug: string) {
+    if (!dstSlugCache) dstSlugCache = new Set(dstCountries());
+    return dstSlugCache.has(slug);
+  },
+};
+
 /* ------------------------------------------------------------- buildPlace */
 
 export interface PlaceContent {
   kind: PlaceTarget["kind"];
   path: string;
+  dstHref: string | null;
   title: string;
   description: string;
   h1: string;
@@ -413,7 +423,8 @@ export function buildPlace(t: PlaceTarget, now: number = Date.now()): PlaceConte
         items: regions.map((r) => ({ href: `/time/${r.countrySlug}/${r.slug}`, label: r.name })),
       });
     }
-    const cities = PLACES.filter((p) => p.countrySlug === t.country.slug).slice(0, 40);
+    // Every city in the country, so none depends on a sitemap to be found.
+    const cities = PLACES.filter((p) => p.countrySlug === t.country.slug);
     if (cities.length) {
       children.push({
         heading: `Current time in ${names.name} cities`,
@@ -421,9 +432,8 @@ export function buildPlace(t: PlaceTarget, now: number = Date.now()): PlaceConte
       });
     }
   } else if (t.kind === "region") {
-    const cities = PLACES.filter((p) => p.countrySlug === t.region.countrySlug && p.regionSlug === slugOfRegion(t.region)).slice(
-      0,
-      30
+    const cities = PLACES.filter(
+      (p) => p.countrySlug === t.region.countrySlug && p.regionSlug === slugOfRegion(t.region)
     );
     if (cities.length) {
       children.push({
@@ -432,7 +442,23 @@ export function buildPlace(t: PlaceTarget, now: number = Date.now()): PlaceConte
       });
     }
   } else {
-    const cities = PLACES.filter((p) => p.countrySlug === t.place.countrySlug && p.slug !== t.place.slug).slice(0, 12);
+    const inCountry = PLACES.filter((p) => p.countrySlug === t.place.countrySlug);
+    const self = inCountry.findIndex((p) => p.slug === t.place.slug);
+    // Largest cities, then this city's neighbours in the population ranking.
+    // The neighbour window chains every city in the country together, so even
+    // the smallest is reachable by crawling rather than only from a sitemap.
+    const picked = new Map<string, Place>();
+    for (const p of inCountry.slice(0, 12)) if (p.slug !== t.place.slug) picked.set(p.slug, p);
+    for (const p of inCountry.slice(Math.max(0, self - 8), self + 9)) {
+      if (p.slug !== t.place.slug) picked.set(p.slug, p);
+    }
+    if (t.place.regionSlug) {
+      const sameRegion = inCountry
+        .filter((p) => p.regionSlug === t.place.regionSlug && p.slug !== t.place.slug)
+        .slice(0, 10);
+      for (const p of sameRegion) picked.set(p.slug, p);
+    }
+    const cities = [...picked.values()];
     if (cities.length) {
       children.push({
         heading: `Other cities in ${names.countryShort}`,
@@ -476,6 +502,8 @@ export function buildPlace(t: PlaceTarget, now: number = Date.now()): PlaceConte
     ? [year, year + 1].map((y) => ({ year: y, changes: dstChangesFor(names.primary, y) })).filter((x) => x.changes.length)
     : [];
 
+  const dstHref = observesDst && dstSlugs.has(names.countrySlug) ? `/daylight-saving-time/${names.countrySlug}` : null;
+
   const multiZoneHref =
     names.multiZone && rows.length > 1
       ? t.kind === "country"
@@ -488,6 +516,7 @@ export function buildPlace(t: PlaceTarget, now: number = Date.now()): PlaceConte
   return {
     kind: t.kind,
     path,
+    dstHref,
     title: titleText,
     description,
     h1,
@@ -545,6 +574,7 @@ export interface MultiZoneContent {
   observesDst: boolean;
   faqs: FaqItem[];
   placeHref: string;
+  dstHref: string | null;
   updatedDate: string;
 }
 
@@ -630,6 +660,7 @@ export function buildMultiZone(t: MultiZoneTarget, now: number = Date.now()): Mu
     observesDst: base.observesDst,
     faqs,
     placeHref: base.path,
+    dstHref: base.dstHref,
     updatedDate: base.updatedDate,
   };
 }
@@ -740,7 +771,10 @@ export function buildZone(zone: Zone, now: number = Date.now()): ZoneContent {
 
   /* ----------------------------------------------------------- conversions */
 
-  const conversions = pairsWith(zone.slug, 24).map((slug) => {
+  // Every indexed pair that touches this zone, not a top-24 sample: a pair
+  // outside everyone else's top eight would otherwise have no inbound link at
+  // all, and 232 of them were unreachable from the home page.
+  const conversions = pairsWith(zone.slug, 150).map((slug) => {
     const at = slug.indexOf("-to-");
     const q = pairFromKeys(slug.slice(0, at), slug.slice(at + 4));
     return { href: `/${slug}`, label: q ? `${tLabel(q.from)} to ${tLabel(q.to)}` : slug };

@@ -324,8 +324,8 @@ export function buildPair(p: ParsedPair, now: number = Date.now()): PairContent 
   };
   const toItems = (slugs: string[]) => slugs.map((s) => ({ href: `/${s}`, label: label(s) }));
 
-  const fromGroup = toItems(pairsFrom(p.fromKey, 8, p.slug));
-  const toGroup = toItems(pairsTo(p.toKey, 8, p.slug));
+  const fromGroup = toItems(pairsFrom(p.fromKey, 24, p.slug));
+  const toGroup = toItems(pairsTo(p.toKey, 24, p.slug));
   const hourPair = hourPairs().includes(p.slug);
   const hourGroup = hourPair
     ? Array.from({ length: 24 }, (_, h) => ({ href: `${path}/${hourLabel(h)}`, label: `${hourDisplay(h)} ${A} to ${B}` }))

@@ -93,11 +93,13 @@ function DstSection({
   name,
   observes,
   offsetFallback,
+  dstHref,
 }: {
   years: { year: number; changes: { dateText: string; text: string; direction: string }[] }[];
   name: string;
   observes: boolean;
   offsetFallback: string;
+  dstHref?: string | null;
 }) {
   return (
     <section>
@@ -121,6 +123,14 @@ function DstSection({
           </div>
         ))
       )}
+      {dstHref ? (
+        <p>
+          <Link href={dstHref} prefetch={false}>
+            Full daylight saving time schedule for {name}
+          </Link>
+          , including the rule each change follows.
+        </p>
+      ) : null}
     </section>
   );
 }
@@ -184,6 +194,7 @@ export function PlaceView({ c, today }: { c: PlaceContent; today: string }) {
         name={c.names.name}
         observes={c.observesDst}
         offsetFallback={c.zoneFacts.find((f) => f.label === "UTC offset")?.value ?? "the same offset"}
+        dstHref={c.dstHref}
       />
 
       <Ad slot="place-2" />
@@ -243,6 +254,7 @@ export function MultiZoneView({ c, today }: { c: MultiZoneContent; today: string
         name={c.names.name}
         observes={c.observesDst}
         offsetFallback={c.zoneFacts.find((f) => f.label === "UTC offset")?.value ?? "the same offset"}
+        dstHref={c.dstHref}
       />
 
       <Faq items={c.faqs} heading={`${c.names.name} time zone FAQ`} id="faq" />

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ZONES } from "@/data/zones";
-import { COUNTRIES } from "@/engine/entities";
+import { COUNTRIES, COUNTRY_BY_SLUG, REGION_BY_ENTITY } from "@/engine/entities";
 import { abbrFor } from "@/engine/side";
 import { fmtDate, fmtOffset, isoDate, offsetMinutes, seasonalOffsets, wallTime } from "@/engine/tz";
 import { graph, ld, pageMeta } from "@/seo/meta";
+import { multiZoneEntities } from "@/seo/gate";
 import { Crumbs, Faq, JsonLd, LinkList, Updated } from "@/components/Blocks";
 import { Ad } from "@/components/Ad";
 
@@ -98,6 +99,25 @@ export default function TimeZonesPage() {
         <h2>Current time by country</h2>
         <p className="lead">All {COUNTRIES.length} countries and territories, ordered by search demand.</p>
         <LinkList items={COUNTRIES.map((c) => ({ href: `/time/${c.slug}`, label: c.name }))} cols tight />
+      </section>
+
+      <section>
+        <h2>Countries and states with more than one time zone</h2>
+        <p className="lead">
+          These places span several zones, so &ldquo;what time is it there&rdquo; has more than one answer.
+        </p>
+        <LinkList
+          items={multiZoneEntities().map((e) => {
+            const country = COUNTRY_BY_SLUG.get(e.slug);
+            const region = REGION_BY_ENTITY.get(e.slug);
+            return {
+              href: `/time-zone/${e.slug}`,
+              label: country ? country.name : region ? region.name : e.slug,
+            };
+          })}
+          cols
+          tight
+        />
       </section>
 
       <Faq items={faqs} heading="Time zone FAQ" id="faq" />
