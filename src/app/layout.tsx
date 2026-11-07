@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import Link from "next/link";
 import "./globals.css";
 import { SITE } from "@/site";
@@ -154,10 +153,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <JsonLd data={graph([ld.organization(), ld.website()])} />
 
+        {/* A plain async script, not next/script: with strategy="afterInteractive"
+            Next emits only <link rel="preload"> into the HTML and injects the
+            real tag on the client, which the AdSense crawler cannot see when it
+            fetches the page. React 19 hoists this into <head>, which is where
+            AdSense requires it. It stays async, so it does not block rendering. */}
         {SITE.adsenseClient ? (
-          <Script
-            id="adsbygoogle"
-            strategy="afterInteractive"
+          <script
             async
             crossOrigin="anonymous"
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.adsenseClient}`}

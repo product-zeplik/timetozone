@@ -100,6 +100,7 @@ const AUDIT = `(() => {
 const browser = await chromium.launch();
 const problems = [];
 const rows = [];
+let thirdPartyTotal = 0;
 
 for (const [vname, w, h, isMobile] of VIEWPORTS) {
   for (const theme of ["light", "dark"]) {
@@ -114,12 +115,28 @@ for (const [vname, w, h, isMobile] of VIEWPORTS) {
         : undefined,
     });
     const page = await ctx.newPage();
+    // Ad and analytics scripts log their own errors (AdSense returns 400 for a
+    // host it has not approved, which includes localhost). Those are counted
+    // and reported, but they are third-party and cannot be fixed here.
+    const THIRD_PARTY = /googlesyndication|doubleclick|googleads|googletagmanager|google-analytics|adsbygoogle/i;
     const errors = [];
+    let thirdParty = 0;
+    const note = (t) => {
+      if (THIRD_PARTY.test(t)) {
+        thirdParty++;
+        return;
+      }
+      errors.push(t.slice(0, 160));
+    };
     page.on("console", (m) => {
-      const t = m.text();
-      if (m.type() === "error" || /hydrat|did not match|Warning/i.test(t)) errors.push(t.slice(0, 160));
+      const t = m.text() + " " + (m.location()?.url ?? "");
+      if (m.type() === "error" || /hydrat|did not match|Warning/i.test(t)) note(t);
     });
-    page.on("pageerror", (e) => errors.push("pageerror: " + String(e).slice(0, 160)));
+    page.on("pageerror", (e) => note("pageerror: " + String(e)));
+    page.on("requestfailed", (r) => {
+      if (!THIRD_PARTY.test(r.url())) return;
+      thirdParty++;
+    });
 
     for (const [pname, path] of PAGES) {
       const label = `${pname} ${vname} ${theme}`;
@@ -140,6 +157,10 @@ for (const [vname, w, h, isMobile] of VIEWPORTS) {
       if (errors.length) {
         problems.push(`${label}: console — ${errors[0]}`);
         errors.length = 0;
+      }
+      if (thirdParty) {
+        thirdPartyTotal += thirdParty;
+        thirdParty = 0;
       }
 
       if (SHOTS && theme === "light" && (vname === "mobile" || vname === "laptop")) {
@@ -185,6 +206,9 @@ console.log(`page heights @ laptop(1280): ${heightsFor("laptop")}`);
 
 const uniq = [...new Set(problems)];
 console.log(`\n${rows.length} page/viewport/theme combinations checked`);
+if (thirdPartyTotal) {
+  console.log(`(${thirdPartyTotal} console message(s) from ad/analytics scripts ignored — third-party, not site code)`);
+}
 if (!uniq.length) {
   console.log("visual-audit: no problems found");
   process.exit(0);
