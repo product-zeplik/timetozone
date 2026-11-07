@@ -5,6 +5,7 @@ import { COUNTRIES, PLACES, REGIONS } from "@/engine/entities";
 import { dstCountries, hourPairs, indexedPairs, multiZoneEntities } from "@/seo/gate";
 import { hourLabel } from "@/engine/tz";
 import { TOOL_LINKS } from "@/content/nav";
+import meta from "@/data/generated/meta.json";
 
 export const revalidate = 86400;
 
@@ -13,8 +14,22 @@ export function generateSitemaps() {
   return [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }];
 }
 
+/**
+ * The date the content was last built, to the day.
+ *
+ * docs/08 §8.3 says `lastModified` = build/revalidate time, and that was a
+ * `new Date()` at render. With `revalidate = 86400` the file regenerates every
+ * day, so all 7,695 pair URLs claimed to have changed seconds ago, every day,
+ * on identical timestamps. Google's guidance is that lastmod must be when the
+ * page last changed *meaningfully* and that a consistently inaccurate one is
+ * ignored outright -- and "12,000 pages all changed this second" is a poor
+ * look for a domain with no history. The build date is both stable and true:
+ * these pages change when the data or the templates are rebuilt.
+ */
+const BUILT = (meta as { builtAt: string }).builtAt.slice(0, 10);
+
 export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
-  const lastModified = new Date();
+  const lastModified = BUILT;
   if (!SITE.isProduction) return [];
 
   const entry = (path: string, priority: number) => ({

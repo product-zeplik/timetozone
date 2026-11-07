@@ -1,4 +1,5 @@
 import { SITE } from "@/site";
+import meta from "@/data/generated/meta.json";
 
 export const dynamic = "force-static";
 export const revalidate = 86400;
@@ -12,7 +13,9 @@ export const revalidate = 86400;
  * for it by convention find the whole set.
  */
 export function GET() {
-  const lastmod = new Date().toISOString();
+  // Date only, and the build date rather than "now": see the note in
+  // app/sitemap.ts on why a per-render timestamp is worse than useless here.
+  const lastmod = (meta as { builtAt: string }).builtAt.slice(0, 10);
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${[0, 1, 2, 3, 4]

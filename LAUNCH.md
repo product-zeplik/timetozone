@@ -66,6 +66,19 @@ account report the same while they are in review, and `/ads.txt` returns 200
 with the right record to Google's own `Mediapartners-Google` agent, so this is
 AdSense's crawl lag rather than a fault here.
 
+### One site, one hostname
+Railway gives every service a `*.up.railway.app` name, and ours was serving the
+whole site: 200, `robots: index, follow`, its own crawlable robots.txt, and
+bypassing Cloudflare, so nothing was cached and the origin was exposed. The
+canonical tag pointed home, but a canonical is a hint rather than a directive,
+and those names are published in certificate transparency logs. That hostname
+and the redundant `www` custom domain are both removed from the service, and
+middleware now marks any non-canonical host `noindex` so the next generated
+name cannot become a second crawlable copy. It sets a header rather than
+redirecting: an unexpected forwarded Host would make a host redirect loop and
+take the site down, while a header cannot. A smoke check covers both
+directions.
+
 ### Cloudflare — complete
 Cache rule active (`cf-cache-status: HIT` verified), SSL **Full (Strict)**,
 Brotli + HTTP/3 + Early Hints on, Rocket Loader off, and **`www` → apex 301
@@ -150,6 +163,36 @@ So the gates are not page quality and not backlinks in any great number:
 `time difference calculator` (6.8K/mo US) is the other open seam: it is the top
 keyword of three pages on the `time difference` SERP, one of which ranks sixth
 on five backlinks. `/time-calculator` now carries that tool and the keyword.
+
+### What the traffic target can actually be
+The researched keyword set is **354 rows summing to 20.76M searches a month**
+(US 15.3M, India 2.7M, Canada 827K, Australia 819K, UK 747K), spread over 186
+target URLs. The single biggest is the home page at 4.72M.
+
+Those are *searches*, not clicks. Ranking first across the whole mapped set,
+with an AI Overview sitting above many of them, converts to roughly 5-7M
+clicks a month, and the unmapped long tail — 7,695 pair pages, 2,859 cities —
+adds to that rather than multiplying it.
+
+So **20-40M visits a month across the site is a real target** and roughly what
+the original brief said. **20-30M per page is not**: the busiest page in the
+map has 4.72M monthly searches behind it, which caps it near 1.5M clicks even
+at position one. The way to raise the ceiling is more markets (the map is 74%
+US today) and more mapped keywords, not more traffic per existing page.
+
+### AdSense requirements are checked, not remembered
+`npm run check:adsense` asserts the eighteen requirements that can be verified
+from outside the console — the ads.txt record down to Google's certification
+id, the tag in raw HTML rather than the hydrated DOM, 200s for
+Mediapartners-Google and AdsBot-Google, robots.txt not disallowing them, the
+four trust pages with real word counts, and the required disclosures in the
+privacy policy. All eighteen pass. Approval status, the EEA consent message
+and policy-centre notices are not visible from outside and stay manual.
+
+**The account is shared.** `pub-7026096193684009` also carries optipix.art and
+calcmyway.com, both of which have been "Getting ready" since 17 and 30 October.
+AdSense reviews the publisher, not only the site, so a policy problem on either
+of those holds up timetozone too.
 
 ### Build and content
 - 2,375 pages pre-rendered; 7,695 indexable pair URLs; ISR (24 h) for everything else.
@@ -260,7 +303,19 @@ going `/pst-to-est` → `/est-to-pst` → `/pst-to-est/9am` counted as one view.
    nothing is communicated by colour alone — satisfying the brand's accessibility rule and
    docs/06's table spec at once. Fonts stay on the system stack: docs/09 budgets zero web fonts
    and the brand brief defers to it on exactly this point.
-6. **4 SEO-lint warnings are intentional.** `daylight savings 2026` (spelling variant) and three
+6. **`abbrFor` does not resolve by continent + offset.** docs/04 §4.2 picks a
+   curated zone on the same continent with the same offset. Asked about an
+   arbitrary country that returns whichever of the 62 curated zones sits on
+   that offset, which labelled Libya "SAST", Fiji "NZST", Kazakhstan "PKT" and
+   Bolivia "AST". It matches the platform's own CLDR name instead, which keeps
+   every example the spec gives and falls back to the plain offset otherwise.
+7. **Sitemap `lastmod` is the build date, not the render time.** docs/08 §8.3
+   says build/revalidate time, which was `new Date()` at render; with
+   `revalidate = 86400` that told Google all 7,695 pair URLs had changed
+   seconds ago, every day, on one identical timestamp. Google ignores a
+   lastmod it finds consistently inaccurate. It is now the data build date to
+   the day, which is both stable and true.
+8. **4 SEO-lint warnings are intentional.** `daylight savings 2026` (spelling variant) and three
    `…pt to est` hour pages: docs/06 fixes those title and H1 templates and a 60-character title
    cannot carry both PT and PST. Both variants are answered in body copy and the FAQ instead.
 
