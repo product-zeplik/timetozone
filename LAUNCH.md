@@ -115,6 +115,42 @@ That 3,546-page jump in what a crawler can reach matters more than usual here:
 Cloudflare shows Googlebot has made 58 requests in total, so the sitemaps are
 not doing this work yet.
 
+### What ranking first actually requires (Ahrefs, Nov 2026)
+Pulled through the Markhor Ahrefs seat. The headline is that **this category is
+not authority-gated**:
+
+**`pst to est` — 66K/mo US, 79K global, Keyword Difficulty 4, ~5 referring
+domains to rank in the top ten.** The live SERP:
+
+| # | Result | DR | Ref. domains | Words |
+|---|---|---|---|---|
+| 1 | **AI Overview** | — | — | — |
+| 2 | worldtimebuddy.com/pst-to-est-converter | 82 | 31 | 888 |
+| 3 | savvytime.com/converter/pst-to-est | 69 | 52 | 1,953 |
+| 4 | freeconvert.com/time/pst-to-est | 77 | 7 | 1,039 |
+| 5 | **currenttimeutc.com/pst-to-est/** | **5** | **1** | 541 |
+| 6 | **watchisup.com/pst-to-est** | 27 | **0** | 760 |
+
+A site with domain rating 5 and a single referring domain ranks fifth; one with
+no backlinks at all ranks sixth. Every result is a Tool/Calculator page, and
+every title is literally "PST to EST Converter", which is the shape our titles
+already take. Our pages carry more than any of them — live clocks, the 24-hour
+table, real DST handling, FAQ schema.
+
+So the gates are not page quality and not backlinks in any great number:
+
+1. **Being crawled at all.** Googlebot has made 58 requests (see above). This
+   is the binding constraint today and it resolves with time.
+2. **A handful of referring domains** — about five. That is a business task,
+   not a code change.
+3. **The AI Overview holds position one.** Answer-first copy, FAQ schema and
+   `llms.txt` are aimed at exactly that, and ClaudeBot and GPTBot are already
+   reading the site heavily.
+
+`time difference calculator` (6.8K/mo US) is the other open seam: it is the top
+keyword of three pages on the `time difference` SERP, one of which ranks sixth
+on five backlinks. `/time-calculator` now carries that tool and the keyword.
+
 ### Build and content
 - 2,375 pages pre-rendered; 7,695 indexable pair URLs; ISR (24 h) for everything else.
 - `npm test` — 125 checks green (engine vectors, 870-pair matrix against `toLocaleString`
