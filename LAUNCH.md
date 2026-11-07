@@ -25,17 +25,26 @@ Lighthouse mobile over 10 templates, run against the live domain:
 **performance 97-99, accessibility 100, best practices 100, SEO 100**, CLS
 0.000-0.009, TBT 0-73ms.
 
-### Search presence
-| | state |
-|---|---|
-| Search Console | property `https://timetozone.com/` **verified** (HTML tag), all 5 sitemaps submitted |
-| Bing Webmaster Tools | site **verified** (HTML tag), all 5 sitemaps submitted, 0 errors |
-| Google Analytics 4 | property **TimeToZone**, stream `TimeToZone web`, `G-Q1PZTJFKG1` live on the site |
-| IndexNow | key live, 16 URLs submitted (202) |
+### Accounts — all live
+| | account | state |
+|---|---|---|
+| **Google Analytics 4** | **product@zeplik.com** | Account `TimeToZone` → property `TimeToZone.com` → stream `TimeToZone.com web`, **`G-VQSH78G0GZ`**. Matches the one-account-per-project layout of Arteza, CalcMyWay, Inrick and the rest. **Confirmed receiving live traffic** with per-page titles. |
+| **AdSense** | **asad@zeplik.com** | `pub-7026096193684009`, site **verified**, **review requested** ("Getting ready"). `ads.txt` carries the real publisher id. |
+| **AdSense consent (EEA/UK/CH)** | asad@zeplik.com | `timetozone EEA consent` **published**, branded with the TZ lockup, privacy policy linked, **"Do not consent" enabled in every country**. |
+| **Search Console** | **product@zeplik.com** *and* asadmalik901@gmail.com | Both verified by HTML tag; the layout takes a comma-separated list of tokens so each account owns the property independently. 5 sitemaps + the index submitted. |
+| **Bing Webmaster Tools** | asadmalik901 session | Verified. **All 5 sitemaps Success, 0 errors, 12.2K URLs discovered.** |
+| **IndexNow** | — | Key live, URLs submitted. |
 
-Both search properties and the GA4 property were created under
-**asadmalik901@gmail.com**, which is the Google account signed into this
-Chrome — not `product@zeplik.com`. See the first item under "Remaining".
+Google Search Console may show "Couldn't fetch" on the sitemaps for a while
+after submission. That is Google's own retry lag, not a fault: the files are
+valid XML, served as `application/xml`, listed in `robots.txt`, and return 200
+to a Googlebot user agent — and **Bing fetched all five successfully and found
+12.2K URLs**.
+
+### Cloudflare — complete
+Cache rule active (`cf-cache-status: HIT` verified), SSL **Full (Strict)**,
+Brotli + HTTP/3 + Early Hints on, Rocket Loader off, and **`www` → apex 301
+with the query string preserved** (so shared `?t=&d=` links survive).
 
 ### Build and content
 - 2,375 pages pre-rendered; 7,695 indexable pair URLs; ISR (24 h) for everything else.
@@ -109,23 +118,29 @@ wants to see during review.
 Slots are already reserved in the layout (3 on pair pages, 2 on hour and place pages, 1 on zone
 and tool pages), with fixed heights so CLS stays at 0, and **never above the answer line**.
 
-### 5. Chrome Web Store
+### 4. Chrome Web Store
 `npm run ext:build` produces `extension/timetozone-extension-1.0.0.zip`. Load
 `extension/dist` unpacked once to sanity-check the popup, `chrome.storage.sync` and the
 right-click toast, then publish. Afterwards set `NEXT_PUBLIC_CHROME_STORE_URL` on Railway —
 that switches on the site-wide extension CTA and adds the listing to the Organization `sameAs`.
 
-## Already handled, for reference
-- **Cloudflare**: cache rule active and verified `cf-cache-status: HIT`, SSL
-  **Full (Strict)**, Brotli + HTTP/3 + Early Hints on, Rocket Loader off,
-  `CF_ZONE_ID`/`CF_API_TOKEN` set on both services so `npm run purge` and the
-  daily DST cron purge work.
-- **GA4** is live: `G-Q1PZTJFKG1`, with `convert`, `swap`, `add_zone`, `copy`,
-  `share` and `ics` already instrumented.
-- **Search Console and Bing** are verified and have all five sitemaps.
-  GSC may show "Couldn't fetch" for a few hours after submission; the sitemaps
-  are valid XML, served as `application/xml`, and listed in `robots.txt`
-  (checked).
+## How the analytics are wired
+`gtag('config')` only sends a page_view on the **initial document load**. On a
+site built of cross-linked conversion pages that is almost nothing: a visitor
+going `/pst-to-est` → `/est-to-pst` → `/pst-to-est/9am` counted as one view.
+
+- Automatic page_view is off (`send_page_view: false`); a client island sends
+  one per route change, with the real path and document title.
+- Enhanced Measurement's **"page changes based on browser history events" is
+  deliberately off** in the stream settings, or every SPA navigation would be
+  counted twice.
+- Interaction events are instrumented: `convert`, `swap`, `add_zone`, `copy`,
+  `share`, `ics`.
+- Both the gtag and AdSense tags are **plain async scripts rendered by the
+  server layout**, not `next/script`. With `strategy="afterInteractive"` Next
+  emits only a `<link rel="preload">` and injects the real tag on the client —
+  invisible to the AdSense and Search Console crawlers, which is exactly why
+  both verifications failed on the first attempt.
 
 ## Deviations from the spec, and why
 
