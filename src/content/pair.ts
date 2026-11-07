@@ -248,7 +248,12 @@ export function buildPair(p: ParsedPair, now: number = Date.now()): PairContent 
     ? `The time difference between ${A} and ${B} is ${fmtDuration(ab.minutes)} all year${
         ab.direction === "same" ? "" : ` – ${abbrTo} is ${directionWord(ab.minutes)} ${abbrFrom}`
       }.`
-    : `The time difference between ${A} and ${B} is not the same all year, because the two sides change for daylight saving time on different dates. In ${fromWall.year} it works out like this:`;
+    : // Lead with the number even when it varies. A reader asking "what is the
+      // time difference between X and Y" wants the figure, and a search or AI
+      // answer lifts the first sentence; the caveat still follows immediately.
+      `The time difference between ${A} and ${B} is ${ab.duration} right now${
+        ab.direction === "same" ? "" : ` – ${abbrTo} is ${directionWord(ab.minutes)} ${abbrFrom}`
+      }. It is not the same all year, because the two sides change for daylight saving time on different dates. In ${fromWall.year} it works out like this:`;
 
   const dstBullets = dstBulletsFor([from, to], now);
   const meetingText = meetingSentence(from, to, now, A, B);
@@ -264,7 +269,9 @@ export function buildPair(p: ParsedPair, now: number = Date.now()): PairContent 
             ? `${abbrTo} and ${abbrFrom} are on the same time all year.`
             : `${abbrTo} is ${ab.duration} ${directionWord(ab.minutes)} ${abbrFrom} all year.`
         } ${example}.`
-      : `Right now ${abbrTo} is ${ab.duration} ${directionWord(ab.minutes)} ${abbrFrom}. The gap changes ${
+      : `The time difference between ${A} and ${B} is ${ab.duration} right now – ${abbrTo} is ${directionWord(
+          ab.minutes
+        )} ${abbrFrom}. The gap changes ${
           periods.length
         } times in ${fromWall.year} because the two sides switch to daylight saving time on different dates.`,
   });

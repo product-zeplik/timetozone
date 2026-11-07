@@ -1107,6 +1107,11 @@ select:focus {
   display: block;
   width: 100%;
   height: auto;
+  /* A browser cannot know an <object>'s intrinsic ratio until the SVG inside
+     has loaded, so the box collapsed and then sprang open: a layout shift the
+     page was carrying before the readout was added. The page sets the real
+     ratio per map. */
+  aspect-ratio: var(--map-ar, 2 / 1);
 }
 
 /* offset groups on the map and hub pages */
@@ -1370,4 +1375,92 @@ details.more .links.cols {
   details.more > summary::before {
     transition: none;
   }
+}
+
+/* Map hover readout. Reserves its own height so revealing a name cannot shift
+   the map underneath it. */
+.mapwrap-outer {
+  margin-bottom: var(--sp-4);
+}
+.mapreadout {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  min-height: 52px;
+  padding: 0 2px var(--sp-2);
+  font-size: 15px;
+  line-height: 1.3;
+  flex-wrap: wrap;
+}
+.mapreadout strong {
+  font-weight: 600;
+  color: var(--text);
+}
+.mapreadout-time {
+  font-variant-numeric: tabular-nums;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 8.5ch;
+}
+.mapreadout-off,
+.mapreadout-hint {
+  color: var(--faint);
+  font-size: 14px;
+}
+
+/* Time difference calculator */
+.zonediff-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-4);
+}
+@media (min-width: 640px) {
+  .zonediff-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+.zonediff-current {
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 2px;
+  margin: 0 0 var(--sp-2);
+  height: 52px;
+  align-content: start;
+}
+.zonediff-current strong {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.zonediff-meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+}
+.zonediff-clock {
+  font-variant-numeric: tabular-nums;
+  font-size: 19px;
+  font-weight: 600;
+  min-width: 7.4ch;
+}
+.zonediff-answer {
+  margin: 0;
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+  font-size: 17px;
+  line-height: 1.5;
+  /* Reserve the three lines the sentence takes at 320px, so filling it in
+     after mount cannot shift the page. */
+  min-height: 92px;
+}
+@media (min-width: 640px) {
+  .zonediff-answer {
+    min-height: 64px;
+  }
+}
+.zonediff-answer strong {
+  font-weight: 650;
 }

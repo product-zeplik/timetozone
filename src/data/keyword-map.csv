@@ -350,3 +350,6 @@ utc time,IN,135000,83,/zones/utc,primary
 utc time,UK,49500,77,/zones/utc,primary
 utc now,US,14800,86,/zones/utc,secondary
 what is utc,US,14800,67,/zones/utc,intro
+time calculator,US,284000,,/time-calculator,primary
+time duration calculator,US,84000,,/time-calculator,secondary
+time difference calculator,US,6800,,/time-calculator,h2

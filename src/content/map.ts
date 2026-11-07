@@ -19,6 +19,8 @@ interface Shape {
   name: string;
   href?: string;
   title: string;
+  /** IANA id, so the page can show this shape's live local time on hover. */
+  tz?: string;
 }
 
 /** Build the SVG document for one map. Pure string output, cacheable. */
@@ -29,7 +31,10 @@ export function renderMapSvg(name: MapName, now: number = Date.now()): string {
 function svgDocument(width: number, height: number, shapes: Shape[], label: string): string {
   const body = shapes
     .map((s) => {
-      const path = `<path d="${s.d}" class="g"><title>${esc(s.title)}</title></path>`;
+      // data-* so the parent page can render a readout with a live clock. The
+      // <title> stays for the no-JS and <img> fallbacks.
+      const data = `data-name="${esc(s.name)}"${s.tz ? ` data-tz="${esc(s.tz)}"` : ""}`;
+      const path = `<path d="${s.d}" class="g" ${data}><title>${esc(s.title)}</title></path>`;
       return s.href
         ? `<a href="${esc(s.href)}" target="_top" aria-label="${esc(s.title)}">${path}</a>`
         : path;
@@ -60,6 +65,17 @@ function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+/**
+ * "Kenya — EAT (UTC+3)", or just "Fiji — UTC+12" when the zone has no
+ * abbreviation of its own: abbrFor falls back to the offset, and printing it
+ * twice reads like a mistake.
+ */
+function labelFor(name: string, tz: string, now: number): string {
+  const offset = fmtOffset(offsetMinutes(tz, now));
+  const abbr = abbrFor(tz, now);
+  return abbr === offset ? `${name} — ${offset}` : `${name} — ${abbr} (${offset})`;
+}
+
 function worldSvg(now: number): string {
   const width = 1000;
   const height = 500;
@@ -78,10 +94,14 @@ function worldSvg(now: number): string {
     const iso2 = numeric ? countryCodes.numericToAlpha2(numeric) : undefined;
     const country = iso2 ? COUNTRY_BY_ISO.get(iso2) : undefined;
     const geoName = (f.properties as { name?: string } | null)?.name ?? country?.name ?? "";
-    const title = country
-      ? `${country.name} — ${abbrFor(country.primary, now)} (${fmtOffset(offsetMinutes(country.primary, now))})`
-      : geoName;
-    shapes.push({ d, name: geoName, href: country ? `/time/${country.slug}` : undefined, title });
+    const title = country ? labelFor(country.name, country.primary, now) : geoName;
+    shapes.push({
+      d,
+      name: country?.name ?? geoName,
+      href: country ? `/time/${country.slug}` : undefined,
+      title,
+      tz: country?.primary,
+    });
   }
   return svgDocument(width, height, shapes, "World time zone map");
 }
@@ -102,14 +122,13 @@ function usaSvg(now: number): string {
     if (!d) continue;
     const stateName = (f.properties as { name?: string } | null)?.name ?? "";
     const region = REGIONS.find((r) => r.iso2 === "US" && r.rawName === stateName);
-    const title = region
-      ? `${region.name} — ${abbrFor(region.primary, now)} (${fmtOffset(offsetMinutes(region.primary, now))})`
-      : stateName;
+    const title = region ? labelFor(region.name, region.primary, now) : stateName;
     shapes.push({
       d,
-      name: stateName,
+      name: region?.name ?? stateName,
       href: region ? `/time/usa/${region.slug}` : undefined,
       title,
+      tz: region?.primary,
     });
   }
   return svgDocument(width, height, shapes, "US time zone map");

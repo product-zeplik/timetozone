@@ -42,9 +42,13 @@ describe("indexing gate", () => {
     expect(indexedPairs().has("est-to-edt")).toBe(true);
   });
   it("keyword map resolves primaries", () => {
-    expect(KEYWORDS.length).toBe(351);
+    // The seed map holds 351 researched rows. docs/07 §7 has the monthly loop
+    // add rows for queries that earn them, so this is a floor rather than an
+    // exact count -- pinning the number made extending the map fail the build.
+    expect(KEYWORDS.length).toBeGreaterThanOrEqual(351);
     expect(primaryKeyword("/")!.keyword).toBe("time zone converter");
     expect(primaryKeyword("/pst-to-est")!.keyword).toBe("pst to est");
+    expect(primaryKeyword("/time-calculator")!.keyword).toBe("time calculator");
   });
   it("rankedPairs puts the measured pairs first", () => {
     const top = rankedPairs().slice(0, 12);

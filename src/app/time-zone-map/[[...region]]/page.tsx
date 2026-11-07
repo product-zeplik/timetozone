@@ -6,6 +6,7 @@ import { LinkList } from "@/components/Blocks";
 import { usaOffsetGroups, worldOffsetGroups } from "@/content/map";
 import { fmtDate, isoDate, wallTime } from "@/engine/tz";
 import { pageMeta } from "@/seo/meta";
+import { MapReadout } from "@/components/MapReadout";
 
 export const revalidate = 86400;
 export const dynamicParams = false;
@@ -128,14 +129,17 @@ export default async function TimeZoneMapPage({ params }: Params) {
         </>
       }
     >
-      <div className="mapwrap">
-        <object type="image/svg+xml" data={cfg.svg} aria-label={cfg.h1} width={1000} height={isUsa ? 620 : 500}>
-          <img src={cfg.svg} alt={cfg.h1} width={1000} height={isUsa ? 620 : 500} />
-        </object>
+      <div className="mapwrap-outer">
+        <MapReadout kind={isUsa ? "state" : "country"} />
+        <div className="mapwrap" style={{ ["--map-ar" as string]: isUsa ? "1000 / 620" : "1000 / 500" }}>
+          <object type="image/svg+xml" data={cfg.svg} aria-label={cfg.h1} width={1000} height={isUsa ? 620 : 500}>
+            <img src={cfg.svg} alt={cfg.h1} width={1000} height={isUsa ? 620 : 500} />
+          </object>
+        </div>
       </div>
       <ul className="legend">
         <li>Click a {isUsa ? "state" : "country"} to see its current local time.</li>
-        <li>Hover for the abbreviation and UTC offset in force right now.</li>
+        <li>Point at one for its name, live local time and UTC offset.</li>
       </ul>
     </ToolPage>
   );

@@ -34,8 +34,6 @@ export function counterpartOf(slug: string): Zone | undefined {
   return c ? ZONE_BY_SLUG.get(c) : undefined;
 }
 
-const continentOf = (tz: string) => tz.split("/")[0];
-
 /* -------------------------------------------------------------- abbrFor */
 
 const abbrCache = new Map<string, string>();
@@ -51,7 +49,7 @@ export function abbrFor(tz: string, ms: number = Date.now()): string {
   const hit = abbrCache.get(cacheKey);
   if (hit) return hit;
 
-  const base = resolveBase(tz, std, dst);
+  const base = resolveBase(tz, std, dst, ms);
   let out: string;
   if (!base) {
     out = fmtOffset(offsetMinutes(tz, ms));
@@ -65,53 +63,87 @@ export function abbrFor(tz: string, ms: number = Date.now()): string {
   return out;
 }
 
+/**
+ * The CLDR generic name for a zone ("Central European Time", "Kazakhstan
+ * Time"), normalised so that Standard/Summer/Daylight and accents do not
+ * matter: "Brasília Standard Time" and "Brasilia Time" compare equal.
+ */
+const cldrCache = new Map<string, string>();
+function cldrName(tz: string, ms: number): string {
+  const hit = cldrCache.get(tz);
+  if (hit !== undefined) return hit;
+  let out = "";
+  try {
+    out =
+      new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "longGeneric" })
+        .formatToParts(ms)
+        .find((p) => p.type === "timeZoneName")?.value ?? "";
+  } catch {
+    out = "";
+  }
+  const norm = normName(out);
+  cldrCache.set(tz, norm);
+  return norm;
+}
+
+function normName(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\b(standard|summer|daylight)\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /** Pick the curated zone (kind std or fixed) that represents `tz`. */
-function resolveBase(tz: string, std: number, dst: number | null): Zone | undefined {
+function resolveBase(tz: string, std: number, dst: number | null, ms: number): Zone | undefined {
   const asBase = (z: Zone | undefined): Zone | undefined => {
     if (!z) return undefined;
     if (z.kind === "dst") return counterpartOf(z.slug) ?? z;
     return z;
   };
 
-  // 1. exact IANA match, ignoring generic names
+  // 1. exact IANA match, ignoring generic names. This stays first and stays
+  //    authoritative: Europe/London is GMT/BST here, though CLDR calls it
+  //    "United Kingdom Time".
   const exact = ZONES.filter((z) => z.iana === tz && z.kind !== "generic");
   if (exact.length) {
     return asBase(exact.find((z) => z.kind === "std" || z.kind === "fixed") ?? exact[0]);
   }
 
-  // 2. no DST -> a curated std zone with the same standard offset on the same
-  //    continent (America/Phoenix -> MST, America/Panama -> EST).
-  //    Checked before (3) or Panama would match Colombia Time (docs/14 #15).
-  if (dst === null) {
-    const cont = continentOf(tz);
-    const byStd = ZONES.filter(
-      (z) =>
-        z.kind === "std" &&
-        !z.iana.startsWith("Etc/") &&
-        continentOf(z.iana) === cont &&
-        seasonalOffsets(z.iana, new Date().getUTCFullYear()).std === std
-    );
-    if (byStd.length) return asBase(byStd.find((z) => z.top) ?? byStd[0]);
+  // 2. Otherwise borrow a curated zone's abbreviation only when the platform's
+  //    own CLDR data says the two zones share a name.
+  //
+  //    docs/04 §4.2 matches on same-continent + same-offset instead. That is
+  //    too loose: it is only ever asked for an offset, so it hands back
+  //    whichever curated zone happens to sit on that offset in that continent.
+  //    Libya came out as "SAST" because South Africa is the curated UTC+2 zone
+  //    in Africa, and the map also showed "Fiji — NZST", "Kazakhstan — PKT",
+  //    "Timor-Leste — JST", "Bolivia — AST" and "Ecuador — EST". The offsets
+  //    were right and the names belonged to other countries.
+  //
+  //    CLDR knows Africa/Tripoli is "Eastern European Standard Time" and
+  //    Asia/Almaty is "Kazakhstan Time", so a name comparison keeps every
+  //    example docs/04 gives -- Phoenix is Mountain Time, Panama is Eastern
+  //    Time, Paris is Central European Time -- and refuses the rest. The
+  //    offset check stays as a guard, and a zone CLDR names after its own
+  //    country simply falls through to step 3.
+  const want = cldrName(tz, ms);
+  if (want) {
+    const year = wallTime(tz, ms).year;
+    const named = ZONES.filter((z) => {
+      if (z.kind === "generic" || z.iana.startsWith("Etc/")) return false;
+      if (normName(z.name) !== want) return false;
+      const s = seasonalOffsets(z.iana, year);
+      return s.std === std && (dst === null || s.dst === dst);
+    });
+    if (named.length) {
+      return asBase(named.find((z) => z.kind === "std" || z.kind === "fixed") ?? named[0]);
+    }
   }
 
-  // 3. same (std, dst) seasonal offsets on the same continent
-  const cont = continentOf(tz);
-  const year = new Date().getUTCFullYear();
-  const bySeason = ZONES.filter((z) => {
-    if (z.kind === "generic" || z.iana.startsWith("Etc/")) return false;
-    if (continentOf(z.iana) !== cont) return false;
-    const s = seasonalOffsets(z.iana, year);
-    return s.std === std && s.dst === dst;
-  });
-  if (bySeason.length) {
-    const pref =
-      bySeason.find((z) => (z.kind === "std" || z.kind === "fixed") && z.top) ??
-      bySeason.find((z) => z.kind === "std" || z.kind === "fixed") ??
-      bySeason[0];
-    return asBase(pref);
-  }
-
-  // 4. no match
+  // 3. no match -> the caller prints the plain offset
   return undefined;
 }
 
