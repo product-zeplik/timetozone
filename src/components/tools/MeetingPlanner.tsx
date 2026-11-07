@@ -10,12 +10,6 @@ import { fmtClock, fmtOffset, offsetMinutes, parseIsoDate, wallTime, zonedToUtc 
 const MAX = 8;
 const pad = (n: number) => String(n).padStart(2, "0");
 
-function fallbackDate(tz?: string) {
-  if (!tz) return null;
-  const w = wallTime(tz, Date.now());
-  return { year: w.year, month: w.month, day: w.day };
-}
-
 export default function MeetingPlanner({ initial }: { initial: Side[] }) {
   const [sides, setSides] = useState<Side[]>(initial);
   const [dateIso, setDateIso] = useState("");
@@ -37,9 +31,7 @@ export default function MeetingPlanner({ initial }: { initial: Side[] }) {
   }, []);
 
   const rows = useMemo(() => {
-    // Before mount `dateIso` is empty; fall back to the reference zone's own
-    // current date so the table is laid out at first paint (CLS stays at 0).
-    const d = parseIsoDate(dateIso) || fallbackDate(sides[0]?.tz);
+    const d = parseIsoDate(dateIso);
     if (!d || !sides.length) return [];
     return Array.from({ length: 24 }, (_, h) => {
       const instant = zonedToUtc(sides[0].tz, d.year, d.month, d.day, h, 0);
@@ -147,7 +139,7 @@ export default function MeetingPlanner({ initial }: { initial: Side[] }) {
                   {s.label}
                   <br />
                   <span className="mark" suppressHydrationWarning>
-                    {mounted ? fmtOffset(offsetMinutes(s.tz, Date.now())) : ""}
+                    {mounted ? fmtOffset(offsetMinutes(s.tz, Date.now())) : "\u00a0"}
                   </span>
                 </th>
               ))}
@@ -155,21 +147,36 @@ export default function MeetingPlanner({ initial }: { initial: Side[] }) {
             </tr>
           </thead>
           <tbody suppressHydrationWarning>
-            {rows.map((r) => (
+            {!mounted || !rows.length
+              ? Array.from({ length: 24 }, (_, h) => (
+                  <tr key={`ph-${h}`}>
+                    {sides.map((_, i) => (
+                      <td className="t" key={i}>
+                        --:--
+                      </td>
+                    ))}
+                    <td>
+                      <span className="mark">&nbsp;</span>
+                    </td>
+                  </tr>
+                ))
+              : null}
+            {mounted &&
+              rows.map((r) => (
               <tr key={r.h} className={r.all ? "biz" : ""}>
                 {r.cells.map((c, i) => (
                   <td className="t" key={i}>
                     {fmtClock(c.wall.hour, c.wall.minute, h12)}
-                    {i > 0 && c.wall.day !== r.cells[0].wall.day ? (
-                      <span className="mark"> {c.wall.weekday}</span>
-                    ) : null}
+                    <span className="mark">
+                      {i > 0 && c.wall.day !== r.cells[0].wall.day ? ` ${c.wall.weekday}` : "\u00a0"}
+                    </span>
                   </td>
                 ))}
                 <td>
                   <span className="mark">{r.all ? "yes" : "no"}</span>
                 </td>
               </tr>
-            ))}
+              ))}
           </tbody>
         </table>
       </div>

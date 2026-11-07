@@ -761,6 +761,7 @@ select:focus {
   font-size: 12px;
   font-weight: 600;
   color: var(--muted);
+  white-space: nowrap;
 }
 
 /* The 24-hour conversion grid: three short tables instead of one tall one.
