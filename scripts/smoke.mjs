@@ -186,6 +186,23 @@ for (const [from, to] of EXPECT_308) {
   check(!/\bclass="zrow-clock"[^>]*>\d/.test(body), "no live clock value in cached HTML");
 }
 
+// Non-canonical hosts must not be indexable. Railway hands every service a
+// *.up.railway.app name, and that name served the whole site with
+// `robots: index, follow`, bypassing Cloudflare. The hostname is gone now, but
+// a header guard is what keeps any future one from becoming a second
+// crawlable copy of the site.
+{
+  // x-forwarded-host, not host: Node's fetch forbids setting Host, and behind
+  // Railway it is x-forwarded-host that carries the real name anyway.
+  const foreign = await get("/pst-to-est", { "x-forwarded-host": "web-production-58416.up.railway.app" });
+  const tag = foreign.headers.get("x-robots-tag") || "";
+  check(/noindex/i.test(tag), "a non-canonical host is served noindex", tag || "<no header>");
+
+  const loopback = await get("/pst-to-est");
+  const okTag = loopback.headers.get("x-robots-tag") || "";
+  check(!/noindex/i.test(okTag), "the canonical host is still indexable", okTag || "<no header>");
+}
+
 // HTML size budget.
 // docs/09 budgets 60 KB of HTML per pair page. The uncompressed figure now sits
 // a little above that: roughly three quarters of it is React's RSC payload, and
