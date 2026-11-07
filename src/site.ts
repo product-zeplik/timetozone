@@ -12,6 +12,8 @@ export const SITE = {
   gaId: process.env.NEXT_PUBLIC_GA_ID || "",
   chromeStoreUrl: process.env.NEXT_PUBLIC_CHROME_STORE_URL || "",
   contactEmail: "hello@timetozone.com",
+  googleVerification: process.env.GOOGLE_SITE_VERIFICATION || "",
+  bingVerification: process.env.BING_SITE_VERIFICATION || "",
 } as const;
 
 export const abs = (path: string) => `${SITE.url}${path === "/" ? "" : path}`;

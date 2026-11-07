@@ -18,6 +18,10 @@ export const metadata: Metadata = {
     apple: [{ url: "/brand/app-icon-light-192.png", sizes: "192x192" }],
   },
   manifest: "/manifest.webmanifest",
+  verification: {
+    ...(SITE.googleVerification ? { google: SITE.googleVerification } : {}),
+    ...(SITE.bingVerification ? { other: { "msvalidate.01": SITE.bingVerification } } : {}),
+  },
   formatDetection: { telephone: false, date: false, address: false, email: false },
   other: SITE.adsenseClient ? { "google-adsense-account": SITE.adsenseClient } : undefined,
 };
