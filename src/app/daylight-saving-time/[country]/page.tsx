@@ -36,7 +36,7 @@ export default async function DstCountryPage({ params }: Params) {
     <>
       <Crumbs items={c.crumbs} />
       <h1>{c.h1}</h1>
-      <Answer>{c.answer}</Answer>
+      <Answer text={c.answer} />
 
       {c.schedules.map((s) => (
         <section key={s.heading}>

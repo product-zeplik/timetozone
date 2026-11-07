@@ -43,6 +43,8 @@
     "city-timezones": "^1.2.1",
     "countries-and-timezones": "^3.6.0",
     "esbuild": "^0.24.0",
+    "lighthouse": "^12.2.1",
+    "playwright": "^1.49.1",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"
   }

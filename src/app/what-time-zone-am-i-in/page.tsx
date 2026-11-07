@@ -47,7 +47,7 @@ export default function MyZonePage() {
       extra={
         <section>
           <h2>All time zone abbreviations</h2>
-          <LinkList items={ZONES.map((z) => ({ href: `/zones/${z.slug}`, label: `${z.abbr} — ${z.name}` }))} cols />
+          <LinkList items={ZONES.map((z) => ({ href: `/zones/${z.slug}`, label: `${z.abbr} — ${z.name}` }))} cols tight />
         </section>
       }
     >

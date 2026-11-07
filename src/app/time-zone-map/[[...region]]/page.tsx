@@ -99,14 +99,16 @@ export default async function TimeZoneMapPage({ params }: Params) {
         <>
           <section>
             <h2>{isUsa ? "US states and territories by UTC offset" : "Every country by UTC offset"}</h2>
-            {groups.map((g) => (
-              <div className="offsetgroup" key={g.offset}>
-                <h3>
-                  {g.offsetText} — {g.abbrs.slice(0, 4).join(", ")}
-                </h3>
-                <LinkList items={g.items} cols />
-              </div>
-            ))}
+            <div className="offsetgroups">
+              {groups.map((g) => (
+                <div className="offsetgroup" key={g.offset}>
+                  <h3>
+                    {g.offsetText} — {g.abbrs.slice(0, 4).join(", ")}
+                  </h3>
+                  <LinkList items={g.items} cols tight />
+                </div>
+              ))}
+            </div>
           </section>
           <p>
             {isUsa ? (

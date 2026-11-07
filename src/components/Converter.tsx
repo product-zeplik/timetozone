@@ -119,7 +119,7 @@ export default function Converter({
     let list = initial;
     if (autoLocal) {
       const ls = localSide();
-      if (!list.some((s) => s.tz === ls.tz)) list = [ls, ...list].slice(0, maxZones);
+      if (!list.some((s) => s.tz === ls.tz)) list = [ls, ...list].slice(0, Math.max(2, initial.length));
       setSides(list);
     }
 
@@ -437,9 +437,8 @@ export default function Converter({
                   )}
                 </div>
               </div>
-              {mounted ? (
-                <div className="zrow-actions">
-                  {i > 0 ? (
+              <div className="zrow-actions">
+                {mounted && i > 0 ? (
                     <button
                       type="button"
                       className="btn btn-sm btn-icon"
@@ -449,26 +448,25 @@ export default function Converter({
                     >
                       ↑
                     </button>
-                  ) : null}
-                  {sides.length > 2 ? (
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-icon"
-                      onClick={() => removeSide(i)}
-                      title={`Remove ${r.side.label}`}
-                      aria-label={`Remove ${r.side.label}`}
-                    >
-                      ×
-                    </button>
-                  ) : null}
-                </div>
-              ) : null}
+                ) : null}
+                {mounted && sides.length > 2 ? (
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-icon"
+                    onClick={() => removeSide(i)}
+                    title={`Remove ${r.side.label}`}
+                    aria-label={`Remove ${r.side.label}`}
+                  >
+                    ×
+                  </button>
+                ) : null}
+              </div>
             </div>
           )
         )}
       </div>
 
-      {mounted && lockedMinutes == null ? (
+      {lockedMinutes == null ? (
         <div className="slider-row">
           <label className="sr-only" htmlFor="ttz-slider">
             Adjust the time in 15-minute steps
@@ -480,6 +478,7 @@ export default function Converter({
             max={1425}
             step={15}
             value={anchor ? Math.round(anchor.minutes / 15) * 15 : 540}
+            disabled={!mounted}
             onChange={(e) => {
               const mins = Number(e.target.value);
               setLive(false);
@@ -492,16 +491,16 @@ export default function Converter({
         </div>
       ) : null}
 
-      {mounted && allowAdd && sides.length < maxZones ? (
-        <div className="conv-foot">
-          <ZoneSearch onPick={addSide} />
-          <button type="button" className="btn btn-sm" onClick={addMyZone}>
-            + My time zone
-          </button>
-        </div>
-      ) : null}
-
       <div className="conv-foot">
+        {allowAdd && sides.length < maxZones ? (
+          <>
+            <ZoneSearch onPick={addSide} />
+            <button type="button" className="btn btn-sm" onClick={addMyZone} disabled={!mounted}>
+              + My time zone
+            </button>
+            <span className="conv-sep" aria-hidden="true" />
+          </>
+        ) : null}
         <button type="button" className="btn btn-sm" onClick={copyText} disabled={!mounted}>
           Copy
         </button>
@@ -511,7 +510,6 @@ export default function Converter({
         <button type="button" className="btn btn-sm" onClick={downloadIcs} disabled={!mounted}>
           Add to calendar
         </button>
-        <span className="spacer" />
         {toast ? (
           <span className="small" role="status">
             {toast}

@@ -338,12 +338,12 @@ export function buildPair(p: ParsedPair, now: number = Date.now()): PairContent 
 
   const related: RelatedGroup[] = [];
   if (reverseHref) {
-    related.push({ heading: `Convert ${B} to ${A}`, items: [{ href: reverseHref, label: `${B} to ${A}` }] });
+    related.push({ heading: `Convert ${B} to ${A}`, items: [{ href: reverseHref, label: `${B} to ${A}` }], cols: true });
   }
-  if (fromGroup.length) related.push({ heading: `Convert ${A} to other time zones`, items: fromGroup });
-  if (toGroup.length) related.push({ heading: `Convert other time zones to ${B}`, items: toGroup });
+  if (fromGroup.length) related.push({ heading: `Convert ${A} to other time zones`, items: fromGroup, cols: true });
+  if (toGroup.length) related.push({ heading: `Convert other time zones to ${B}`, items: toGroup, cols: true });
   if (hourGroup.length) related.push({ heading: `${A} to ${B} by hour`, items: hourGroup, cols: true });
-  if (learnMore.length) related.push({ heading: "Learn more", items: learnMore });
+  if (learnMore.length) related.push({ heading: "Learn more", items: learnMore, cols: true });
 
   return {
     slug: p.slug,

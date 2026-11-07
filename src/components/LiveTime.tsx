@@ -19,10 +19,10 @@ export default function LiveTime({ tz, withDay = false }: { tz: string; withDay?
     return () => clearInterval(id);
   }, []);
 
-  if (!now) return <span suppressHydrationWarning>--:--</span>;
+  if (!now) return <span className="livetime" suppressHydrationWarning>--:--</span>;
   const w = wallTime(tz, now);
   return (
-    <span suppressHydrationWarning>
+    <span className="livetime" suppressHydrationWarning>
       {fmtClock(w.hour, w.minute, h12)}
       {withDay ? ` ${w.weekday}` : ""}
     </span>

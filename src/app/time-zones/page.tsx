@@ -5,7 +5,7 @@ import { COUNTRIES } from "@/engine/entities";
 import { abbrFor } from "@/engine/side";
 import { fmtDate, fmtOffset, isoDate, offsetMinutes, seasonalOffsets, wallTime } from "@/engine/tz";
 import { graph, ld, pageMeta } from "@/seo/meta";
-import { Answer, Crumbs, Faq, JsonLd, LinkList, Updated } from "@/components/Blocks";
+import { Crumbs, Faq, JsonLd, LinkList, Updated } from "@/components/Blocks";
 import { Ad } from "@/components/Ad";
 
 export const revalidate = 86400;
@@ -55,10 +55,10 @@ export default function TimeZonesPage() {
     <>
       <Crumbs items={crumbs} />
       <h1>Time Zones and Abbreviations</h1>
-      <Answer>
+      <p className="answer">
         There are 62 commonly used time zone abbreviations, from UTC−10 (HST) to UTC+13 (NZDT). Each row below shows
         the abbreviation, its UTC offset, the full zone name and which name is in force right now.
-      </Answer>
+      </p>
 
       <section>
         <h2>All time zone abbreviations by offset</h2>
@@ -69,8 +69,8 @@ export default function TimeZonesPage() {
                 <th scope="col">Abbr</th>
                 <th scope="col">Offset</th>
                 <th scope="col">Name</th>
-                <th scope="col">In force now</th>
-                <th scope="col">Region</th>
+                <th scope="col" className="opt-sm">In force now</th>
+                <th scope="col" className="opt-md">IANA zone</th>
               </tr>
             </thead>
             <tbody>
@@ -83,8 +83,8 @@ export default function TimeZonesPage() {
                   </th>
                   <td className="t">{fmtOffset(own)}</td>
                   <td className="wide">{z.name}</td>
-                  <td className="mark">{live}</td>
-                  <td className="wide">{z.iana}</td>
+                  <td className="mark opt-sm">{live}</td>
+                  <td className="wide opt-md">{z.iana}</td>
                 </tr>
               ))}
             </tbody>
@@ -97,7 +97,7 @@ export default function TimeZonesPage() {
       <section>
         <h2>Current time by country</h2>
         <p className="lead">All {COUNTRIES.length} countries and territories, ordered by search demand.</p>
-        <LinkList items={COUNTRIES.map((c) => ({ href: `/time/${c.slug}`, label: c.name }))} cols />
+        <LinkList items={COUNTRIES.map((c) => ({ href: `/time/${c.slug}`, label: c.name }))} cols tight />
       </section>
 
       <Faq items={faqs} heading="Time zone FAQ" id="faq" />

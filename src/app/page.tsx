@@ -67,7 +67,7 @@ export default function HomePage() {
         <>
           <section>
             <h2>Popular time zone conversions</h2>
-            <LinkList items={pairs} cols />
+            <LinkList items={pairs} cols tight />
           </section>
 
           <section>
@@ -77,7 +77,7 @@ export default function HomePage() {
 
           <section>
             <h2>Current time around the world</h2>
-            <LinkList items={cities} cols />
+            <LinkList items={cities} cols tight />
           </section>
 
           <section>

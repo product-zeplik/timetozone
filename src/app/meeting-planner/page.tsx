@@ -51,7 +51,7 @@ export default function MeetingPlannerPage() {
       extra={
         <section>
           <h2>Popular two-zone conversions</h2>
-          <LinkList items={topPairLinks(24)} cols />
+          <LinkList items={topPairLinks(24)} cols tight />
         </section>
       }
     >

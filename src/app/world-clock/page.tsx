@@ -64,7 +64,7 @@ export default function WorldClockPage() {
       extra={
         <section>
           <h2>Current time in major cities</h2>
-          <LinkList items={cityClockLinks(40)} cols />
+          <LinkList items={cityClockLinks(40)} cols tight />
         </section>
       }
     >

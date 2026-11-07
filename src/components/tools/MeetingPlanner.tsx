@@ -10,6 +10,12 @@ import { fmtClock, fmtOffset, offsetMinutes, parseIsoDate, wallTime, zonedToUtc 
 const MAX = 8;
 const pad = (n: number) => String(n).padStart(2, "0");
 
+function fallbackDate(tz?: string) {
+  if (!tz) return null;
+  const w = wallTime(tz, Date.now());
+  return { year: w.year, month: w.month, day: w.day };
+}
+
 export default function MeetingPlanner({ initial }: { initial: Side[] }) {
   const [sides, setSides] = useState<Side[]>(initial);
   const [dateIso, setDateIso] = useState("");
@@ -31,7 +37,9 @@ export default function MeetingPlanner({ initial }: { initial: Side[] }) {
   }, []);
 
   const rows = useMemo(() => {
-    const d = parseIsoDate(dateIso);
+    // Before mount `dateIso` is empty; fall back to the reference zone's own
+    // current date so the table is laid out at first paint (CLS stays at 0).
+    const d = parseIsoDate(dateIso) || fallbackDate(sides[0]?.tz);
     if (!d || !sides.length) return [];
     return Array.from({ length: 24 }, (_, h) => {
       const instant = zonedToUtc(sides[0].tz, d.year, d.month, d.day, h, 0);

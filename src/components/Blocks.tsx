@@ -39,6 +39,36 @@ export function Crumbs({ items }: { items: Crumb[] }) {
   );
 }
 
+/* --------------------------------------------------------------- answer line */
+
+/** Clock times, durations and offsets inside the answer sentence. */
+const NUMERIC = /(\d{1,2}:\d{2}\s?(?:AM|PM)|UTC[+−-][\d:]+|\d+\s(?:hours?|minutes?)(?:\s\d+\sminutes?)?)/g;
+/** Clock times and offsets get the monospace face; a duration is just bold. */
+const IS_CLOCK = /^(?:\d{1,2}:\d{2}\s?(?:AM|PM)|UTC[+−-][\d:]+)$/;
+
+/**
+ * The answer sentence. The whole line is not bolded — only the values are, so
+ * the converted time and the date read as the strongest thing on the page
+ * without the sentence shouting.
+ */
+export function Answer({ children, text }: { children?: React.ReactNode; text?: string }) {
+  if (text === undefined) return <p className="answer">{children}</p>;
+  const parts = text.split(NUMERIC);
+  return (
+    <p className="answer">
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <span className={IS_CLOCK.test(part) ? "num" : "val"} key={i}>
+            {part}
+          </span>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </p>
+  );
+}
+
 /* ------------------------------------------------------------------------ FAQ */
 
 export interface FaqItem {
@@ -68,18 +98,20 @@ export function Faq({ items, heading, id }: { items: FaqItem[]; heading: string;
 export function LinkList({
   items,
   cols = false,
+  tight = false,
 }: {
   items: { href: string; label: string }[];
   cols?: boolean;
+  tight?: boolean;
 }) {
   if (!items.length) return null;
   // The column variant renders anchors directly: a <li> wrapper per item costs
   // real bytes in the RSC payload once a list runs to hundreds of links.
   if (cols) {
     return (
-      <div className="links cols">
+      <div className={tight ? "links cols tight" : "links cols"}>
         {items.map((l) => (
-          <Link key={l.href} href={l.href} prefetch={false}>
+          <Link key={l.href} href={l.href} prefetch={false} title={l.label}>
             {l.label}
           </Link>
         ))}
@@ -105,6 +137,11 @@ export interface RelatedGroup {
   cols?: boolean;
 }
 
+/**
+ * One quiet reference block at the foot of the page. Group headings are small
+ * labels rather than content headings, so a long list of links never competes
+ * with the answer above it.
+ */
 export function Related({ groups, heading = "Related conversions" }: { groups: RelatedGroup[]; heading?: string }) {
   const live = groups.filter((g) => g.items.length);
   if (!live.length) return null;
@@ -113,8 +150,8 @@ export function Related({ groups, heading = "Related conversions" }: { groups: R
       <h2>{heading}</h2>
       {live.map((g) => (
         <div key={g.heading}>
-          <h3>{g.heading}</h3>
-          <LinkList items={g.items} cols={g.cols} />
+          <h3 className="label">{g.heading}</h3>
+          <LinkList items={g.items} cols={g.cols} tight={g.cols} />
         </div>
       ))}
     </section>
@@ -132,22 +169,16 @@ export function Updated({ date, note }: { date: string; note?: string }) {
   );
 }
 
-/* --------------------------------------------------------------- answer line */
-
-export function Answer({ children }: { children: React.ReactNode }) {
-  return <p className="answer">{children}</p>;
-}
-
-/* ------------------------------------------------------------------ 24h table */
+/* ------------------------------------------------------------------ 24h legend */
 
 export function Legend() {
   return (
     <ul className="legend">
       <li>
-        <span className="sw sw-biz" /> Work rows — 9 AM–5 PM in both places
+        <span className="sw sw-biz" /> ✓ marks 9 AM–5 PM in both places
       </li>
       <li>
-        <span className="sw sw-night" /> Night in the destination (10 PM–6 AM)
+        <span className="sw sw-night" /> Greyed times are night in the destination (10 PM–6 AM)
       </li>
     </ul>
   );

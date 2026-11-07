@@ -130,7 +130,7 @@ export function PlaceView({ c, today }: { c: PlaceContent; today: string }) {
     <>
       <Crumbs items={c.crumbs} />
       <h1>{c.h1}</h1>
-      <Answer>{c.answer}</Answer>
+      <Answer text={c.answer} />
 
       <LiveClock tz={c.names.primary} label={c.names.name} />
 
@@ -193,7 +193,7 @@ export function PlaceView({ c, today }: { c: PlaceContent; today: string }) {
       {c.children.map((g) => (
         <section key={g.heading}>
           <h2>{g.heading}</h2>
-          <LinkList items={g.items} cols />
+          <LinkList items={g.items} cols tight />
         </section>
       ))}
 
@@ -223,7 +223,7 @@ export function MultiZoneView({ c, today }: { c: MultiZoneContent; today: string
     <>
       <Crumbs items={c.crumbs} />
       <h1>{c.h1}</h1>
-      <Answer>{c.answer}</Answer>
+      <Answer text={c.answer} />
 
       <LiveClock tz={c.names.primary} label={`${c.names.name} — main zone`} />
 
@@ -271,7 +271,7 @@ export function ZoneView({ c, today }: { c: ZoneContent; today: string }) {
     <>
       <Crumbs items={c.crumbs} />
       <h1>{c.h1}</h1>
-      <Answer>{c.answer}</Answer>
+      <Answer text={c.answer} />
       {c.note ? <p className="note">{c.note}</p> : null}
 
       <LiveClock tz={c.zone.iana} label={c.zone.abbr} sub={c.offsetText} />
@@ -289,14 +289,14 @@ export function ZoneView({ c, today }: { c: ZoneContent; today: string }) {
         <p>{c.regionText}.</p>
         {c.countries.length ? (
           <>
-            <h3>Countries on the same offsets</h3>
-            <LinkList items={c.countries} cols />
+            <h3 className="label">Countries on the same offsets</h3>
+            <LinkList items={c.countries} cols tight />
           </>
         ) : null}
         {c.cities.length ? (
           <>
-            <h3>Major cities on {c.zone.iana}</h3>
-            <LinkList items={c.cities} />
+            <h3 className="label">Major cities on {c.zone.iana}</h3>
+            <LinkList items={c.cities} cols tight />
           </>
         ) : null}
       </section>
@@ -309,7 +309,7 @@ export function ZoneView({ c, today }: { c: ZoneContent; today: string }) {
       {c.conversions.length ? (
         <section>
           <h2>Convert {c.zone.abbr} to other time zones</h2>
-          <LinkList items={c.conversions} cols />
+          <LinkList items={c.conversions} cols tight />
         </section>
       ) : null}
 

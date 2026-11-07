@@ -93,18 +93,19 @@ export default function WorldClock({ initial }: { initial: Side[] }) {
                 {w ? `${w.weekday}, ${fmtDate(w)}` : " "}
               </div>
             </div>
-            {mounted && sides.length > 1 ? (
-              <div className="zrow-actions">
+            <div className="zrow-actions">
+              {sides.length > 1 ? (
                 <button
                   type="button"
                   className="btn btn-sm btn-icon"
                   aria-label={`Remove ${s.label}`}
+                  disabled={!mounted}
                   onClick={() => persist(sides.filter((_, n) => n !== i))}
                 >
                   ×
                 </button>
-              </div>
-            ) : null}
+              ) : null}
+            </div>
           </div>
         );
       })}

@@ -21,7 +21,7 @@ export default function DstHubPage() {
     <>
       <Crumbs items={c.crumbs} />
       <h1>{c.h1}</h1>
-      <Answer>{c.answer}</Answer>
+      <Answer text={c.answer} />
 
       {c.blocks.map((b) => (
         <section key={b.heading}>
@@ -53,7 +53,7 @@ export default function DstHubPage() {
 
       <section>
         <h2>Daylight saving time by country</h2>
-        <LinkList items={c.countries} cols />
+        <LinkList items={c.countries} cols tight />
       </section>
 
       <section>
