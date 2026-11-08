@@ -164,6 +164,46 @@ So the gates are not page quality and not backlinks in any great number:
 keyword of three pages on the `time difference` SERP, one of which ranks sixth
 on five backlinks. `/time-calculator` now carries that tool and the keyword.
 
+### The seed keyword volumes do not reconcile with Ahrefs
+
+Re-measured in Ahrefs (US, 2026-11-08) against the map's own largest rows:
+
+| keyword | `keyword-map.csv` | Ahrefs US volume | ratio |
+|---|---|---|---|
+| what time is it | 2,740,000 | 269,000 | 10x |
+| time zone converter | 1,500,000 | 77,000 | 19x |
+| world clock | 823,000 | 37,000 | 22x |
+| time in india | 1,000,000 | 575,000 | 1.7x |
+| what time is it in california | 550,000 | 134,000 | 4x |
+| ist time | 368,000 | 90,000 | 4x |
+| time in japan | 301,000 | 101,000 | 3x |
+| time in london | 301,000 | 151,000 | 2x |
+| what time is it in london | 246,000 | 94,000 | 2.6x |
+| time in hawaii | 246,000 | 58,000 | 4x |
+| military time | 301,000 | 564,000 | 0.5x (understated) |
+
+Those eleven rows claim 8,376,000 searches a month and measure 2,150,000 --
+3.9x inflated, and they are 37% of the map's whole claimed total. The gap is
+not Ahrefs global volume either: "world clock" is 74,000 globally against the
+823,000 the map claims. The rows added from Ahrefs in this project match it
+exactly (`time calculator` 284,000, `time duration calculator` 84,000,
+`time difference calculator` 6,800), so the seed rows come from some other
+source or metric.
+
+**Consequence.** The "20.76M searches a month" ceiling quoted earlier, and the
+20-40M visits/month read off it, are built on these numbers and are too
+optimistic by roughly 4x. A realistic mapped ceiling is nearer 5-6M searches a
+month across the six markets, which is perhaps 1.5-2M clicks a month at
+dominant positions. 20-30M users *per page* is not reachable on this keyword
+set by any amount of on-page work.
+
+**Not yet done:** re-verifying all 364 rows against Ahrefs. Two rows were
+refreshed in passing while fixing the PT mapping (`pt to est` 33,100 ->
+12,000, `pacific time to eastern time` 27,100 -> 10,000), so the file is now
+mixed vintage. Until the rest is re-measured, treat the volume column as
+indicative and the KD column as unreliable -- measured KD for `pt to est` is
+2, where the seed row said 42.
+
 ### What the traffic target can actually be
 The researched keyword set is **354 rows summing to 20.76M searches a month**
 (US 15.3M, India 2.7M, Canada 827K, Australia 819K, UK 747K), spread over 186
