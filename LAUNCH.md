@@ -164,61 +164,103 @@ So the gates are not page quality and not backlinks in any great number:
 keyword of three pages on the `time difference` SERP, one of which ranks sixth
 on five backlinks. `/time-calculator` now carries that tool and the keyword.
 
-### The seed keyword volumes do not reconcile with Ahrefs
+### Every keyword re-measured in Ahrefs (2026-11-08)
 
-Re-measured in Ahrefs (US, 2026-11-08) against the map's own largest rows:
+All 364 rows of `keyword-map.csv` were re-measured against Ahrefs, market by
+market. 362 returned data; `time difference between est and pst`,
+`est to london time`, `philippine time to pst` and `utc to pht` return none
+and were left untouched.
 
-| keyword | `keyword-map.csv` | Ahrefs US volume | ratio |
+| market | seed claimed | Ahrefs measured |
+|---|---|---|
+| US | 17,002,030 | 7,313,800 |
+| IN | 2,686,700 | 1,041,950 |
+| UK | 747,240 | 280,700 |
+| AU | 819,120 | 365,010 |
+| CA | 827,320 | 229,100 |
+| PH | 416,760 | 189,650 |
+| **total** | **22,499,170** | **9,420,210** |
+
+The seed data was **2.39x inflated**. Worst single rows: `time zone converter`
+1,500,000 -> 77,000, `world clock` 823,000 -> 37,000, `what time is it`
+2,740,000 -> 269,000. A few were understated: `military time` 301,000 ->
+564,000, `est to ist` (IN) 49,500 -> 122,000. Volume and KD columns are now
+Ahrefs figures throughout.
+
+### The KD column was the more important error
+
+The seed KD values bore no relation to reality, and they were hiding the whole
+opportunity. Measured difficulty of the conversion pairs:
+
+| band | rows | volume | share |
 |---|---|---|---|
-| what time is it | 2,740,000 | 269,000 | 10x |
-| time zone converter | 1,500,000 | 77,000 | 19x |
-| world clock | 823,000 | 37,000 | 22x |
-| time in india | 1,000,000 | 575,000 | 1.7x |
-| what time is it in california | 550,000 | 134,000 | 4x |
-| ist time | 368,000 | 90,000 | 4x |
-| time in japan | 301,000 | 101,000 | 3x |
-| time in london | 301,000 | 151,000 | 2x |
-| what time is it in london | 246,000 | 94,000 | 2.6x |
-| time in hawaii | 246,000 | 58,000 | 4x |
-| military time | 301,000 | 564,000 | 0.5x (understated) |
+| KD 0-10 (trivial) | 217 | 2,084,810 | 22.1% |
+| KD 11-20 (easy) | 9 | 198,050 | 2.1% |
+| KD 21-40 (moderate) | 31 | 1,448,300 | 15.4% |
+| KD 41-70 (hard) | 67 | 3,558,200 | 37.8% |
+| KD 71+ (very hard) | 40 | 2,130,850 | 22.6% |
 
-Those eleven rows claim 8,376,000 searches a month and measure 2,150,000 --
-3.9x inflated, and they are 37% of the map's whole claimed total. The gap is
-not Ahrefs global volume either: "world clock" is 74,000 globally against the
-823,000 the map claims. The rows added from Ahrefs in this project match it
-exactly (`time calculator` 284,000, `time duration calculator` 84,000,
-`time difference calculator` 6,800), so the seed rows come from some other
-source or metric.
+**2,091,000 searches a month sit at KD <= 20, across 92 keywords, and the site
+already has a page for every one of them.** The seed file said `pst to est`
+was KD 41; it is 4. `cst to est` is 1, `mst to est` is 0, `utc to pst` is 1,
+`ist to est` (IN) is 0, `cst to ist` (IN) is 0.
 
-**Consequence.** The "20.76M searches a month" ceiling quoted earlier, and the
-20-40M visits/month read off it, are built on these numbers and are too
-optimistic by roughly 4x. A realistic mapped ceiling is nearer 5-6M searches a
-month across the six markets, which is perhaps 1.5-2M clicks a month at
-dominant positions. 20-30M users *per page* is not reachable on this keyword
-set by any amount of on-page work.
+The head terms are the opposite story and should not drive the plan:
+`time zone converter` KD 87, `what time is it` KD 89, `world clock` KD 86,
+`current time` KD 91, `world time` KD 95. A domain with no backlinks will not
+take those, and they are only 22.6% of the demand.
 
-**Not yet done:** re-verifying all 364 rows against Ahrefs. Two rows were
-refreshed in passing while fixing the PT mapping (`pt to est` 33,100 ->
-12,000, `pacific time to eastern time` 27,100 -> 10,000), so the file is now
-mixed vintage. Until the rest is re-measured, treat the volume column as
-indicative and the KD column as unreliable -- measured KD for `pt to est` is
-2, where the seed row said 42.
+Highest-value winnable rows, all already built:
+
+| volume | KD | market | keyword | page |
+|---|---|---|---|---|
+| 165,000 | 12 | US | time change 2026 | /daylight-saving-time |
+| 122,000 | 5 | IN | est to ist | /est-to-ist |
+| 92,000 | 7 | US | time in israel | /time/israel |
+| 82,000 | 9 | US | time in arizona | /time/usa/arizona |
+| 66,000 | 4 | US | pst to est | /pst-to-est |
+| 64,000 | 1 | US | cst to est | /cst-to-est |
+| 64,000 | 3 | US | utc to est | /utc-to-est |
+| 56,000 | 2 | IN | utc to ist | /utc-to-ist |
+| 48,000 | 0 | IN | cst to ist | /cst-to-ist |
+| 46,000 | 9 | US | time in nigeria | /time/nigeria |
+| 45,000 | 0 | IN | ist to est | /ist-to-est |
+| 43,000 | 1 | IN | cet to ist | /cet-to-ist |
+| 43,000 | 8 | US | mountain time | /zones/mt |
+| 42,000 | 8 | US | time in pakistan | /time/pakistan |
 
 ### What the traffic target can actually be
-The researched keyword set is **354 rows summing to 20.76M searches a month**
-(US 15.3M, India 2.7M, Canada 827K, Australia 819K, UK 747K), spread over 186
-target URLs. The single biggest is the home page at 4.72M.
 
-Those are *searches*, not clicks. Ranking first across the whole mapped set,
-with an AI Overview sitting above many of them, converts to roughly 5-7M
-clicks a month, and the unmapped long tail — 7,695 pair pages, 2,859 cities —
-adds to that rather than multiplying it.
+Now that every row is measured: **364 rows summing to 9,420,210 searches a
+month** (US 7.31M, India 1.04M, Australia 365K, UK 281K, Canada 229K,
+Philippines 190K), across 187 target URLs.
 
-So **20-40M visits a month across the site is a real target** and roughly what
-the original brief said. **20-30M per page is not**: the busiest page in the
-map has 4.72M monthly searches behind it, which caps it near 1.5M clicks even
-at position one. The way to raise the ceiling is more markets (the map is 74%
-US today) and more mapped keywords, not more traffic per existing page.
+Those are *searches*, not clicks. The honest split is by difficulty, not by
+total:
+
+- **Winnable now (KD <= 20): 2,091,000 searches/month.** At positions 1-3 with
+  an AI Overview above some of them, that is roughly **600K-900K clicks a
+  month**, and every page already exists.
+- **Reachable with authority (KD 21-40): 1,448,300.**
+- **Needs real backlinks (KD 41+): 5,689,050** — more than half the demand,
+  and not available to a domain with no link profile, whatever the on-page.
+
+The unmapped long tail (7,695 pair pages, 2,859 cities, 960 hour pages) adds
+to this rather than multiplying it; most of those URLs have genuine but small
+demand that was never researched.
+
+**20-30M users per page is not reachable on this keyword set**, and neither is
+20-40M site-wide: the entire measured market across six countries is 9.4M
+searches a month. The previous estimate in this file said otherwise because it
+was computed from seed volumes that were 2.39x too high.
+
+The levers that actually raise the ceiling, in order:
+1. **Win the KD <= 20 set first.** 2.09M searches, pages already built, no
+   backlinks required. This is the whole near-term plan.
+2. **More markets.** The map is 78% US. Germany, Brazil, Indonesia, Mexico,
+   Nigeria and Japan are unmapped and the pages already exist.
+3. **More mapped keywords.** 187 URLs are mapped out of 11,979 indexable.
+4. **Backlinks**, without which the KD 41+ half of the demand stays shut.
 
 ### AdSense requirements are checked, not remembered
 `npm run check:adsense` asserts the eighteen requirements that can be verified
