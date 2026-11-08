@@ -80,6 +80,10 @@ function norm(s) {
     .replace(/[‐-―−]/g, "-")
     .replace(/[‘’]/g, "'")
     .replace(/[“”]/g, '"')
+    // Collapse dotted acronyms before punctuation is stripped, or "D.C."
+    // becomes the two tokens "d" and "c" and never matches the keyword "dc".
+    // Google treats the two spellings as one term; so should this.
+    .replace(/\b(?:[a-z]\.){2,}/gi, (m) => m.replace(/\./g, ""))
     .replace(/[^\w\s'"-]/g, " ")
     .replace(/\s+/g, " ")
     .trim()
