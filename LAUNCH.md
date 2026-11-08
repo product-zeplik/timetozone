@@ -231,35 +231,36 @@ Highest-value winnable rows, all already built:
 
 ### What the traffic target can actually be
 
-Now that every row is measured: **364 rows summing to 9,420,210 searches a
-month** (US 7.31M, India 1.04M, Australia 365K, UK 281K, Canada 229K,
-Philippines 190K), across 187 target URLs.
+Every row measured in Ahrefs, then expanded: **487 rows summing to 11,225,610
+searches a month across 249 target URLs**.
 
-Those are *searches*, not clicks. The honest split is by difficulty, not by
-total:
+The honest split is by difficulty, not by total:
 
-- **Winnable now (KD <= 20): 2,091,000 searches/month.** At positions 1-3 with
-  an AI Overview above some of them, that is roughly **600K-900K clicks a
-  month**, and every page already exists.
-- **Reachable with authority (KD 21-40): 1,448,300.**
-- **Needs real backlinks (KD 41+): 5,689,050** — more than half the demand,
-  and not available to a domain with no link profile, whatever the on-page.
+- **Winnable now (KD <= 20): 4,088,260 searches/month, 349 rows, 36% of the
+  demand — and every one of those pages is already built.** At positions 1-3,
+  with an AI Overview above some of them, that is roughly **1.2M-1.8M clicks a
+  month**. This is the whole near-term plan.
+- **Reachable with some authority (KD 21-40).**
+- **Needs real backlinks (KD 41+)** — roughly half the remaining demand, not
+  available to a domain with no link profile whatever the on-page work.
 
 The unmapped long tail (7,695 pair pages, 2,859 cities, 960 hour pages) adds
-to this rather than multiplying it; most of those URLs have genuine but small
-demand that was never researched.
+to this rather than multiplying it.
 
 **20-30M users per page is not reachable on this keyword set**, and neither is
-20-40M site-wide: the entire measured market across six countries is 9.4M
-searches a month. The previous estimate in this file said otherwise because it
-was computed from seed volumes that were 2.39x too high.
+20-40M site-wide: the entire measured market across six countries is about
+11M searches a month, and no site takes all of it. The earlier estimate in
+this file said otherwise because it was computed from seed volumes that were
+2.39x too high.
 
-The levers that actually raise the ceiling, in order:
-1. **Win the KD <= 20 set first.** 2.09M searches, pages already built, no
-   backlinks required. This is the whole near-term plan.
-2. **More markets.** The map is 78% US. Germany, Brazil, Indonesia, Mexico,
-   Nigeria and Japan are unmapped and the pages already exist.
-3. **More mapped keywords.** 187 URLs are mapped out of 11,979 indexable.
+The levers that raise the ceiling, in order:
+1. **Win the KD <= 20 set.** 4.09M searches, pages already built, no backlinks
+   required.
+2. **Keep mining at KD <= 20.** The "time in X" family alone returns 46,581
+   keywords under that threshold; 123 have been mapped so far. 249 URLs are
+   mapped out of 11,979 indexable, so this seam is barely opened.
+3. **More markets.** The map is heavily US. Germany, Brazil, Indonesia,
+   Mexico, Nigeria and Japan are unmapped and the pages already exist.
 4. **Backlinks**, without which the KD 41+ half of the demand stays shut.
 
 ### AdSense requirements are checked, not remembered
