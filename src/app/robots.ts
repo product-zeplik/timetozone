@@ -19,6 +19,16 @@ const AI_AGENTS = [
   "meta-externalagent",
 ];
 
+/**
+ * Paths no crawler should take. A robots.txt group is not inherited: a crawler
+ * obeys the single most specific group that names it and ignores every other,
+ * so the per-agent groups below MUST repeat these. Without them `User-Agent:
+ * GPTBot` + `Allow: /` told exactly the AI crawlers we most want on the site
+ * that `/api/` and the `?t=` / `?d=` / `?z=` state parameters were fair game --
+ * an unbounded set of URLs that render the same page at a different clock.
+ */
+const DISALLOW = ["/api/", "/*?t=", "/*?d=", "/*?z="];
+
 export default function robots(): MetadataRoute.Robots {
   if (!SITE.isProduction) {
     return { rules: [{ userAgent: "*", disallow: "/" }] };
@@ -28,9 +38,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/*?t=", "/*?d=", "/*?z="],
+        disallow: DISALLOW,
       },
-      ...AI_AGENTS.map((userAgent) => ({ userAgent, allow: "/" })),
+      ...AI_AGENTS.map((userAgent) => ({ userAgent, allow: "/", disallow: DISALLOW })),
     ],
     sitemap: [`${SITE.url}/sitemap.xml`, ...[0, 1, 2, 3, 4].map((i) => `${SITE.url}/sitemap/${i}.xml`)],
     host: SITE.url,

@@ -238,7 +238,7 @@ describe("DST pages", () => {
   it("USA country page has the right 2027 dates", () => {
     const country = resolveDstCountry("usa");
     const c = buildDstCountry(country!, JAN);
-    expect(c.h1).toBe("Daylight Saving Time in United States (2027–2028)");
+    expect(c.h1).toBe("Daylight Saving Time in the United States (2027–2028)");
     const all = c.schedules.flatMap((s) => s.years.flatMap((y) => y.changes));
     expect(all.some((ch) => ch.dateText === "14 March 2027")).toBe(true);
     expect(all.some((ch) => ch.dateText === "7 November 2027")).toBe(true);

@@ -315,9 +315,43 @@ going `/pst-to-est` → `/est-to-pst` → `/pst-to-est/9am` counted as one view.
    seconds ago, every day, on one identical timestamp. Google ignores a
    lastmod it finds consistently inaccurate. It is now the data build date to
    the day, which is both stable and true.
-8. **4 SEO-lint warnings are intentional.** `daylight savings 2026` (spelling variant) and three
-   `…pt to est` hour pages: docs/06 fixes those title and H1 templates and a 60-character title
-   cannot carry both PT and PST. Both variants are answered in body copy and the FAQ instead.
+8. **The daylight-savings cluster sits on the hub, and the titles carry both
+   spellings.** This entry used to say the four SEO-lint warnings were
+   unavoidable, because "a 60-character title cannot carry both PT and PST".
+   That was wrong on both counts, and the measurements say why it mattered:
+   - `1pm PST to EST – 1:00 PM PT is 4:00 PM ET | TimeToZone` is 54 characters
+     and carries both. The hour titles now restate the conversion in the
+     generic form (PT/ET), which is accurate because the two move together.
+     `/pt-to-est/1pm` 308s here, so the page has to name the form a third of
+     its searchers type.
+   - "Daylight savings" is not a misspelling to avoid: measured in Ahrefs on
+     2026-11-08, the colloquial cluster is 1.74M US searches a month
+     (`daylight savings 2026` 688K, `daylight savings` 422K, `when is daylight
+     savings` 244K, `daylight savings time` 179K, `time change 2026` 165K)
+     against 209K for the formal spelling. The titles now use "Savings" and
+     the H1s keep "Saving"; seo-lint matches on substrings, so one page
+     satisfies both.
+   - Ahrefs gives `daylight saving time` and `daylight savings` the same
+     parent topic, and every US-named variant is tiny (`daylight savings usa`
+     700, `daylight saving time usa` 500, `when do clocks change usa` 30).
+     There is no separate US SERP to win, so docs/07 rule 2 applies and the
+     generic cluster consolidated onto `/daylight-saving-time`, which until
+     now had no mapped keyword at all. `/daylight-saving-time/usa` keeps the
+     country-named variants and `when do clocks change`.
+   SEO lint is now 0 errors and 0 warnings.
+9. **robots.txt repeats the disallow list in every per-agent group.** A
+   robots.txt group is not inherited: a crawler obeys the single most specific
+   group that names it. `User-Agent: GPTBot` + `Allow: /` therefore told
+   exactly the AI crawlers we most want on the site that `/api/` and the
+   `?t=` / `?d=` / `?z=` state parameters were fair game, while the `*` group
+   blocked them for everyone else.
+10. **Two content defects the templates had been printing.** The DST country
+   description read "back on 5 April 2026 in 2026", because the date already
+   carried the year; and for southern-hemisphere countries it paired the two
+   changes inside one calendar year, printing "forward on 4 October 2026 and
+   back on 5 April 2026" — back before forward. The clocks that go forward in
+   October go back the following April, and it now says so. The H1 also said
+   "in United States" rather than "in the United States".
 
 ## Routine operations
 

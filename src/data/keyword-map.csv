@@ -48,8 +48,8 @@ cst to philippine time,PH,5400,30,/cst-to-philippine-time,primary
 cst to pht,PH,1300,23,/cst-to-philippine-time,synonym
 cst to pst,US,18100,32,/cst-to-pst,primary
 daylight savings 2026,AU,90500,37,/daylight-saving-time/australia,primary
-daylight saving time,US,135000,93,/daylight-saving-time/usa,primary
-when do clocks change,US,12100,65,/daylight-saving-time/usa,secondary
+daylight saving time,US,167000,71,/daylight-saving-time,synonym
+when do clocks change,US,12100,65,/daylight-saving-time/usa,primary
 when does daylight saving time end,US,5400,13,/daylight-saving-time/usa,faq
 edt to bst,UK,1900,22,/edt-to-bst,primary
 edt to est,US,14800,33,/edt-to-est,primary
@@ -150,8 +150,8 @@ pst to aest,AU,3600,25,/pst-to-aest,primary
 pst to bst,UK,1900,26,/pst-to-bst,primary
 pst to cst,US,49500,34,/pst-to-cst,primary
 pst to est,US,74000,41,/pst-to-est,primary
-pt to est,US,33100,42,/pst-to-est,synonym
-pacific time to eastern time,US,27100,49,/pst-to-est,synonym
+pt to est,US,12000,2,/pst-to-est,synonym
+pacific time to eastern time,US,10000,4,/pst-to-est,synonym
 pst to est,CA,22200,55,/pst-to-est,primary
 pt to et,US,8100,49,/pst-to-est,synonym
 pst to est converter,US,8100,54,/pst-to-est,title
@@ -353,3 +353,13 @@ what is utc,US,14800,67,/zones/utc,intro
 time calculator,US,284000,,/time-calculator,primary
 time duration calculator,US,84000,,/time-calculator,secondary
 time difference calculator,US,6800,,/time-calculator,h2
+daylight savings 2026,US,688000,55,/daylight-saving-time,primary
+daylight savings,US,422000,75,/daylight-saving-time,primary
+when is daylight savings,US,244000,65,/daylight-saving-time,secondary
+daylight savings time,US,179000,72,/daylight-saving-time,synonym
+time change 2026,US,165000,12,/daylight-saving-time,secondary
+when does daylight savings end,US,28000,56,/daylight-saving-time,faq
+when does daylight savings start,US,14000,67,/daylight-saving-time,faq
+time change usa,US,1500,43,/daylight-saving-time/usa,secondary
+daylight savings usa,US,700,64,/daylight-saving-time/usa,secondary
+daylight saving time usa,US,500,69,/daylight-saving-time/usa,secondary

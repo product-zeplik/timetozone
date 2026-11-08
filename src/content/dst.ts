@@ -42,6 +42,25 @@ export function observesDst(tz: string, year: number): boolean {
   return seasonalOffsets(tz, year).dst !== null;
 }
 
+/**
+ * "United States" reads as an error without its article, and the DST pages put
+ * a country name straight after "in". Only the handful of names that take one
+ * are listed; everything else is returned unchanged.
+ */
+const TAKES_THE = new Set([
+  "United States",
+  "United Kingdom",
+  "Netherlands",
+  "Philippines",
+  "Bahamas",
+  "Czech Republic",
+  "Dominican Republic",
+  "United Arab Emirates",
+]);
+function theName(name: string): string {
+  return TAKES_THE.has(name) ? `the ${name}` : name;
+}
+
 /* ------------------------------------------------------------------ the hub */
 
 export interface DstHubContent {
@@ -93,11 +112,16 @@ export function buildDstHub(now: number = Date.now()): DstHubContent {
   const ukB = uk.find((c) => c.direction === "back");
   const auB = au.find((c) => c.direction === "back");
 
-  const answer = `In ${year} US clocks go forward on ${usF?.dateText ?? "—"} and back on ${
-    usB?.dateText ?? "—"
-  }. UK and EU clocks go forward on ${ukF?.dateText ?? "—"} and back on ${ukB?.dateText ?? "—"}. Australian clocks (NSW, Victoria, Tasmania, ACT) go back on ${
+  // The answer leads with the dates, per CLAUDE.md rule 3. The closing gloss is
+  // there because "daylight savings" is not a typo to most readers: it is the
+  // form roughly eight times more people search for than the formal one.
+  const answer = `The ${year} time change dates: US clocks go forward on ${
+    usF?.dateText ?? "—"
+  } and back on ${usB?.dateText ?? "—"}. UK and EU clocks go forward on ${ukF?.dateText ?? "—"} and back on ${
+    ukB?.dateText ?? "—"
+  }. Australian clocks (NSW, Victoria, Tasmania, ACT) go back on ${
     auB?.dateText ?? "—"
-  }.`;
+  }. Daylight saving time is also written “daylight savings”.`;
 
   const dstSlugs = new Set(dstCountries());
   const countries = COUNTRIES.filter((c) => dstSlugs.has(c.slug))
@@ -133,20 +157,39 @@ export function buildDstHub(now: number = Date.now()): DstHubContent {
       q: `Do clocks change in the southern hemisphere at the same time?`,
       a: `No. Australia, New Zealand, Chile and Paraguay are on daylight saving time during the northern-hemisphere winter, so their clocks go forward in October and back in April.`,
     },
+    {
+      q: `When is daylight savings ${year}?`,
+      a: `“Daylight savings” is the everyday spelling of daylight saving time, and it means the same thing. In ${year} it begins in the US on ${
+        usF?.dateText ?? "—"
+      } and ends on ${usB?.dateText ?? "—"}; in the UK and EU it begins on ${ukF?.dateText ?? "—"} and ends on ${
+        ukB?.dateText ?? "—"
+      }.`,
+    },
+    {
+      q: `What is daylight saving time?`,
+      a: `Daylight saving time moves the clock forward one hour for part of the year, so that summer evenings keep an extra hour of daylight. The offset from UTC changes with it: New York is UTC−5 on standard time and UTC−4 on daylight time, which is why a conversion is only correct for a given date.`,
+    },
+    {
+      q: `Why do we have daylight saving time?`,
+      a: `It was adopted during the First World War to save fuel and kept, in most of Europe and North America, to shift an hour of daylight from the early morning to the evening. Countries near the equator gain almost nothing from it and generally do not use it at all.`,
+    },
   ];
 
   return {
     year,
     title: firstThatFits(
+      // "Savings" in the title, "Saving" in the H1. Both spellings are in wide
+      // use and they rank as separate terms; the colloquial one carries the
+      // far larger share of the searches, so it earns the title.
       [
-        brandTitle(`Daylight Saving Time ${year} – When Do Clocks Change?`),
-        `Daylight Saving Time ${year} – When Do Clocks Change?`,
-        `Daylight Saving Time ${year}`,
+        brandTitle(`Daylight Savings Time ${year} – Time Change Dates`),
+        `Daylight Savings Time ${year} – When Do Clocks Change?`,
+        `Daylight Savings Time ${year}`,
       ],
       60
     ),
     description: clip(
-      `Daylight saving time ${year} and ${year + 1}: when clocks change in the US, UK, EU, Australia and New Zealand, the exact dates and local times, and the countries that do not change at all.`,
+      `Daylight savings ${year} and ${year + 1}: the exact time change dates for the US, UK, EU, Australia and New Zealand, the local time each clock moves, and the countries that never change.`,
       155
     ),
     h1: `Daylight Saving Time ${year}: When Do the Clocks Change?`,
@@ -243,9 +286,18 @@ export function buildDstCountry(country: Country, now: number = Date.now()): Dst
 
   const first = schedules[0]?.years[0]?.changes ?? [];
   const fwd = first.find((c) => c.direction === "forward");
-  const back = first.find((c) => c.direction === "back");
+  let back = first.find((c) => c.direction === "back");
+  // In the southern hemisphere the two changes inside one calendar year belong
+  // to different daylight-saving periods: Australia's clocks go back in April
+  // and forward in October. Pairing them as they fall in the year produced
+  // "forward on 4 October 2026 and back on 5 April 2026" -- back before
+  // forward. The change that ends the period beginning at `fwd` is next year's.
+  if (fwd && back && back.at < fwd.at) {
+    const following = schedules[0]?.years[1]?.changes ?? [];
+    back = following.find((c) => c.direction === "back") ?? back;
+  }
 
-  const answer = `${country.name} ${
+  const answer = `${theName(country.name)} ${
     schedules.length ? "observes daylight saving time" : "does not observe daylight saving time"
   } (often written “daylight savings”). In ${year} clocks go forward on ${fwd?.dateText ?? "—"} and back on ${
     back?.dateText ?? "—"
@@ -329,20 +381,26 @@ export function buildDstCountry(country: Country, now: number = Date.now()): Dst
     year,
     path: `/daylight-saving-time/${country.slug}`,
     title: firstThatFits(
+      // "When Clocks Change" is what the page actually answers, and it carries
+      // the clock-change wording that the country pages own now that the
+      // generic daylight-savings cluster has consolidated on the hub.
       [
-        brandTitle(`Daylight Saving Time ${year} in ${country.short}`),
-        `Daylight Saving Time ${year} in ${country.name}`,
-        `Daylight Saving Time ${year} in ${country.short}`,
+        `Daylight Savings Time ${year} in ${country.short} – When Clocks Change`,
+        brandTitle(`Daylight Savings Time ${year} in ${country.short}`),
+        `Daylight Savings Time ${year} in ${country.name}`,
+        `Daylight Savings Time ${year} in ${country.short}`,
       ],
       60
     ),
     description: clip(
-      `Daylight saving time in ${country.name}: clocks go forward on ${fwd?.dateText ?? "—"} and back on ${
-        back?.dateText ?? "—"
-      } in ${year}. Exact local times, offsets and ${year + 1} dates.`,
+      // dateText already carries the year, so the old trailing "in ${year}"
+      // printed "back on 5 April 2026 in 2026" on every one of these pages.
+      `Daylight savings in ${theName(country.name)}: clocks go forward on ${
+        fwd?.dateText ?? "—"
+      } and back on ${back?.dateText ?? "—"}. Exact local times, offsets and ${year + 1} dates.`,
       155
     ),
-    h1: `Daylight Saving Time in ${country.name} (${year}–${year + 1})`,
+    h1: `Daylight Saving Time in ${theName(country.name)} (${year}–${year + 1})`,
     answer,
     crumbs: [
       { name: "Home", path: "/" },

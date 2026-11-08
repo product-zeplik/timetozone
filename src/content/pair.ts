@@ -2,7 +2,7 @@
  * Content builders for pair pages (A/C) and hour pages (B). docs/06.
  * Every sentence is filled with values computed by the engine at render time.
  */
-import { ZONE_BY_SLUG } from "@/data/zones";
+import { ZONES, ZONE_BY_SLUG } from "@/data/zones";
 import type { Side } from "@/engine/side";
 import { sideAbbr } from "@/engine/side";
 import {
@@ -393,6 +393,20 @@ export function buildPair(p: ParsedPair, now: number = Date.now()): PairContent 
   };
 }
 
+/**
+ * "pst" -> "PT". The generic abbreviation is how a large share of readers write
+ * the zone, and /pt-to-est/1pm 308s here, so the hour pages have to say "PT"
+ * somewhere or they answer a query they never name: "1pm pt to est" is 14,800
+ * US searches a month against 14,800 for the PST spelling of the same hour.
+ */
+const GENERIC_ABBR = new Map<string, string>();
+for (const z of ZONES) {
+  if (z.kind === "generic" && z.pairAlias) GENERIC_ABBR.set(z.pairAlias, z.abbr);
+}
+function genericAbbr(s: Side): string | undefined {
+  return s.zoneSlug ? GENERIC_ABBR.get(s.zoneSlug) : undefined;
+}
+
 /* ---------------------------------------------------------------- buildHour */
 
 export interface HourContent {
@@ -460,10 +474,17 @@ export function buildHour(p: ParsedPair, hour: number, now: number = Date.now())
   const shift = shiftWord(c.shift);
   const noonTag = hour === 12 ? " (noon)" : hour === 0 ? " (midnight)" : "";
 
+  // The heading keeps the exact abbreviation for the date in question (PST or
+  // PDT); the title restates the same conversion in the generic form, so one
+  // string covers both "1pm pst to est" and "1pm pt to est" without claiming
+  // anything different -- PT and ET move together, so the clock times are the
+  // same either way. Zones with no generic form keep the exact abbreviation.
+  const genFrom = genericAbbr(from) ?? c.fromAbbr;
+  const genTo = genericAbbr(to) ?? c.toAbbr;
   const titleText = firstThatFits(
     [
-      brandTitle(`${label} ${A} to ${B} – ${fromClock} ${c.fromAbbr} is ${toClock} ${c.toAbbr}`),
-      `${label} ${A} to ${B} – ${fromClock} ${c.fromAbbr} is ${toClock} ${c.toAbbr}`,
+      brandTitle(`${label} ${A} to ${B} – ${fromClock} ${genFrom} is ${toClock} ${genTo}`),
+      `${label} ${A} to ${B} – ${fromClock} ${genFrom} is ${toClock} ${genTo}`,
       brandTitle(`${label} ${A} to ${B}`),
       `${label} ${A} to ${B}`,
     ],
