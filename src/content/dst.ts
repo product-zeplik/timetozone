@@ -110,7 +110,16 @@ export function buildDstHub(now: number = Date.now()): DstHubContent {
   const usB = us.find((c) => c.direction === "back");
   const ukF = uk.find((c) => c.direction === "forward");
   const ukB = uk.find((c) => c.direction === "back");
-  const auB = au.find((c) => c.direction === "back");
+  const auF = au.find((c) => c.direction === "forward");
+  // Same southern-hemisphere pairing as the country pages: the change that
+  // ends the period starting in October falls in the following April, so
+  // reading the two out of one calendar year listed a date that had already
+  // passed and left out the October move entirely.
+  const auNext = changesFor("Australia/Sydney", year + 1);
+  const auBack =
+    auF && au.find((c) => c.direction === "back" && c.at > auF.at)
+      ? au.find((c) => c.direction === "back" && c.at > auF.at)
+      : auNext.find((c) => c.direction === "back") ?? au.find((c) => c.direction === "back");
 
   // The answer leads with the dates, per CLAUDE.md rule 3. The closing gloss is
   // there because "daylight savings" is not a typo to most readers: it is the
@@ -119,9 +128,9 @@ export function buildDstHub(now: number = Date.now()): DstHubContent {
     usF?.dateText ?? "—"
   } and back on ${usB?.dateText ?? "—"}. UK and EU clocks go forward on ${ukF?.dateText ?? "—"} and back on ${
     ukB?.dateText ?? "—"
-  }. Australian clocks (NSW, Victoria, Tasmania, ACT) go back on ${
-    auB?.dateText ?? "—"
-  }. Daylight saving time is also written “daylight savings”.`;
+  }. Australian clocks (NSW, Victoria, Tasmania, ACT) go forward on ${
+    auF?.dateText ?? "—"
+  } and back on ${auBack?.dateText ?? "—"}. Daylight saving time is also written “daylight savings”.`;
 
   const dstSlugs = new Set(dstCountries());
   const countries = COUNTRIES.filter((c) => dstSlugs.has(c.slug))
