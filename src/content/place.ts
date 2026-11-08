@@ -141,6 +141,21 @@ function areaLabel(iana: string): string {
   return AREA_LABEL[area] ?? area.replace(/_/g, " ");
 }
 
+/**
+ * Place paths that are not the canonical slug, served as a 308. Only the one
+ * case exists: every other region slug is the name people search for, but
+ * "Newfoundland and Labrador" is searched as "newfoundland time" (9,900/mo in
+ * Canada), and that keyword was mapped to a URL that 404ed.
+ */
+const PLACE_ALIASES: Record<string, string> = {
+  "canada/newfoundland": "/time/canada/newfoundland-and-labrador",
+};
+
+/** The canonical path for an aliased place path, or null. */
+export function placeAlias(segments: string[]): string | null {
+  return PLACE_ALIASES[segments.join("/").toLowerCase()] ?? null;
+}
+
 export function resolvePlace(segments: string[]): PlaceTarget | null {
   if (segments.length === 0 || segments.length > 2) return null;
   const country = COUNTRY_BY_SLUG.get(segments[0]);

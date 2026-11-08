@@ -20,7 +20,7 @@ aest to ist,IN,6600,25,/aest-to-ist,primary
 time difference between india and australia,IN,3600,28,/aest-to-ist,h2
 aest to ist,AU,720,26,/aest-to-ist,primary
 aest to utc,AU,880,29,/aest-to-utc,primary
-ast to est,CA,720,32,/ast-to-est,primary
+ast to est,CA,720,32,/at-to-est,primary
 awst to aest,AU,590,21,/awst-to-aest,primary
 perth to sydney time,AU,590,39,/awst-to-aest,synonym
 bst to est,US,6600,26,/bst-to-est,primary
@@ -224,7 +224,7 @@ time in calgary,CA,33100,36,/time/canada/calgary,primary
 edmonton time,CA,22200,38,/time/canada/edmonton,primary
 halifax time,CA,14800,32,/time/canada/halifax,primary
 montreal time,CA,12100,41,/time/canada/montreal,primary
-newfoundland time,CA,9900,46,/time/canada/newfoundland,primary
+newfoundland time,CA,9900,46,/time/canada/newfoundland-and-labrador,primary
 time in toronto,CA,60500,60,/time/canada/toronto,primary
 toronto time,CA,60500,49,/time/canada/toronto,secondary
 time in toronto,US,22200,50,/time/canada/toronto,primary

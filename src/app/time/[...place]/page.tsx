@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { buildPlace, resolvePlace } from "@/content/place";
+import { notFound, permanentRedirect } from "next/navigation";
+import { buildPlace, placeAlias, resolvePlace } from "@/content/place";
 import { staticPlacePaths } from "@/seo/gate";
 import { pageMeta } from "@/seo/meta";
 import { PlaceView } from "@/components/PlaceView";
@@ -25,6 +25,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function TimePlacePage({ params }: Params) {
   const { place } = await params;
+  const alias = placeAlias(place);
+  if (alias) permanentRedirect(alias);
   const t = resolvePlace(place);
   if (!t) notFound();
   const now = Date.now();

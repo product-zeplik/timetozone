@@ -237,6 +237,25 @@ for (const [from, to] of EXPECT_308) {
   check(!r.headers.get("x-powered-by"), "no X-Powered-By");
 }
 
+// Every keyword in the map must point at a URL that exists. The map is the
+// contract (CLAUDE.md rule 2), but nothing checked that its right-hand side
+// resolved: "newfoundland time" (9,900/mo) pointed at /time/canada/newfoundland
+// and "ast to est" at /ast-to-est, and both 404ed. Both are 308s now.
+{
+  const { readFileSync } = await import("node:fs");
+  const csv = readFileSync(new URL("../data/keyword-map.csv", import.meta.url), "utf8");
+  const lines = csv.trim().split("\n");
+  const cols = lines[0].split(",");
+  const urlCol = cols.indexOf("target_url");
+  const targets = [...new Set(lines.slice(1).map((l) => l.split(",")[urlCol]).filter(Boolean))];
+  const bad = [];
+  for (const t of targets) {
+    const r = await get(t);
+    if (r.status !== 200) bad.push(`${t} -> ${r.status}`);
+  }
+  check(bad.length === 0, `all ${targets.length} mapped keyword URLs return 200`, bad.join(", ") || "all 200");
+}
+
 console.log(`\n${pass} checks passed`);
 if (fails.length) {
   console.log(`${fails.length} FAILED:`);

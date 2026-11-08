@@ -157,6 +157,10 @@ export const PAIR_ALIASES: Record<string, string> = {
   "dubai-time": "gst",
   "uae-time": "gst",
   "moscow-time": "msk",
+  // The Atlantic zone's curated slug is "at", but nobody searches "at to est":
+  // the keyword map had "ast to est" (720/mo, CA) pointing at /ast-to-est,
+  // which 404ed. AST is Atlantic Standard Time here, as zones.ts records.
+  ast: "at",
 };
 for (const z of ZONES) if (z.pairAlias) PAIR_ALIASES[z.slug] = z.pairAlias;
 
