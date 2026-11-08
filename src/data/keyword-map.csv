@@ -486,3 +486,58 @@ what time will it be in 12 hours,US,7500,0,/time-calculator,secondary
 what time will it be in 7 hours,US,7300,0,/time-calculator,secondary
 what time will it be in 10 hours,US,7300,0,/time-calculator,secondary
 what time will it be in 6 hours,US,6200,0,/time-calculator,secondary
+cdt to est,US,9700,0,/cdt-to-est,primary
+gmt to cst,US,9600,0,/gmt-to-cst,secondary
+10 am pst to est,US,8100,9,/pst-to-est/10am,secondary
+pt to cst,US,7400,2,/pst-to-cst,secondary
+pst to mst,US,6200,0,/pst-to-mst,secondary
+ct to est,US,6100,2,/cst-to-est,secondary
+5pm pst to est,US,6000,9,/pst-to-est/5pm,primary
+edt to cst,US,5800,0,/edt-to-cst,primary
+9am cst to est,US,5700,3,/cst-to-est/9am,primary
+1pm cst to est,US,5600,3,/cst-to-est/1pm,primary
+et to cst,US,5400,1,/est-to-cst,secondary
+cest to est,US,5200,0,/cest-to-est,primary
+10 am cst to est,US,5100,1,/cst-to-est/10am,primary
+mountain time to est,US,5100,1,/mst-to-est,secondary
+11am pst to est,US,5100,8,/pst-to-est/11am,primary
+2pm est to pst,US,5000,2,/est-to-pst/2pm,primary
+cst to utc,US,4800,0,/cst-to-utc,primary
+7pm cst to est,US,4500,4,/cst-to-est/7pm,primary
+utc to central time,US,4500,0,/utc-to-cst,secondary
+1pm pst to est,US,4400,9,/pst-to-est/1pm,secondary
+edt to pst,US,4400,0,/est-to-pst,secondary
+6pm cst to est,US,4400,1,/cst-to-est/6pm,primary
+4pm pst to est,US,4200,10,/pst-to-est/4pm,primary
+2pm cst to est,US,4100,4,/cst-to-est/2pm,primary
+8pm est to cst,US,4000,2,/est-to-cst/8pm,primary
+jst to pst,US,3900,0,/jst-to-pst,primary
+5pm cst to est,US,3900,1,/cst-to-est/5pm,primary
+kst to pst,US,3800,0,/kst-to-pst,primary
+1pm est to pst,US,3800,2,/est-to-pst/1pm,primary
+cet to pst,US,3800,2,/cet-to-pst,primary
+8am cst to est,US,3700,1,/cst-to-est/8am,primary
+6pm pst to est,US,3600,4,/pst-to-est/6pm,secondary
+3pm cst to est,US,3500,2,/cst-to-est/3pm,primary
+utc to edt,US,3500,0,/utc-to-est,secondary
+cet to cst,US,3500,0,/cet-to-cst,primary
+3pm est to pst,US,3500,2,/est-to-pst/3pm,primary
+mdt to est,US,3400,0,/mst-to-est,secondary
+10 am est to ist,US,3300,6,/est-to-ist/10am,secondary
+9pm et to cst,US,3300,1,/est-to-cst/9pm,primary
+9am pst to cst,US,3300,3,/pst-to-cst/9am,primary
+10am pst to cst,US,3300,2,/pst-to-cst/10am,primary
+9pm est to cst,US,3200,0,/est-to-cst/9pm,secondary
+11am cst to est,US,3200,4,/cst-to-est/11am,primary
+4pm cst to est,US,3200,1,/cst-to-est/4pm,primary
+8pm est to pst,US,3100,1,/est-to-pst/8pm,primary
+11 am pst to est,US,3100,5,/pst-to-est/11am,secondary
+pst to central time,US,3100,4,/pst-to-cst,secondary
+8am pst to est,US,3100,9,/pst-to-est/8am,primary
+10 am pst to cst,US,3000,2,/pst-to-cst/10am,secondary
+7pm est to cst,US,3000,2,/est-to-cst/7pm,primary
+10 am pt to est,US,3000,4,/pst-to-est/10am,secondary
+10 am est to cst,US,3000,4,/est-to-cst/10am,primary
+6am pst to est,US,3000,8,/pst-to-est/6am,primary
+4pm est to pst,US,2800,2,/est-to-pst/4pm,primary
+11 am cst to est,US,2800,1,/cst-to-est/11am,secondary
