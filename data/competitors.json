@@ -1,0 +1,22 @@
+{
+  "measured": "2026-11-10",
+  "source": "Ahrefs Batch Analysis, subdomains mode",
+  "note": "Coverage beats authority in this category: compare everytimezone (DR 75, 2,225 kw, 14.6K traffic) against currenttimeutc (DR 5, 9,853 kw, 68.8K traffic).",
+  "competitors": [
+    { "domain": "timeanddate.com",     "dr": 91, "keywords": 637925, "top3": 260056, "traffic": 24423620 },
+    { "domain": "koalendar.com",       "dr": 85, "keywords": 13138,  "top3": 4157,   "traffic": 127326 },
+    { "domain": "worldtimebuddy.com",  "dr": 82, "keywords": 44082,  "top3": 23470,  "traffic": 1252852 },
+    { "domain": "dateful.com",         "dr": 80, "keywords": 12209,  "top3": 1070,   "traffic": 144664 },
+    { "domain": "freeconvert.com",     "dr": 77, "keywords": 104804, "top3": 54928,  "traffic": 9591233 },
+    { "domain": "24timezones.com",     "dr": 77, "keywords": 175370, "top3": 66573,  "traffic": 2676869 },
+    { "domain": "worldtimeserver.com", "dr": 76, "keywords": 46648,  "top3": 7960,   "traffic": 604101 },
+    { "domain": "everytimezone.com",   "dr": 75, "keywords": 2225,   "top3": 730,    "traffic": 14643,  "refDomains": 5657 },
+    { "domain": "savvytime.com",       "dr": 69, "keywords": 64876,  "top3": 30095,  "traffic": 908819 },
+    { "domain": "thetimenow.com",      "dr": 65, "keywords": 14918,  "top3": 2764,   "traffic": 133855 },
+    { "domain": "timebie.com",         "dr": 64, "keywords": 16295,  "top3": 3296,   "traffic": 53610,  "refDomains": 4538 },
+    { "domain": "mytime.io",           "dr": 56, "keywords": 1554,   "top3": 692,    "traffic": 13410,  "refDomains": 2261 },
+    { "domain": "currenttimeutc.com",  "dr": 5,  "keywords": 9853,   "top3": 1367,   "traffic": 68829,  "refDomains": 2943 },
+    { "domain": "psttoest.com",        "dr": 2,  "keywords": 289,    "top3": 35,     "traffic": 803 },
+    { "domain": "timetozone.com",      "dr": 0,  "keywords": 0,      "top3": 0,      "traffic": 0,      "refDomains": 186, "pages": 11979 }
+  ]
+}
