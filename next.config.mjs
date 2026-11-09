@@ -40,6 +40,29 @@ const config = {
         ],
       },
       {
+        /**
+         * Make the generated child sitemaps answer exactly like /sitemap.xml.
+         *
+         * Google reads /sitemap.xml (a route handler with explicit headers)
+         * but reported "Couldn't fetch" on all five /sitemap/N.xml files,
+         * which come from generateSitemaps() and so carry Next's ISR defaults.
+         * The bodies are identical in validity -- 12,209 well-formed URLs that
+         * serve 200 over gzip, brotli, identity, HTTP/1.1 and HTTP/2 -- so the
+         * only asymmetry left was delivery: no charset, must-revalidate rather
+         * than a shared-cache TTL, a Last-Modified that moved every second,
+         * and, worst, no `Vary: Accept-Encoding` on a brotli-compressed body,
+         * which lets a shared cache hand brotli to a client that never asked
+         * for it. That one is a genuine HTTP nonconformance whatever Google's
+         * fetcher does with it. These headers erase the difference.
+         */
+        source: "/sitemap/:file*",
+        headers: [
+          { key: "Content-Type", value: "application/xml; charset=utf-8" },
+          { key: "Cache-Control", value: "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400" },
+          { key: "Vary", value: "Accept-Encoding" },
+        ],
+      },
+      {
         source: "/icon.svg",
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },
