@@ -41,11 +41,11 @@ const OK_200 = [
 
 const MACHINE_200 = [
   "/sitemap.xml",
-  "/sitemap/0.xml",
-  "/sitemap/1.xml",
-  "/sitemap/2.xml",
-  "/sitemap/3.xml",
-  "/sitemap/4.xml",
+  "/sitemap-0.xml",
+  "/sitemap-1.xml",
+  "/sitemap-2.xml",
+  "/sitemap-3.xml",
+  "/sitemap-4.xml",
   "/robots.txt",
   "/llms.txt",
   "/api/search",

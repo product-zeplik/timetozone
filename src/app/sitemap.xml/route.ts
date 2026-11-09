@@ -1,5 +1,6 @@
 import { SITE } from "@/site";
 import meta from "@/data/generated/meta.json";
+import { SITEMAP_HEADERS, SITEMAP_IDS, sitemapPath } from "@/seo/sitemap-data";
 
 export const dynamic = "force-static";
 export const revalidate = 86400;
@@ -18,15 +19,8 @@ export function GET() {
   const lastmod = (meta as { builtAt: string }).builtAt.slice(0, 10);
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${[0, 1, 2, 3, 4]
-  .map((i) => `  <sitemap><loc>${SITE.url}/sitemap/${i}.xml</loc><lastmod>${lastmod}</lastmod></sitemap>`)
-  .join("\n")}
+${SITEMAP_IDS.map((i) => `  <sitemap><loc>${SITE.url}${sitemapPath(i)}</loc><lastmod>${lastmod}</lastmod></sitemap>`).join("\n")}
 </sitemapindex>
 `;
-  return new Response(body, {
-    headers: {
-      "Content-Type": "application/xml; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400",
-    },
-  });
+  return new Response(body, { headers: SITEMAP_HEADERS });
 }

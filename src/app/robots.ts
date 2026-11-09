@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { SITEMAP_IDS, sitemapPath } from "@/seo/sitemap-data";
 import { SITE } from "@/site";
 
 export const revalidate = 86400;
@@ -42,7 +43,7 @@ export default function robots(): MetadataRoute.Robots {
       },
       ...AI_AGENTS.map((userAgent) => ({ userAgent, allow: "/", disallow: DISALLOW })),
     ],
-    sitemap: [`${SITE.url}/sitemap.xml`, ...[0, 1, 2, 3, 4].map((i) => `${SITE.url}/sitemap/${i}.xml`)],
+    sitemap: [`${SITE.url}/sitemap.xml`, ...SITEMAP_IDS.map((i) => `${SITE.url}${sitemapPath(i)}`)],
     host: SITE.url,
   };
 }
