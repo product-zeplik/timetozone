@@ -23,7 +23,8 @@
     "purge": "node scripts/purge-cdn.mjs",
     "ext:build": "node extension/build.mjs",
     "typecheck": "tsc --noEmit",
-    "check:adsense": "node scripts/adsense-check.mjs"
+    "check:adsense": "node scripts/adsense-check.mjs",
+    "rank": "node scripts/rank-report.mjs"
   },
   "dependencies": {
     "d3-geo": "^3.1.1",
