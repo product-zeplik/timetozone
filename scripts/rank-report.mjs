@@ -24,6 +24,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const HIST = join(ROOT, "data", "rank-history");
 const MAP = join(ROOT, "data", "keyword-map.csv");
+const METRICS = join(HIST, "_metrics.json");
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -76,7 +77,8 @@ function load(file) {
 function snapshots() {
   if (!existsSync(HIST)) return [];
   return readdirSync(HIST)
-    .filter((f) => f.endsWith(".json"))
+    // _metrics.json holds site-wide totals keyed by date, not a day's rows.
+    .filter((f) => f.endsWith(".json") && !f.startsWith("_"))
     .sort()
     .map((f) => ({ date: f.replace(/\.json$/, ""), rows: JSON.parse(readFileSync(join(HIST, f), "utf8")) }));
 }
@@ -114,6 +116,7 @@ function report() {
   console.log(`  ranked keywords : ${cur.rows.length}${prev ? ` (${sign(cur.rows.length - prev.rows.length)})` : ""}`);
   console.log(`  top 3 / 10 / 20 : ${top3} / ${top10} / ${top20}`);
   console.log(`  of our mapped   : ${mapped.length} of ${targets.size} targeted keywords are ranking`);
+  metricsReport();
 
   if (!prev) {
     console.log("\n  current positions:");
@@ -160,8 +163,54 @@ function history(keyword) {
   console.log("");
 }
 
+
+/**
+ * Site-wide totals for the day, which move long before individual positions
+ * do. Read off the Search Console performance panel; one object per date so a
+ * re-run corrects the day rather than appending a second reading.
+ */
+function addMetrics(spec) {
+  const m = {};
+  for (const pair of spec.split(",")) {
+    const [k, v] = pair.split("=").map((x) => x.trim());
+    if (!k) continue;
+    const n = Number(String(v).replace(/[,%]/g, ""));
+    m[k] = Number.isFinite(n) ? n : v;
+  }
+  mkdirSync(HIST, { recursive: true });
+  const all = existsSync(METRICS) ? JSON.parse(readFileSync(METRICS, "utf8")) : {};
+  all[today()] = m;
+  writeFileSync(METRICS, JSON.stringify(all, null, 1));
+  console.log(`recorded metrics for ${today()}: ${JSON.stringify(m)}`);
+}
+
+function metricsReport() {
+  if (!existsSync(METRICS)) return;
+  const all = JSON.parse(readFileSync(METRICS, "utf8"));
+  const dates = Object.keys(all).sort();
+  if (!dates.length) return;
+  const keys = [...new Set(dates.flatMap((d) => Object.keys(all[d])))];
+  console.log("\n  site totals:");
+  console.log(`    ${"date".padEnd(12)}${keys.map((k) => k.padStart(13)).join("")}`);
+  for (const d of dates) {
+    console.log(`    ${d.padEnd(12)}${keys.map((k) => String(all[d][k] ?? "—").padStart(13)).join("")}`);
+  }
+  if (dates.length > 1) {
+    const a = all[dates[dates.length - 2]], b = all[dates[dates.length - 1]];
+    const delta = keys
+      .filter((k) => typeof a[k] === "number" && typeof b[k] === "number")
+      .map((k) => `${k} ${sign(Math.round((b[k] - a[k]) * 10) / 10)}`)
+      .join("  ");
+    if (delta) console.log(`    change:     ${delta}`);
+  }
+}
+
 const args = process.argv.slice(2);
-if (args[0] === "--add") {
+if (args[0] === "--metrics") {
+  if (!args[1]) { console.error('--metrics needs e.g. "clicks=15,impressions=31300,position=15.5,queries=1000"'); process.exit(1); }
+  addMetrics(args.slice(1).join(" "));
+  metricsReport();
+} else if (args[0] === "--add") {
   if (!args[1]) { console.error("--add needs a file"); process.exit(1); }
   add(args[1]);
   report();
