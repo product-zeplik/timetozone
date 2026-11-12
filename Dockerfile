@@ -52,4 +52,4 @@ COPY --from=build --chown=nextjs:nodejs /app/scripts ./scripts
 COPY --from=build --chown=nextjs:nodejs /app/vendor/icu-tz ./vendor/icu-tz
 USER nextjs
 EXPOSE 3000
-CMD ["node", "server.js"]
+CMD ["node", "scripts/serve.mjs"]

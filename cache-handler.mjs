@@ -3,9 +3,31 @@
  * Enabled only when REDIS_URL is set (see next.config.mjs). docs/12 §12.2.
  */
 import { createClient } from "redis";
+import { readFileSync } from "node:fs";
 
-const PREFIX = "ttz:isr:";
-const TAG_PREFIX = "ttz:tag:";
+/**
+ * The cache is namespaced by build, because it outlives the deploy that filled
+ * it. Entries are kept for revalidate*7 (a week), so with one fixed prefix a
+ * deploy that corrected a page went on serving the old one until something
+ * revalidated it: Cuba stayed an hour wrong, and "behind of" stayed on every
+ * pair page, through a successful deploy that had fixed both. Keying on the
+ * build id means a new deploy simply cannot read the previous build's HTML.
+ * Old keys fall out on their own TTL.
+ */
+const BUILD = (() => {
+  for (const f of [".next/BUILD_ID", "./BUILD_ID"]) {
+    try {
+      const id = readFileSync(f, "utf8").trim();
+      if (id) return id;
+    } catch {
+      /* try the next location */
+    }
+  }
+  return process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 12) || "dev";
+})();
+
+const PREFIX = `ttz:isr:${BUILD}:`;
+const TAG_PREFIX = `ttz:tag:${BUILD}:`;
 
 let client = null;
 let connecting = null;
