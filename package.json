@@ -27,7 +27,8 @@
     "rank": "node scripts/rank-report.mjs",
     "indexnow:all": "node scripts/indexnow-all.mjs",
     "tzdata:update": "node scripts/update-tzdata.mjs",
-    "audit:offsets": "node scripts/with-tzdata.mjs node scripts/offset-audit.mjs"
+    "audit:offsets": "node scripts/with-tzdata.mjs node scripts/offset-audit.mjs",
+    "verify:live": "node scripts/with-tzdata.mjs node scripts/verify-live.mjs"
   },
   "dependencies": {
     "d3-geo": "^3.1.1",
