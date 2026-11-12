@@ -99,6 +99,8 @@ for (const p of OK_200) {
   if (r.status === 200) {
     check(/<h1[^>]*>/.test(body), `h1 on ${p}`);
     check(/class="answer"/.test(body), `answer on ${p}`);
+    // `${direction} of` once rendered "13 hours behind of PKT" site-wide.
+    check(!/behind of\b/i.test(body), `no "behind of" on ${p}`);
     check(/rel="canonical"/.test(body), `canonical on ${p}`);
     const kb = Buffer.byteLength(body) / 1024;
     if (p.startsWith("/time-zone-map")) {
@@ -254,6 +256,56 @@ for (const [from, to] of EXPECT_308) {
     if (r.status !== 200) bad.push(`${t} -> ${r.status}`);
   }
   check(bad.length === 0, `all ${targets.length} mapped keyword URLs return 200`, bad.join(", ") || "all 200");
+}
+
+/* ------------------------------------------------- offsets against tzdata */
+// The engine is well tested, but what reaches a reader is static HTML that was
+// baked at some earlier moment on some earlier tz database. This asserts the
+// served page against the tzdata this process is running, which is the vendored
+// copy -- the check that caught Cuba shipping UTC-5 while it was on UTC-4.
+{
+  const { readFileSync } = await import("node:fs");
+  const vendored = readFileSync(new URL("../vendor/icu-tz/VERSION", import.meta.url), "utf8").trim();
+  check(process.versions.tz === vendored, "smoke runs on the vendored tzdata", `${process.versions.tz} vs ${vendored}`);
+
+  const offMin = (tz) => {
+    const raw = new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "longOffset" })
+      .formatToParts(Date.now())
+      .find((x) => x.type === "timeZoneName").value;
+    if (raw === "GMT") return 0;
+    const m = /GMT([+-])(\d{1,2})(?::?(\d{2}))?/.exec(raw);
+    return (m[1] === "-" ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3] ?? 0));
+  };
+  const say = (min) => `UTC${min < 0 ? "\u2212" : "+"}${Math.abs(min) / 60 % 1 ? (Math.abs(min) / 60).toFixed(1).replace(".5", ":30") : Math.abs(min) / 60}`;
+
+  // One per DST behaviour: northern DST, southern DST, permanent offset, a zone
+  // whose rules changed recently, and a half-hour offset.
+  const PLACES = [
+    ["/time/usa/san-francisco", "America/Los_Angeles"],
+    ["/time/uk/london", "Europe/London"],
+    ["/time/australia/sydney", "Australia/Sydney"],
+    ["/time/india", "Asia/Kolkata"],
+    ["/time/cuba/havana", "America/Havana"],
+    ["/time/japan/tokyo", "Asia/Tokyo"],
+  ];
+  for (const [path, tz] of PLACES) {
+    const r = await get(path);
+    if (r.status !== 200) { check(false, `offset check ${path}`, `got ${r.status}`); continue; }
+    const text = r.text.replace(/<[^>]+>/g, " ").replace(/&[a-z]+;/g, " ").replace(/\s+/g, " ");
+    const m = /\(\s*UTC([+\u2212-])(\d{1,2})(?::(\d{2}))?\s*\)\s*right now/.exec(text);
+    if (!m) { check(false, `offset stated on ${path}`, text.slice(0, 120)); continue; }
+    const claimed = (m[1] === "-" || m[1] === "\u2212" ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3] ?? 0));
+    check(claimed === offMin(tz), `${path} offset matches tzdata ${process.versions.tz}`, `page ${say(claimed)}, ${tz} is ${say(offMin(tz))}`);
+  }
+
+  // And a conversion pair end to end: the number a reader actually acts on.
+  const r = await get("/pst-to-pkt");
+  if (r.status === 200) {
+    const text = r.text.replace(/<[^>]+>/g, " ").replace(/&[a-z]+;/g, " ").replace(/\s+/g, " ");
+    const m = /is\s+(\d+)\s*hours?\s+(ahead|behind)/.exec(text.slice(text.indexOf("PKT")));
+    const truth = (offMin("Asia/Karachi") - offMin("America/Los_Angeles")) / 60;
+    check(!!m && Number(m[1]) === Math.abs(truth), "/pst-to-pkt states the real difference", m ? `page ${m[1]}h, tzdata ${truth}h` : "no sentence");
+  }
 }
 
 console.log(`\n${pass} checks passed`);

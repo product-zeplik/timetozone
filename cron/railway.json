@@ -6,7 +6,7 @@
   },
   "deploy": {
     "startCommand": "node scripts/dst-watch.mjs",
-    "cronSchedule": "5 0 * * *",
+    "cronSchedule": "*/15 * * * *",
     "restartPolicyType": "NEVER",
     "numReplicas": 1
   }

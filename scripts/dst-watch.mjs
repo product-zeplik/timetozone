@@ -1,65 +1,90 @@
 #!/usr/bin/env node
 /**
- * Daily cron (00:05 UTC). If any representative zone changes its offset within
- * the next 48 hours or changed in the last 24, revalidate every page and purge
- * the Cloudflare cache. docs/12 §12.6.
+ * Runs every 15 minutes. If any zone we can serve changed its UTC offset in the
+ * last few minutes, revalidate every page and purge the Cloudflare cache.
+ *
+ * Why so often. Offsets are baked into statically generated HTML, so between a
+ * DST transition and the next purge the whole site states the old offset: San
+ * Francisco reads UTC-7 when it is already UTC-8, and "13 hours ahead of
+ * Karachi" renders as 12. On a daily schedule that window was up to ~24 hours,
+ * and it lands exactly when people check -- the hour the clocks move. A tiny
+ * container a few times an hour is the cheapest part of this system.
+ *
+ * It also watches two things that used to pass silently:
+ *  - the UTC year rolling over, because the DST tables are built per calendar
+ *    year and go stale the instant it changes;
+ *  - our tzdata falling behind IANA, which is where DST truth actually lives.
+ *    A stale tzdb is wrong time that no test of ours can catch. docs/12 §12.6.
  */
 const SITE_URL = (process.env.SITE_URL || "https://timetozone.com").replace(/\/+$/, "");
 const SECRET = process.env.REVALIDATE_SECRET || "";
 const CF_ZONE_ID = process.env.CF_ZONE_ID || "";
 const CF_API_TOKEN = process.env.CF_API_TOKEN || "";
 const FORCE = process.argv.includes("--force");
+/** Slightly longer than the cron interval, so a transition is never stepped over. */
+const LOOKBACK_MIN = Number(process.env.DST_LOOKBACK_MIN || 20);
 
-const ZONES = [
-  "America/New_York",
-  "America/Chicago",
-  "America/Denver",
-  "America/Los_Angeles",
-  "America/Anchorage",
-  "America/Halifax",
-  "America/St_Johns",
-  "Europe/London",
-  "Europe/Berlin",
-  "Europe/Athens",
-  "Europe/Lisbon",
-  "Australia/Sydney",
-  "Australia/Adelaide",
-  "Pacific/Auckland",
-  "America/Santiago",
-  "America/Mexico_City",
-  "Asia/Tehran",
-  "Asia/Jerusalem",
-  "Africa/Cairo",
-  "America/Havana",
-  "America/Asuncion",
-  "Africa/Casablanca",
-];
+/**
+ * Every zone this runtime knows, not a curated list: we publish pages for 307
+ * of them and a hand-maintained list silently stops covering whatever was added
+ * last. Falls back to the representative set on a runtime without the API.
+ */
+const ZONES =
+  typeof Intl.supportedValuesOf === "function"
+    ? Intl.supportedValuesOf("timeZone")
+    : ["America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles", "Europe/London", "Europe/Berlin", "Australia/Sydney", "Pacific/Auckland", "America/Santiago", "Asia/Tehran", "Asia/Jerusalem", "America/Havana"];
 
-const offset = (tz, ms) => {
-  const raw = new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "longOffset" })
+const offset = (tz, ms) =>
+  new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "longOffset" })
     .formatToParts(ms)
     .find((p) => p.type === "timeZoneName").value;
-  return raw;
-};
 
 const now = Date.now();
-const HOUR = 3_600_000;
-const changed = [];
+const MIN = 60_000;
+const back = now - LOOKBACK_MIN * MIN;
+
+const moved = [];
 for (const tz of ZONES) {
-  const before = offset(tz, now - 24 * HOUR);
-  const current = offset(tz, now);
-  const ahead = offset(tz, now + 48 * HOUR);
-  if (before !== current || current !== ahead) {
-    changed.push(`${tz}: ${before} -> ${current} -> ${ahead}`);
+  try {
+    const before = offset(tz, back);
+    const current = offset(tz, now);
+    if (before !== current) moved.push(`${tz}: ${before} -> ${current}`);
+  } catch {
+    /* a zone this ICU cannot format is not one we can serve */
   }
 }
+const yearRolled = new Date(back).getUTCFullYear() !== new Date(now).getUTCFullYear();
 
-console.log(`dst-watch ${new Date(now).toISOString()} — tzdata ${process.versions.tz}`);
-if (!changed.length && !FORCE) {
-  console.log("no transition within the window; nothing to do");
+console.log(`dst-watch ${new Date(now).toISOString()} — tzdata ${process.versions.tz}, ${ZONES.length} zones, ${LOOKBACK_MIN}m lookback`);
+
+/* --------------------------------------------------- tzdata freshness alarm */
+// Not fatal, and deliberately not tied to the exit code: a purge failure and a
+// stale tzdb are different problems and must stay separately legible.
+try {
+  const res = await fetch("https://data.iana.org/time-zones/tzdb/version", { signal: AbortSignal.timeout(10_000) });
+  const latest = (await res.text()).trim();
+  let serving = process.versions.tz;
+  try {
+    const h = await fetch(`${SITE_URL}/api/health`, { signal: AbortSignal.timeout(10_000) }).then((r) => r.json());
+    serving = h.tzdata || serving;
+  } catch {
+    /* fall back to this container's own tzdata */
+  }
+  if (latest && serving && latest !== serving) {
+    console.warn(`WARNING: serving tzdata ${serving}, IANA current is ${latest} — rebuild on a newer node image to pick up rule changes`);
+  } else {
+    console.log(`tzdata ${serving} matches IANA current`);
+  }
+} catch (e) {
+  console.log(`tzdata freshness check skipped: ${e.message}`);
+}
+
+if (!moved.length && !yearRolled && !FORCE) {
+  console.log("no offset moved in the window; nothing to do");
   process.exit(0);
 }
-for (const line of changed) console.log(`  transition: ${line}`);
+for (const line of moved) console.log(`  transition: ${line}`);
+if (yearRolled) console.log("  UTC year rolled over — per-year DST tables must be rebuilt");
 
 let failed = false;
 

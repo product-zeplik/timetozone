@@ -29,20 +29,27 @@ ENV SITE_URL=$SITE_URL \
     NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build && npm test && npm run seo:lint
+# Static generation bakes UTC offsets into the HTML, so the build must read the
+# same tzdata the server will. vendor/icu-tz overrides the copy inside Node's
+# bundled ICU, which otherwise only moves when Node cuts a release.
+ENV ICU_TIMEZONE_FILES_DIR=/app/vendor/icu-tz
+RUN node -e "if(process.versions.tz!==require('fs').readFileSync('vendor/icu-tz/VERSION','utf8').trim())throw new Error('tzdata override not loaded: '+process.versions.tz)" \
+ && npm run build && npm test && npm run seo:lint
 
 FROM node:22-alpine AS run
 WORKDIR /app
 ENV NODE_ENV=production \
     HOSTNAME=0.0.0.0 \
     PORT=3000 \
-    NEXT_TELEMETRY_DISABLED=1
+    NEXT_TELEMETRY_DISABLED=1 \
+    ICU_TIMEZONE_FILES_DIR=/app/vendor/icu-tz
 RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=build --chown=nextjs:nodejs /app/public ./public
 COPY --from=build --chown=nextjs:nodejs /app/cache-handler.mjs ./cache-handler.mjs
 COPY --from=build --chown=nextjs:nodejs /app/scripts ./scripts
+COPY --from=build --chown=nextjs:nodejs /app/vendor/icu-tz ./vendor/icu-tz
 USER nextjs
 EXPOSE 3000
 CMD ["node", "server.js"]
