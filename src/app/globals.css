@@ -1029,6 +1029,11 @@ select:focus {
     min-height: 250px;
   }
 }
+/* The ad unit itself holds the reservation too (manual 15.2-1), so the slot keeps
+   its height when it is measured on its own, at every viewport. */
+.ad > ins.adsbygoogle {
+  min-height: inherit;
+}
 
 /* --------------------------------------------------------------------- misc */
 
