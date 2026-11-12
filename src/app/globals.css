@@ -1171,11 +1171,12 @@ select:focus {
   width: 100%;
 }
 .search-list {
-  position: absolute;
-  z-index: 30;
-  left: 0;
-  right: 0;
-  top: calc(100% + 4px);
+  /* Positioned from the input's viewport rect in ZoneSearch: the converter card
+     is `overflow: hidden` for its rounded corners, which clipped an absolutely
+     positioned list down to a few pixels. `fixed` is not clipped by an
+     ancestor's overflow, so the results stay visible wherever the input sits. */
+  position: fixed;
+  z-index: 60;
   background: var(--card);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius);

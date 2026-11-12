@@ -72,7 +72,25 @@ export default function ZoneSearch({
   const [active, setActive] = useState(0);
   const [ready, setReady] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const listId = useId();
+
+  /**
+   * The listbox is positioned `fixed` against the input's viewport rect rather
+   * than absolutely inside `.search`. The converter card is `overflow: hidden`
+   * (it clips its rows to the rounded corners), and the search sits on the card's
+   * last row, so an absolutely positioned list was clipped to a few pixels and
+   * looked like nothing had opened. `fixed` escapes the clip without the card
+   * losing its corners. It also lets the list flip above the input when there is
+   * no room below.
+   */
+  const [pos, setPos] = useState<{
+    left: number;
+    width: number;
+    top?: number;
+    bottom?: number;
+    maxHeight: number;
+  } | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -95,6 +113,38 @@ export default function ZoneSearch({
     return scored.slice(0, 8).map((x) => x.r);
   })();
 
+  const show = open && results.length > 0;
+
+  useEffect(() => {
+    if (!show) {
+      setPos(null);
+      return;
+    }
+    const measure = () => {
+      const el = inputRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const gap = 4;
+      const edge = 8;
+      const below = window.innerHeight - r.bottom - gap - edge;
+      const above = r.top - gap - edge;
+      const flip = below < 160 && above > below;
+      setPos({
+        left: r.left,
+        width: r.width,
+        ...(flip ? { bottom: window.innerHeight - r.top + gap } : { top: r.bottom + gap }),
+        maxHeight: Math.max(120, Math.min(320, flip ? above : below)),
+      });
+    };
+    measure();
+    window.addEventListener("scroll", measure, true);
+    window.addEventListener("resize", measure);
+    return () => {
+      window.removeEventListener("scroll", measure, true);
+      window.removeEventListener("resize", measure);
+    };
+  }, [show, results.length]);
+
   const pick = (row: Row) => {
     onPick(rowToSide(row));
     setQ("");
@@ -106,6 +156,7 @@ export default function ZoneSearch({
     <div className="search field" ref={boxRef}>
       <label htmlFor={`${listId}-in`}>{label}</label>
       <input
+        ref={inputRef}
         id={`${listId}-in`}
         type="text"
         role="combobox"
@@ -145,8 +196,14 @@ export default function ZoneSearch({
           }
         }}
       />
-      {open && results.length > 0 ? (
-        <ul className="search-list" role="listbox" id={listId} aria-label="Search results">
+      {show && pos ? (
+        <ul
+          className="search-list"
+          role="listbox"
+          id={listId}
+          aria-label="Search results"
+          style={{ left: pos.left, width: pos.width, top: pos.top, bottom: pos.bottom, maxHeight: pos.maxHeight }}
+        >
           {results.map((r, i) => (
             <li
               key={r[0]}
