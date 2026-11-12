@@ -30,8 +30,7 @@ import {
   offsetMinutes,
   seasonalOffsets,
   transitionsInYear,
-  wallTime,
-} from "@/engine/tz";
+  wallTime, transitionWall } from "@/engine/tz";
 import { diffMinutes, dstInfo } from "@/engine/pair";
 import { dstCountries, isIndexedPair, multiZoneEntities, pairsWith } from "@/seo/gate";
 import { clip, firstThatFits, title as brandTitle } from "@/seo/meta";
@@ -370,7 +369,7 @@ export interface DstChange {
 
 export function dstChangesFor(tz: string, year: number): DstChange[] {
   return transitionsInYear(tz, year).map((t) => {
-    const before = wallTime(tz, t.at - 60_000);
+    const before = transitionWall(t);
     const fromAbbr = abbrFor(tz, t.at - 60_000);
     const toAbbr = abbrFor(tz, t.at + 60_000);
     const localHour = fmtClock(before.hour, before.minute, false);
@@ -959,7 +958,7 @@ export function buildZone(zone: Zone, now: number = Date.now()): ZoneContent {
     dst === null || !nt
       ? `${zone.name} does not change for daylight saving time. It stays on ${offsetText} every day of the year.`
       : (() => {
-          const before = wallTime(zone.iana, nt.at - 60_000);
+          const before = transitionWall(nt);
           return `The next change is on ${fmtDate(before, true)} at ${fmtClock(
             before.hour,
             before.minute,

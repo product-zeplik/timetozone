@@ -91,6 +91,21 @@ export function wallTime(tz: string, ms: number = Date.now()): Wall {
   };
 }
 
+/**
+ * The clock reading at the moment a transition fires, in the offset that was
+ * in force just before it: the 2:00 that springs to 3:00, or the midnight
+ * that springs to 1:00.
+ *
+ * The obvious `wallTime(tz, t.at - 60_000)` is wrong, and was wrong here for
+ * a long time. It answers 01:59 for a 2 AM change, so every DST page read
+ * "clocks go forward 1 hour at 01:59 local time"; and for the midnight
+ * changes used in Egypt and Lebanon it lands on 23:59 of the day before, so
+ * those pages named the wrong date entirely.
+ */
+export function transitionWall(t: Transition): Wall {
+  return wallFromFixed(t.from, t.at);
+}
+
 /** Wall-clock fields for a plain fixed offset (minutes east of UTC). */
 export function wallFromFixed(offset: number, ms: number = Date.now()): Wall {
   const d = new Date(ms + offset * 60_000);
@@ -405,7 +420,11 @@ export function localZone(): string {
 
 /** Ordinal weekday-in-month description, e.g. "second Sunday in March". */
 export function describeRule(ms: number, tz: string): string {
-  const w = wallTime(tz, ms);
+  return describeRuleOn(wallTime(tz, ms));
+}
+
+/** The same, for a wall date already in hand (see `transitionWall`). */
+export function describeRuleOn(w: Wall): string {
   const nth = Math.floor((w.day - 1) / 7) + 1;
   const names = ["first", "second", "third", "fourth", "fifth"];
   const dow = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][

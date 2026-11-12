@@ -4,7 +4,7 @@
  */
 import { COUNTRIES, COUNTRY_BY_SLUG, PLACES, type Country } from "@/engine/entities";
 import { abbrFor } from "@/engine/side";
-import { describeRule, fmtClock, fmtDate, fmtOffset, seasonalOffsets, transitionsInYear, wallTime } from "@/engine/tz";
+import { describeRuleOn, fmtClock, fmtDate, fmtOffset, seasonalOffsets, transitionWall, transitionsInYear, wallTime } from "@/engine/tz";
 import { clip, firstThatFits, title as brandTitle } from "@/seo/meta";
 import { dstCountries } from "@/seo/gate";
 import type { FaqItem } from "@/components/Blocks";
@@ -23,7 +23,7 @@ export interface Change {
 
 export function changesFor(tz: string, year: number): Change[] {
   return transitionsInYear(tz, year).map((t) => {
-    const before = wallTime(tz, t.at - 60_000);
+    const before = transitionWall(t);
     return {
       at: t.at,
       dateText: fmtDate(before, true),
@@ -33,7 +33,7 @@ export function changesFor(tz: string, year: number): Change[] {
       toAbbr: abbrFor(tz, t.at + 60_000),
       fromOffset: t.from,
       toOffset: t.to,
-      rule: describeRule(t.at - 60_000, tz),
+      rule: describeRuleOn(before),
     };
   });
 }

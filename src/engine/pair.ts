@@ -11,6 +11,7 @@ import {
   offsetMinutes,
   wallFromFixed,
   wallTime,
+  transitionWall,
   zonedToUtc,
   transitionsInYear,
   type Wall,
@@ -230,7 +231,7 @@ export function dstInfo(side: Side, now: number = Date.now()): DstInfo {
   if (side.fixed !== undefined && side.fixed !== null) return { observes: false };
   const t = nextTransition(side.tz, now);
   if (!t || t.at - now > 400 * 86_400_000) return { observes: false };
-  const before = wallTime(side.tz, t.at - 60_000);
+  const before = transitionWall(t);
   return {
     observes: true,
     next: {

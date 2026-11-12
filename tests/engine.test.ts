@@ -12,6 +12,8 @@ import {
   transitionsInYear,
   wallTime,
   zonedToUtc,
+  transitionWall,
+  fmtDate,
 } from "@/engine/tz";
 import { abbrFor, applySameRegionRule, zoneSide } from "@/engine/side";
 import { convertAt, diffMinutes, diffPeriods, table24, workOverlap, aheadBehind, directionPhrase, wallOf } from "@/engine/pair";
@@ -388,4 +390,27 @@ describe("zonedToUtc — ambiguity and gaps across many zones", () => {
       }
     }
   });
+});
+
+describe("tz.ts — the moment the clocks change", () => {
+  // `wallTime(tz, at - 60_000)` looks like the time just before a transition
+  // and is not: it answers 01:59 for a 2 AM change, and for the midnight
+  // changes Egypt and Lebanon use it lands on 23:59 of the previous day, so
+  // the page named the wrong date. These are the clock readings people see.
+  const cases: [string, string, string][] = [
+    ["America/New_York", "14 March 2027", "02:00"],
+    ["Europe/London", "28 March 2027", "01:00"],
+    ["Africa/Cairo", "30 April 2027", "00:00"],
+    ["Asia/Beirut", "28 March 2027", "00:00"],
+    ["Australia/Sydney", "4 April 2027", "03:00"],
+  ];
+  for (const [tz, date, hour] of cases) {
+    it(`${tz} changes at ${hour} on ${date}`, () => {
+      const t = nextTransition(tz, Date.UTC(2027, 0, 1));
+      expect(t).not.toBeNull();
+      const w = transitionWall(t!);
+      expect(fmtDate(w, true)).toBe(date);
+      expect(fmtClock(w.hour, w.minute, false)).toBe(hour);
+    });
+  }
 });
