@@ -4,6 +4,8 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
+# @zeplik/* install from tarballs (file: specs), so they must be in place before npm ci.
+COPY vendor/zeplik ./vendor/zeplik
 RUN npm ci
 
 FROM node:22-alpine AS build
