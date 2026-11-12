@@ -14,7 +14,7 @@ import {
   zonedToUtc,
 } from "@/engine/tz";
 import { abbrFor, applySameRegionRule, zoneSide } from "@/engine/side";
-import { convertAt, diffMinutes, diffPeriods, table24, workOverlap, aheadBehind, wallOf } from "@/engine/pair";
+import { convertAt, diffMinutes, diffPeriods, table24, workOverlap, aheadBehind, directionPhrase, wallOf } from "@/engine/pair";
 import { parsePair, pairFromKeys, sideFor } from "@/engine/entities";
 import { ZONES, ZONE_BY_SLUG } from "@/data/zones";
 
@@ -257,6 +257,21 @@ describe("pair.ts — conversions", () => {
   it("aheadBehind text", () => {
     const p = pair("pst-to-est");
     expect(aheadBehind(p.from, p.to, JAN).text).toBe("EST is 3 hours ahead of PST");
+  });
+  it("takes no \"of\" after \"behind\"", () => {
+    // `${direction} of` shipped "13 hours behind of PKT" on every pair page.
+    expect(directionPhrase(-180)).toBe("behind");
+    expect(directionPhrase(180)).toBe("ahead of");
+    expect(directionPhrase(0)).toBe("the same as");
+    const p = pair("est-to-pst");
+    const text = aheadBehind(p.from, p.to, JAN).text;
+    expect(text).toBe("PST is 3 hours behind EST");
+    expect(text).not.toContain("behind of");
+  });
+  it("every pair page sentence is grammatical in both directions", () => {
+    for (const slug of ["pst-to-est", "est-to-pst", "ist-to-est", "est-to-ist", "pst-to-pkt", "pkt-to-pst"]) {
+      expect(aheadBehind(pair(slug).from, pair(slug).to, JAN).text).not.toContain("behind of");
+    }
   });
   it("table24 is 24 rows for the from-side day", () => {
     const p = pair("pst-to-est");

@@ -7,6 +7,7 @@ import type { Side } from "@/engine/side";
 import { sideAbbr } from "@/engine/side";
 import {
   aheadBehind,
+  directionPhrase,
   bestCompromise,
   convertAt,
   diffMinutes,
@@ -78,9 +79,7 @@ export interface PairContent {
 
 const WORK_NOTE = "Today's date. Highlighted rows are 9 AM–5 PM in both places.";
 
-function directionWord(min: number): string {
-  return min > 0 ? "ahead of" : min < 0 ? "behind" : "the same as";
-}
+const directionWord = directionPhrase;
 
 function shiftWord(shift: number): string {
   return shift === 1 ? " (next day)" : shift === -1 ? " (previous day)" : "";

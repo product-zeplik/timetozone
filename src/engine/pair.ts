@@ -40,6 +40,15 @@ export interface AheadBehind {
   duration: string;
 }
 
+/**
+ * The direction with the preposition English actually takes: "ahead **of** X"
+ * but plain "behind X". Building the phrase as `${direction} of` reads
+ * "13 hours behind of PKT", so every sentence goes through this.
+ */
+export function directionPhrase(minutes: number): string {
+  return minutes > 0 ? "ahead of" : minutes < 0 ? "behind" : "the same as";
+}
+
 export function aheadBehind(from: Side, to: Side, ms: number = Date.now()): AheadBehind {
   const d = diffMinutes(from, to, ms);
   const a = sideAbbr(from, ms);
@@ -49,7 +58,7 @@ export function aheadBehind(from: Side, to: Side, ms: number = Date.now()): Ahea
   }
   const dir = d > 0 ? "ahead" : "behind";
   const duration = fmtDuration(d);
-  return { minutes: d, direction: dir, duration, text: `${b} is ${duration} ${dir} of ${a}` };
+  return { minutes: d, direction: dir, duration, text: `${b} is ${duration} ${directionPhrase(d)} ${a}` };
 }
 
 export interface Converted {

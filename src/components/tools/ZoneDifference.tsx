@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ZoneSearch from "@/components/ZoneSearch";
-import { aheadBehind } from "@/engine/pair";
+import { aheadBehind, directionPhrase } from "@/engine/pair";
 import { sideAbbr, type Side } from "@/engine/side";
 import { fmtClock, offsetMinutes, fmtOffset, wallTime } from "@/engine/tz";
 import { track } from "@/components/track";
@@ -98,7 +98,7 @@ export function ZoneDifference() {
             <strong>
               {ab.duration}
             </strong>
-            . {sideAbbr(b, now as number)} is {ab.duration} {ab.direction} of {sideAbbr(a, now as number)}.
+            . {sideAbbr(b, now as number)} is {ab.duration} {directionPhrase(ab.minutes)} {sideAbbr(a, now as number)}.
           </>
         )}
       </p>

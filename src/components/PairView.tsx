@@ -7,7 +7,7 @@ import { fmtClock, fmtDuration } from "@/engine/tz";
 import { graph, ld } from "@/seo/meta";
 import { zoneNote } from "@/content/labels";
 import type { HourContent, PairContent } from "@/content/pair";
-import type { Row } from "@/engine/pair";
+import { directionPhrase, type Row } from "@/engine/pair";
 
 const shiftText = (shift: number) => (shift === 1 ? "next day" : shift === -1 ? "previous day" : "");
 const shiftMark = (shift: number) => (shift === 1 ? "+1" : shift === -1 ? "−1" : "");
@@ -108,7 +108,7 @@ export function PairView({ c, today }: { c: PairContent; today: string }) {
                 </strong>{" "}
                 {p.direction === "same"
                   ? `${c.B} and ${c.A} are on the same time.`
-                  : `${c.B} is ${fmtDuration(p.minutes)} ${p.direction} of ${c.A}.`}
+                  : `${c.B} is ${fmtDuration(p.minutes)} ${directionPhrase(p.minutes)} ${c.A}.`}
               </li>
             ))}
           </ul>
