@@ -243,7 +243,7 @@ export function HourView({ c }: { c: HourContent }) {
       <JsonLd
         data={graph([
           ld.breadcrumbs(c.crumbs),
-          ld.webApplication(`${c.display} ${c.A} to ${c.B}`, c.description, c.path),
+          ld.webApplication(c.h1, c.description, c.path),
           ld.faqPage(c.faqs.map((f) => ({ q: f.q, a: f.a }))),
           ld.webPage(c.title, c.path, c.description, contentDate("hour")),
         ])}
