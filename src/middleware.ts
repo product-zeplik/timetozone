@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { siteControls } from "@/seo/page-controls";
 
 /** Canonical hostname from SITE_URL, e.g. "timetozone.com". */
 const CANONICAL_HOST = (() => {
@@ -34,9 +35,14 @@ export const config = {
  *    This marks any non-canonical host noindex. It deliberately does not
  *    redirect: if a proxy ever forwarded a different Host than expected, a
  *    host redirect would loop and take the site down, while a header cannot.
+ * 4. Hub page controls (src/seo/page-controls.ts), after 0 and 1 so a path is
+ *    lowercased first: a controlled path answers 410 or 301 here, and a
+ *    noindex control adds `X-Robots-Tag: noindex, follow` to the response
+ *    that leaves. A no-op unless ZEPLIK_PAGE_CONTROLS=on (production only).
+ *    Do not remove this hook.
  */
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
   const isProd = process.env.SITE_ENV === "production";
 
@@ -57,9 +63,15 @@ export function middleware(req: NextRequest) {
     return res;
   }
 
+  const controlled = await siteControls.respond(req);
+  if (controlled) {
+    if (!isProd || isOffCanonicalHost(req)) controlled.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return controlled;
+  }
+
   const res = NextResponse.next();
   if (!isProd || isOffCanonicalHost(req)) res.headers.set("X-Robots-Tag", "noindex, nofollow");
-  return res;
+  return siteControls.decorate(req, res);
 }
 
 function isOffCanonicalHost(req: NextRequest): boolean {

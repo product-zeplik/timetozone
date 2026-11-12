@@ -5,6 +5,7 @@ import { dstCountries, hourPairs, indexedPairs, multiZoneEntities } from "@/seo/
 import { hourLabel } from "@/engine/tz";
 import { TOOL_LINKS } from "@/content/nav";
 import { contentDate, type ContentFamily } from "@/seo/content-dates";
+import { siteControls } from "@/seo/page-controls";
 
 /** The five sitemap files, each well under the 50,000-URL limit. docs/08 §8.3. */
 export const SITEMAP_IDS = [0, 1, 2, 3, 4] as const;
@@ -122,6 +123,13 @@ export const SITEMAP_HEADERS = {
   Vary: "Accept-Encoding",
 } as const;
 
-export function sitemapResponse(id: number): Response {
-  return new Response(sitemapXml(sitemapEntries(id)), { headers: SITEMAP_HEADERS });
+/**
+ * The final step before a sitemap file is written: hub page controls
+ * (src/seo/page-controls.ts) drop every 410, 301 source, noindex and exclude
+ * URL. Returns the rows unchanged unless ZEPLIK_PAGE_CONTROLS=on, so the
+ * Docker build and CI always write the code's own sitemap. Do not remove.
+ */
+export async function sitemapResponse(id: number): Promise<Response> {
+  const rows = await siteControls.filterRows(sitemapEntries(id));
+  return new Response(sitemapXml(rows), { headers: SITEMAP_HEADERS });
 }

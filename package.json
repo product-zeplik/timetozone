@@ -33,8 +33,8 @@
     "verify:live": "node scripts/with-tzdata.mjs node scripts/verify-live.mjs"
   },
   "dependencies": {
-    "@zeplik/core": "file:vendor/zeplik/zeplik-core-0.1.1.tgz",
-    "@zeplik/seo-kit": "file:vendor/zeplik/zeplik-seo-kit-0.1.1.tgz",
+    "@zeplik/core": "file:vendor/zeplik/zeplik-core-0.1.3.tgz",
+    "@zeplik/seo-kit": "file:vendor/zeplik/zeplik-seo-kit-0.1.4.tgz",
     "d3-geo": "^3.1.1",
     "i18n-iso-countries": "^7.14.0",
     "next": "15.5.29",
@@ -53,7 +53,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/topojson-client": "^3.1.5",
-    "@zeplik/seo-check": "file:vendor/zeplik/zeplik-seo-check-0.1.2.tgz",
+    "@zeplik/seo-check": "file:vendor/zeplik/zeplik-seo-check-0.1.4.tgz",
     "city-timezones": "^1.2.1",
     "countries-and-timezones": "^3.6.0",
     "esbuild": "^0.24.0",

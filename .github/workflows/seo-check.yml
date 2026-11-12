@@ -34,6 +34,9 @@ jobs:
       SITE_URL: https://timetozone.com
       SITE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
+      # Hub page controls stay off in CI: CI judges the code alone, and a hub
+      # decision can never turn a push red (src/seo/page-controls.ts).
+      ZEPLIK_PAGE_CONTROLS: "off"
     steps:
       - uses: actions/checkout@v4
         with:
