@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { UnitConverter } from "@/components/tools/SmallTools";
 import { ToolPage } from "@/components/ToolPage";
-import { fmtDate, isoDate, wallTime } from "@/engine/tz";
 import { pageMeta } from "@/seo/meta";
 
 export const revalidate = 86400;
@@ -19,7 +18,6 @@ const FAQS = [
 ];
 
 export default function UnitPage() {
-  const now = Date.now();
   return (
     <ToolPage
       h1="Time Unit Converter"
@@ -27,8 +25,7 @@ export default function UnitPage() {
       description={DESCRIPTION}
       path="/time-unit-converter"
       crumbName="Time units"
-      today={isoDate(wallTime("UTC", now))}
-      updatedDate={fmtDate(wallTime("UTC", now), true)}
+      family="time-unit-converter"
       adSlot="unit-1"
       answer={<>Enter a value in any unit and every other unit updates at once: milliseconds, seconds, minutes, hours, days, weeks, months (30.44 days) and years (365.24 days).</>}
       faqHeading="Time unit FAQ"

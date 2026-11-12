@@ -5,7 +5,6 @@ import { ToolPage } from "@/components/ToolPage";
 import { LinkList } from "@/components/Blocks";
 import { ExtensionCta } from "@/components/ExtensionCta";
 import { sideFor } from "@/engine/entities";
-import { fmtDate, isoDate, wallTime } from "@/engine/tz";
 import { pageMeta } from "@/seo/meta";
 import { cityClockLinks, hourLinks, topPairLinks } from "@/content/nav";
 
@@ -37,8 +36,6 @@ const FAQS = [
 ];
 
 export default function HomePage() {
-  const now = Date.now();
-  const today = isoDate(wallTime("UTC", now));
   const sides = [sideFor("est")!, sideFor("pst")!, sideFor("uk-time")!, sideFor("india-time")!];
 
   const pairs = topPairLinks(48);
@@ -52,8 +49,7 @@ export default function HomePage() {
       description={DESCRIPTION}
       path="/"
       crumbName="Home"
-      today={today}
-      updatedDate={fmtDate(wallTime("UTC", now), true)}
+      family="home"
       adSlot="home-1"
       answer={
         <>

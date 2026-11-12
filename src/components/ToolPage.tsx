@@ -2,6 +2,7 @@ import { Ad } from "./Ad";
 import { Answer, Crumbs, Faq, JsonLd, Updated } from "./Blocks";
 import { graph, ld } from "@/seo/meta";
 import type { FaqItem } from "./Blocks";
+import { contentDate, contentDateLabel, type ContentFamily } from "@/seo/content-dates";
 
 export interface ToolPageProps {
   h1: string;
@@ -14,8 +15,8 @@ export interface ToolPageProps {
   extra?: React.ReactNode;
   faqs: FaqItem[];
   faqHeading: string;
-  today: string;
-  updatedDate: string;
+  /** Which entry of seo/content-dates.json dates this page (never the clock). */
+  family: ContentFamily;
   adSlot?: string;
 }
 
@@ -30,8 +31,7 @@ export function ToolPage({
   extra,
   faqs,
   faqHeading,
-  today,
-  updatedDate,
+  family,
   adSlot = "tool-1",
 }: ToolPageProps) {
   const crumbs =
@@ -50,13 +50,13 @@ export function ToolPage({
       <Ad slot={adSlot} lazy={false} />
       {extra}
       <Faq items={faqs} heading={faqHeading} id="faq" />
-      <Updated date={updatedDate} />
+      <Updated date={contentDateLabel(family)} />
       <JsonLd
         data={graph([
           ...(path === "/" ? [] : [ld.breadcrumbs(crumbs)]),
           ld.webApplication(h1, description, path),
           ld.faqPage(faqs),
-          ld.webPage(title, path, description, today),
+          ld.webPage(title, path, description, contentDate(family)),
         ])}
       />
     </>

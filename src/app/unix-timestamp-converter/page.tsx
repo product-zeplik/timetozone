@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { UnixConverter } from "@/components/tools/SmallTools";
 import { ToolPage } from "@/components/ToolPage";
-import { fmtDate, isoDate, wallTime } from "@/engine/tz";
 import { pageMeta } from "@/seo/meta";
 
 export const revalidate = 86400;
@@ -19,7 +18,6 @@ const FAQS = [
 ];
 
 export default function UnixPage() {
-  const now = Date.now();
   return (
     <ToolPage
       h1="Unix Timestamp Converter (Epoch Converter)"
@@ -27,8 +25,7 @@ export default function UnixPage() {
       description={DESCRIPTION}
       path="/unix-timestamp-converter"
       crumbName="Unix timestamp"
-      today={isoDate(wallTime("UTC", now))}
-      updatedDate={fmtDate(wallTime("UTC", now), true)}
+      family="unix-timestamp-converter"
       adSlot="unix-1"
       answer={<>A Unix timestamp counts the seconds since 1 January 1970 UTC. Paste one to get the UTC and local date, or pick a date to get seconds and milliseconds.</>}
       faqHeading="Unix timestamp FAQ"

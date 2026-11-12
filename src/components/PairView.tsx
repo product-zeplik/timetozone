@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Converter from "./Converter";
 import { Ad } from "./Ad";
+import { contentDate, contentDateLabel } from "@/seo/content-dates";
 import { Answer, Crumbs, Faq, JsonLd, Legend, LinkList, Related, Updated } from "./Blocks";
 import { ExtensionCta } from "./ExtensionCta";
 import { fmtClock, fmtDuration } from "@/engine/tz";
@@ -61,7 +62,7 @@ function HoursGrid({ rows, A, B, date }: { rows: Row[]; A: string; B: string; da
   );
 }
 
-export function PairView({ c, today }: { c: PairContent; today: string }) {
+export function PairView({ c }: { c: PairContent }) {
   const noteFrom = zoneNote(c.from);
   const noteTo = zoneNote(c.to);
   const notes = [noteFrom, noteTo, ...c.inForceNotes].filter(Boolean);
@@ -145,21 +146,21 @@ export function PairView({ c, today }: { c: PairContent; today: string }) {
 
       <ExtensionCta />
 
-      <Updated date={c.updatedDate} />
+      <Updated date={contentDateLabel("pair")} />
 
       <JsonLd
         data={graph([
           ld.breadcrumbs(c.crumbs),
           ld.webApplication(`${c.A} to ${c.B} converter`, c.description, c.path),
           ld.faqPage(c.faqs.map((f) => ({ q: f.q, a: f.a }))),
-          ld.webPage(c.title, c.path, c.description, today),
+          ld.webPage(c.title, c.path, c.description, contentDate("pair")),
         ])}
       />
     </>
   );
 }
 
-export function HourView({ c, today }: { c: HourContent; today: string }) {
+export function HourView({ c }: { c: HourContent }) {
   return (
     <>
       <Crumbs items={c.crumbs} />
@@ -237,14 +238,14 @@ export function HourView({ c, today }: { c: HourContent; today: string }) {
 
       <Related groups={c.related} />
 
-      <Updated date={c.updatedDate} />
+      <Updated date={contentDateLabel("hour")} />
 
       <JsonLd
         data={graph([
           ld.breadcrumbs(c.crumbs),
           ld.webApplication(`${c.display} ${c.A} to ${c.B}`, c.description, c.path),
           ld.faqPage(c.faqs.map((f) => ({ q: f.q, a: f.a }))),
-          ld.webPage(c.title, c.path, c.description, today),
+          ld.webPage(c.title, c.path, c.description, contentDate("hour")),
         ])}
       />
     </>

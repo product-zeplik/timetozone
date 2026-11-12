@@ -3,7 +3,6 @@ import WorldClock from "@/components/tools/WorldClock";
 import { ToolPage } from "@/components/ToolPage";
 import { LinkList } from "@/components/Blocks";
 import { sideFor } from "@/engine/entities";
-import { fmtDate, isoDate, wallTime } from "@/engine/tz";
 import { pageMeta } from "@/seo/meta";
 import { cityClockLinks } from "@/content/nav";
 
@@ -46,7 +45,6 @@ const FAQS = [
 ];
 
 export default function WorldClockPage() {
-  const now = Date.now();
   const sides = DEFAULT_KEYS.map((k) => sideFor(k)).filter((s): s is NonNullable<typeof s> => !!s);
   return (
     <ToolPage
@@ -55,8 +53,7 @@ export default function WorldClockPage() {
       description={DESCRIPTION}
       path="/world-clock"
       crumbName="World clock"
-      today={isoDate(wallTime("UTC", now))}
-      updatedDate={fmtDate(wallTime("UTC", now), true)}
+      family="world-clock"
       adSlot="wc-1"
       answer={<>The current local time in twelve major cities, updated every second. Add any city or time zone and your list is saved in this browser.</>}
       faqHeading="World clock FAQ"

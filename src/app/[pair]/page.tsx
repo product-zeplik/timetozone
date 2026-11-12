@@ -5,7 +5,6 @@ import { staticPairs } from "@/seo/gate";
 import { buildPair } from "@/content/pair";
 import { pageMeta } from "@/seo/meta";
 import { PairView } from "@/components/PairView";
-import { isoDate, wallTime } from "@/engine/tz";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -33,5 +32,5 @@ export default async function PairPage({ params }: Params) {
 
   const now = Date.now();
   const c = buildPair(p, now);
-  return <PairView c={c} today={isoDate(wallTime("UTC", now))} />;
+  return <PairView c={c} />;
 }

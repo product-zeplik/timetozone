@@ -4,7 +4,6 @@ import { buildPlace, placeAlias, resolvePlace } from "@/content/place";
 import { staticPlacePaths } from "@/seo/gate";
 import { pageMeta } from "@/seo/meta";
 import { PlaceView } from "@/components/PlaceView";
-import { isoDate, wallTime } from "@/engine/tz";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -31,5 +30,5 @@ export default async function TimePlacePage({ params }: Params) {
   if (!t) notFound();
   const now = Date.now();
   const c = buildPlace(t, now);
-  return <PlaceView c={c} today={isoDate(wallTime("UTC", now))} />;
+  return <PlaceView c={c} />;
 }

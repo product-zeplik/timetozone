@@ -4,7 +4,6 @@ import { buildMultiZone, resolveMultiZone } from "@/content/place";
 import { multiZoneEntities } from "@/seo/gate";
 import { pageMeta } from "@/seo/meta";
 import { MultiZoneView } from "@/components/PlaceView";
-import { isoDate, wallTime } from "@/engine/tz";
 
 export const revalidate = 86400;
 export const dynamicParams = false;
@@ -29,5 +28,5 @@ export default async function MultiZonePage({ params }: Params) {
   if (!t) notFound();
   const now = Date.now();
   const c = buildMultiZone(t, now);
-  return <MultiZoneView c={c} today={isoDate(wallTime("UTC", now))} />;
+  return <MultiZoneView c={c} />;
 }

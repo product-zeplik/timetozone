@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { MyZone } from "@/components/tools/SmallTools";
 import { ToolPage } from "@/components/ToolPage";
 import { LinkList } from "@/components/Blocks";
-import { fmtDate, isoDate, wallTime } from "@/engine/tz";
 import { pageMeta } from "@/seo/meta";
 import { ZONES } from "@/data/zones";
 
@@ -30,7 +29,6 @@ const FAQS = [
 ];
 
 export default function MyZonePage() {
-  const now = Date.now();
   return (
     <ToolPage
       h1="What Time Zone Am I In?"
@@ -38,8 +36,7 @@ export default function MyZonePage() {
       description={DESCRIPTION}
       path="/what-time-zone-am-i-in"
       crumbName="My time zone"
-      today={isoDate(wallTime("UTC", now))}
-      updatedDate={fmtDate(wallTime("UTC", now), true)}
+      family="what-time-zone-am-i-in"
       adSlot="mz-tool"
       answer={<>Your browser reports its own time zone. Below are its full name, abbreviation, UTC offset, IANA id and your next clock change — read locally, with no location access.</>}
       faqHeading="My time zone FAQ"

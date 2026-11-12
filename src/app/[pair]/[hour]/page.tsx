@@ -5,7 +5,7 @@ import { hourPairs } from "@/seo/gate";
 import { buildHour } from "@/content/pair";
 import { pageMeta } from "@/seo/meta";
 import { HourView } from "@/components/PairView";
-import { hourLabel, isoDate, parseHourLabel, wallTime } from "@/engine/tz";
+import { hourLabel, parseHourLabel } from "@/engine/tz";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -51,5 +51,5 @@ export default async function HourPage({ params }: Params) {
 
   const now = Date.now();
   const c = buildHour(p, h, now);
-  return <HourView c={c} today={isoDate(wallTime("UTC", now))} />;
+  return <HourView c={c} />;
 }

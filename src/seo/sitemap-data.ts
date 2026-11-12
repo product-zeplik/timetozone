@@ -4,7 +4,7 @@ import { COUNTRIES, PLACES, REGIONS } from "@/engine/entities";
 import { dstCountries, hourPairs, indexedPairs, multiZoneEntities } from "@/seo/gate";
 import { hourLabel } from "@/engine/tz";
 import { TOOL_LINKS } from "@/content/nav";
-import meta from "@/data/generated/meta.json";
+import { contentDate, type ContentFamily } from "@/seo/content-dates";
 
 /** The five sitemap files, each well under the 50,000-URL limit. docs/08 §8.3. */
 export const SITEMAP_IDS = [0, 1, 2, 3, 4] as const;
@@ -21,18 +21,26 @@ export const SITEMAP_IDS = [0, 1, 2, 3, 4] as const;
 export const sitemapPath = (id: number) => `/sitemap-${id}.xml`;
 
 /**
- * The date the content was last built, to the day.
+ * lastmod is the day the page's content last changed, from git history
+ * (seo/content-dates.json via src/seo/content-dates.ts), per page family.
  *
- * docs/08 §8.3 says `lastModified` = build/revalidate time, and that was a
- * `new Date()` at render. With a daily revalidate the file regenerates every
- * day, so all 7,695 pair URLs claimed to have changed seconds ago, every day,
- * on identical timestamps. Google's guidance is that lastmod must be when the
- * page last changed *meaningfully* and that a consistently inaccurate one is
- * ignored outright -- and "12,000 pages all changed this second" is a poor
- * look for a domain with no history. The build date is both stable and true:
- * these pages change when the data or the templates are rebuilt.
+ * It used to be the data build date on every URL, which re-dated all 12,000
+ * URLs on every deploy whether or not anything a reader sees had changed.
+ * Google ignores a lastmod that is consistently inaccurate (manual 8.2,
+ * GR-36), so it now moves only when a family's template, content builder,
+ * engine or data does. The same date is the page's JSON-LD dateModified and
+ * its visible "Updated" line.
  */
-export const BUILT = (meta as { builtAt: string }).builtAt.slice(0, 10);
+/** TOOL_LINKS hrefs are "/<family>", except the DST hub. */
+function toolFamily(href: string): ContentFamily {
+  const name = href === "/daylight-saving-time" ? "dst-hub" : href.slice(1);
+  return name as ContentFamily;
+}
+
+/** The newest lastmod in one sitemap file, for its <sitemap> entry in the index. */
+export function sitemapLastmod(id: number): string | undefined {
+  return sitemapEntries(id).map((e) => e.lastModified).sort().at(-1);
+}
 
 export type SitemapEntry = {
   url: string;
@@ -44,41 +52,41 @@ export type SitemapEntry = {
 export function sitemapEntries(id: number): SitemapEntry[] {
   if (!SITE.isProduction) return [];
 
-  const entry = (path: string, priority: number): SitemapEntry => ({
+  const entry = (path: string, priority: number, family: ContentFamily): SitemapEntry => ({
     url: abs(path),
-    lastModified: BUILT,
+    lastModified: contentDate(family),
     changeFrequency: "daily",
     priority,
   });
 
   switch (Number(id)) {
     case 0: {
-      const out = [entry("/", 1)];
-      for (const t of TOOL_LINKS) if (t.href !== "/") out.push(entry(t.href, 0.8));
-      out.push(entry("/time-zone-map/usa", 0.8));
-      out.push(entry("/about", 0.3), entry("/contact", 0.3), entry("/privacy", 0.3), entry("/terms", 0.3));
-      for (const z of ZONES) out.push(entry(`/zones/${z.slug}`, 0.7));
-      for (const c of dstCountries()) out.push(entry(`/daylight-saving-time/${c}`, 0.6));
-      for (const e of multiZoneEntities()) out.push(entry(`/time-zone/${e.slug}`, 0.6));
+      const out = [entry("/", 1, "home")];
+      for (const t of TOOL_LINKS) if (t.href !== "/") out.push(entry(t.href, 0.8, toolFamily(t.href)));
+      out.push(entry("/time-zone-map/usa", 0.8, "time-zone-map"));
+      out.push(entry("/about", 0.3, "about"), entry("/contact", 0.3, "contact"), entry("/privacy", 0.3, "privacy"), entry("/terms", 0.3, "terms"));
+      for (const z of ZONES) out.push(entry(`/zones/${z.slug}`, 0.7, "zone"));
+      for (const c of dstCountries()) out.push(entry(`/daylight-saving-time/${c}`, 0.6, "dst-country"));
+      for (const e of multiZoneEntities()) out.push(entry(`/time-zone/${e.slug}`, 0.6, "multi-zone"));
       return out;
     }
     case 1:
-      return [...indexedPairs()].sort().map((slug) => entry(`/${slug}`, 0.8));
+      return [...indexedPairs()].sort().map((slug) => entry(`/${slug}`, 0.8, "pair"));
     case 2: {
       const out: SitemapEntry[] = [];
       for (const pair of hourPairs()) {
-        for (let h = 0; h < 24; h++) out.push(entry(`/${pair}/${hourLabel(h)}`, 0.6));
+        for (let h = 0; h < 24; h++) out.push(entry(`/${pair}/${hourLabel(h)}`, 0.6, "hour"));
       }
       return out;
     }
     case 3: {
       const out: SitemapEntry[] = [];
-      for (const c of COUNTRIES) out.push(entry(`/time/${c.slug}`, 0.7));
-      for (const r of REGIONS) out.push(entry(`/time/${r.countrySlug}/${r.slug}`, 0.6));
+      for (const c of COUNTRIES) out.push(entry(`/time/${c.slug}`, 0.7, "place"));
+      for (const r of REGIONS) out.push(entry(`/time/${r.countrySlug}/${r.slug}`, 0.6, "place"));
       return out;
     }
     case 4:
-      return PLACES.map((p) => entry(`/time/${p.countrySlug}/${p.slug}`, 0.5));
+      return PLACES.map((p) => entry(`/time/${p.countrySlug}/${p.slug}`, 0.5, "place"));
     default:
       return [];
   }

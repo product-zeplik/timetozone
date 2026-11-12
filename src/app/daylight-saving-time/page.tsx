@@ -4,7 +4,7 @@ import { buildDstHub } from "@/content/dst";
 import { pageMeta, graph, ld } from "@/seo/meta";
 import { Answer, Crumbs, Faq, JsonLd, LinkList, Updated } from "@/components/Blocks";
 import { Ad } from "@/components/Ad";
-import { isoDate, wallTime } from "@/engine/tz";
+import { contentDate, contentDateLabel } from "@/seo/content-dates";
 
 export const revalidate = 86400;
 
@@ -16,7 +16,6 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function DstHubPage() {
   const now = Date.now();
   const c = buildDstHub(now);
-  const today = isoDate(wallTime("UTC", now));
   return (
     <>
       <Crumbs items={c.crumbs} />
@@ -69,13 +68,13 @@ export default function DstHubPage() {
 
       <Faq items={c.faqs} heading="Daylight saving time FAQ" id="faq" />
 
-      <Updated date={c.updatedDate} />
+      <Updated date={contentDateLabel("dst-hub")} />
 
       <JsonLd
         data={graph([
           ld.breadcrumbs(c.crumbs),
           ld.faqPage(c.faqs),
-          ld.webPage(c.title, "/daylight-saving-time", c.description, today),
+          ld.webPage(c.title, "/daylight-saving-time", c.description, contentDate("dst-hub")),
         ])}
       />
     </>

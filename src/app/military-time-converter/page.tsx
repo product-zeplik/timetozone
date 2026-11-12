@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { MilitaryChart, MilitaryTime } from "@/components/tools/SmallTools";
 import { ToolPage } from "@/components/ToolPage";
-import { fmtDate, isoDate, wallTime } from "@/engine/tz";
 import { pageMeta } from "@/seo/meta";
 
 export const revalidate = 86400;
@@ -20,7 +19,6 @@ const FAQS = [
 ];
 
 export default function MilitaryPage() {
-  const now = Date.now();
   return (
     <ToolPage
       h1="Military Time Converter"
@@ -28,8 +26,7 @@ export default function MilitaryPage() {
       description={DESCRIPTION}
       path="/military-time-converter"
       crumbName="Military time"
-      today={isoDate(wallTime("UTC", now))}
-      updatedDate={fmtDate(wallTime("UTC", now), true)}
+      family="military-time-converter"
       adSlot="mil-1"
       answer={<>Military time is the 24-hour clock written as four digits: 1:00 PM is 1300, 6:45 PM is 1845, midnight is 0000. Type any time below to convert it both ways.</>}
       faqHeading="Military time FAQ"

@@ -5,7 +5,8 @@ import { dstCountries } from "@/seo/gate";
 import { pageMeta, graph, ld } from "@/seo/meta";
 import { Answer, Crumbs, Faq, JsonLd, Related, Updated } from "@/components/Blocks";
 import { Ad } from "@/components/Ad";
-import { fmtOffset, isoDate, wallTime } from "@/engine/tz";
+import { fmtOffset } from "@/engine/tz";
+import { contentDate, contentDateLabel } from "@/seo/content-dates";
 
 export const revalidate = 86400;
 export const dynamicParams = false;
@@ -30,7 +31,6 @@ export default async function DstCountryPage({ params }: Params) {
   if (!found) notFound();
   const now = Date.now();
   const c = buildDstCountry(found, now);
-  const today = isoDate(wallTime("UTC", now));
 
   return (
     <>
@@ -78,10 +78,10 @@ export default async function DstCountryPage({ params }: Params) {
 
       <Faq items={c.faqs} heading={`Daylight saving time in ${c.country.short}: FAQ`} id="faq" />
 
-      <Updated date={c.updatedDate} />
+      <Updated date={contentDateLabel("dst-country")} />
 
       <JsonLd
-        data={graph([ld.breadcrumbs(c.crumbs), ld.faqPage(c.faqs), ld.webPage(c.title, c.path, c.description, today)])}
+        data={graph([ld.breadcrumbs(c.crumbs), ld.faqPage(c.faqs), ld.webPage(c.title, c.path, c.description, contentDate("dst-country"))])}
       />
     </>
   );

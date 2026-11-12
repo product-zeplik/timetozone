@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ZONES } from "@/data/zones";
 import { COUNTRIES, COUNTRY_BY_SLUG, REGION_BY_ENTITY } from "@/engine/entities";
 import { abbrFor } from "@/engine/side";
-import { fmtDate, fmtOffset, isoDate, offsetMinutes, seasonalOffsets, wallTime } from "@/engine/tz";
+import { fmtOffset, offsetMinutes, seasonalOffsets, wallTime } from "@/engine/tz";
+import { contentDate, contentDateLabel } from "@/seo/content-dates";
 import { graph, ld, pageMeta } from "@/seo/meta";
 import { multiZoneEntities } from "@/seo/gate";
 import { Crumbs, Faq, JsonLd, LinkList, Updated } from "@/components/Blocks";
@@ -122,13 +123,13 @@ export default function TimeZonesPage() {
 
       <Faq items={faqs} heading="Time zone FAQ" id="faq" />
 
-      <Updated date={fmtDate(wallTime("UTC", now), true)} />
+      <Updated date={contentDateLabel("time-zones")} />
 
       <JsonLd
         data={graph([
           ld.breadcrumbs(crumbs),
           ld.faqPage(faqs),
-          ld.webPage(TITLE, "/time-zones", DESCRIPTION, isoDate(wallTime("UTC", now))),
+          ld.webPage(TITLE, "/time-zones", DESCRIPTION, contentDate("time-zones")),
         ])}
       />
     </>

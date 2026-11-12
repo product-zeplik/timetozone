@@ -427,7 +427,6 @@ export interface PlaceContent {
   observesDst: boolean;
   faqs: FaqItem[];
   children: { heading: string; items: { href: string; label: string }[] }[];
-  updatedDate: string;
   lat?: number;
   lng?: number;
   jsonLdKind: "City" | "AdministrativeArea" | "Country";
@@ -725,7 +724,6 @@ export function buildPlace(t: PlaceTarget, now: number = Date.now()): PlaceConte
     observesDst,
     faqs,
     children,
-    updatedDate: fmtDate(wallTime(names.primary, now), true),
     lat: t.kind === "city" ? t.place.lat : undefined,
     lng: t.kind === "city" ? t.place.lng : undefined,
     jsonLdKind: t.kind === "city" ? "City" : t.kind === "region" ? "AdministrativeArea" : "Country",
@@ -768,7 +766,6 @@ export interface MultiZoneContent {
   placeHref: string;
   dstHref: string | null;
   siblings: { href: string; label: string }[];
-  updatedDate: string;
 }
 
 export function buildMultiZone(t: MultiZoneTarget, now: number = Date.now()): MultiZoneContent {
@@ -866,7 +863,6 @@ export function buildMultiZone(t: MultiZoneTarget, now: number = Date.now()): Mu
         return { href: `/time-zone/${e.slug}`, label };
       })
       .sort((a, b) => a.label.localeCompare(b.label)),
-    updatedDate: base.updatedDate,
   };
 }
 
@@ -894,7 +890,6 @@ export interface ZoneContent {
   moreConversions: { href: string; label: string }[];
   siblingZones: { href: string; label: string }[];
   faqs: FaqItem[];
-  updatedDate: string;
   offsetText: string;
 }
 
@@ -1069,7 +1064,6 @@ export function buildZone(zone: Zone, now: number = Date.now()): ZoneContent {
     moreConversions,
     siblingZones,
     faqs,
-    updatedDate: fmtDate(wallTime(zone.iana, now), true),
     offsetText,
   };
 }

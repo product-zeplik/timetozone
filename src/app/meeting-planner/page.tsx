@@ -3,7 +3,6 @@ import MeetingPlanner from "@/components/tools/MeetingPlanner";
 import { ToolPage } from "@/components/ToolPage";
 import { LinkList } from "@/components/Blocks";
 import { sideFor } from "@/engine/entities";
-import { fmtDate, isoDate, wallTime } from "@/engine/tz";
 import { pageMeta } from "@/seo/meta";
 import { topPairLinks } from "@/content/nav";
 
@@ -31,7 +30,6 @@ const FAQS = [
 ];
 
 export default function MeetingPlannerPage() {
-  const now = Date.now();
   const sides = ["new-york-time", "london-time", "india-time", "singapore-time"]
     .map((k) => sideFor(k))
     .filter((s): s is NonNullable<typeof s> => !!s);
@@ -42,8 +40,7 @@ export default function MeetingPlannerPage() {
       description={DESCRIPTION}
       path="/meeting-planner"
       crumbName="Meeting planner"
-      today={isoDate(wallTime("UTC", now))}
-      updatedDate={fmtDate(wallTime("UTC", now), true)}
+      family="meeting-planner"
       adSlot="mp-1"
       answer={<>Add up to eight places, set your working day, and the planner highlights every hour where all of them are at work.</>}
       faqHeading="Meeting planner FAQ"

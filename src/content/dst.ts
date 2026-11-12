@@ -74,7 +74,6 @@ export interface DstHubContent {
   countries: { href: string; label: string }[];
   noDst: string[];
   faqs: FaqItem[];
-  updatedDate: string;
 }
 
 const HUB_REGIONS: { label: string; tz: string }[] = [
@@ -211,7 +210,6 @@ export function buildDstHub(now: number = Date.now()): DstHubContent {
     countries,
     noDst,
     faqs,
-    updatedDate: fmtDate(wallTime("UTC", now), true),
   };
 }
 
@@ -251,7 +249,6 @@ export interface DstCountryContent {
   nonObserving: { tz: string; abbr: string; areas: string[] }[];
   related: { heading: string; items: { href: string; label: string }[] }[];
   faqs: FaqItem[];
-  updatedDate: string;
 }
 
 export function resolveDstCountry(slug: string): Country | null {
@@ -420,7 +417,6 @@ export function buildDstCountry(country: Country, now: number = Date.now()): Dst
     nonObserving,
     related,
     faqs,
-    updatedDate: fmtDate(wallTime(country.primary, now), true),
   };
 }
 

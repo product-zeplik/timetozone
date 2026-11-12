@@ -4,7 +4,6 @@ import { ZONES, ZONE_BY_SLUG } from "@/data/zones";
 import { buildZone } from "@/content/place";
 import { pageMeta } from "@/seo/meta";
 import { ZoneView } from "@/components/PlaceView";
-import { isoDate, wallTime } from "@/engine/tz";
 
 export const revalidate = 86400;
 export const dynamicParams = false;
@@ -29,5 +28,5 @@ export default async function ZonePage({ params }: Params) {
   if (!z) notFound();
   const now = Date.now();
   const c = buildZone(z, now);
-  return <ZoneView c={c} today={isoDate(wallTime("UTC", now))} />;
+  return <ZoneView c={c} />;
 }

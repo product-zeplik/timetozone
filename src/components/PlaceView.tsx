@@ -3,6 +3,7 @@ import Converter from "./Converter";
 import LiveClock from "./LiveClock";
 import LiveTime from "./LiveTime";
 import { Ad } from "./Ad";
+import { contentDate, contentDateLabel } from "@/seo/content-dates";
 import { Answer, Crumbs, Faq, JsonLd, LinkList, Updated } from "./Blocks";
 import { graph, ld } from "@/seo/meta";
 import type { MultiZoneContent, PlaceContent, ZoneContent } from "@/content/place";
@@ -135,7 +136,7 @@ function DstSection({
   );
 }
 
-export function PlaceView({ c, today }: { c: PlaceContent; today: string }) {
+export function PlaceView({ c }: { c: PlaceContent }) {
   return (
     <>
       <Crumbs items={c.crumbs} />
@@ -208,7 +209,7 @@ export function PlaceView({ c, today }: { c: PlaceContent; today: string }) {
         </section>
       ))}
 
-      <Updated date={c.updatedDate} />
+      <Updated date={contentDateLabel("place")} />
 
       <JsonLd
         data={graph([
@@ -222,14 +223,14 @@ export function PlaceView({ c, today }: { c: PlaceContent; today: string }) {
             kind: c.jsonLdKind,
           }),
           ld.faqPage(c.faqs),
-          ld.webPage(c.title, c.path, c.description, today),
+          ld.webPage(c.title, c.path, c.description, contentDate("place")),
         ])}
       />
     </>
   );
 }
 
-export function MultiZoneView({ c, today }: { c: MultiZoneContent; today: string }) {
+export function MultiZoneView({ c }: { c: MultiZoneContent }) {
   return (
     <>
       <Crumbs items={c.crumbs} />
@@ -272,20 +273,20 @@ export function MultiZoneView({ c, today }: { c: MultiZoneContent; today: string
         </Link>
       </p>
 
-      <Updated date={c.updatedDate} />
+      <Updated date={contentDateLabel("multi-zone")} />
 
       <JsonLd
         data={graph([
           ld.breadcrumbs(c.crumbs),
           ld.faqPage(c.faqs),
-          ld.webPage(c.title, c.path, c.description, today),
+          ld.webPage(c.title, c.path, c.description, contentDate("multi-zone")),
         ])}
       />
     </>
   );
 }
 
-export function ZoneView({ c, today }: { c: ZoneContent; today: string }) {
+export function ZoneView({ c }: { c: ZoneContent }) {
   return (
     <>
       <Crumbs items={c.crumbs} />
@@ -349,13 +350,13 @@ export function ZoneView({ c, today }: { c: ZoneContent; today: string }) {
 
       <Faq items={c.faqs} heading={`${c.zone.abbr} FAQ`} id="faq" />
 
-      <Updated date={c.updatedDate} />
+      <Updated date={contentDateLabel("zone")} />
 
       <JsonLd
         data={graph([
           ld.breadcrumbs(c.crumbs),
           ld.faqPage(c.faqs),
-          ld.webPage(c.title, c.path, c.description, today),
+          ld.webPage(c.title, c.path, c.description, contentDate("zone")),
         ])}
       />
     </>

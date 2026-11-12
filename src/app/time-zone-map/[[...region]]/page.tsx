@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { ToolPage } from "@/components/ToolPage";
 import { LinkList } from "@/components/Blocks";
 import { usaOffsetGroups, worldOffsetGroups } from "@/content/map";
-import { fmtDate, isoDate, wallTime } from "@/engine/tz";
 import { pageMeta } from "@/seo/meta";
 import { MapReadout } from "@/components/MapReadout";
 
@@ -78,8 +77,7 @@ export default async function TimeZoneMapPage({ params }: Params) {
       description={cfg.description}
       path={cfg.path}
       crumbName={cfg.crumbName}
-      today={isoDate(wallTime("UTC", now))}
-      updatedDate={fmtDate(wallTime("UTC", now), true)}
+      family="time-zone-map"
       adSlot="map-1"
       answer={
         isUsa ? (

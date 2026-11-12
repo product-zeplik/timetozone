@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { TimeCalculator } from "@/components/tools/SmallTools";
 import { ZoneDifference } from "@/components/tools/ZoneDifference";
 import { ToolPage } from "@/components/ToolPage";
-import { fmtDate, isoDate, wallTime } from "@/engine/tz";
 import { pageMeta } from "@/seo/meta";
 
 export const revalidate = 86400;
@@ -27,7 +26,6 @@ const FAQS = [
 ];
 
 export default function TimeCalculatorPage() {
-  const now = Date.now();
   return (
     <ToolPage
       h1="Time Calculator"
@@ -35,8 +33,7 @@ export default function TimeCalculatorPage() {
       description={DESCRIPTION}
       path="/time-calculator"
       crumbName="Time calculator"
-      today={isoDate(wallTime("UTC", now))}
-      updatedDate={fmtDate(wallTime("UTC", now), true)}
+      family="time-calculator"
       adSlot="calc-1"
       answer={<>Three calculations: the time difference between any two time zones, how long it is between two times (wrapping past midnight), and what you get when you add or subtract hours and minutes from a date and time.</>}
       faqHeading="Time calculator FAQ"

@@ -72,7 +72,6 @@ export interface PairContent {
   related: RelatedGroup[];
   reverseHref: string | null;
   validUntil: number | null;
-  updatedDate: string;
   isHourPair: boolean;
   diffMinutesNow: number;
 }
@@ -386,7 +385,6 @@ export function buildPair(p: ParsedPair, now: number = Date.now()): PairContent 
     related,
     reverseHref,
     validUntil: validUntilFor(from, to, now),
-    updatedDate: fmtDate(fromWall, true),
     isHourPair: hourPair,
     diffMinutesNow: ab.minutes,
   };
@@ -434,7 +432,6 @@ export interface HourContent {
   faqs: FaqItem[];
   related: RelatedGroup[];
   validUntil: number | null;
-  updatedDate: string;
   lockedMinutes: number;
 }
 
@@ -601,7 +598,6 @@ export function buildHour(p: ParsedPair, hour: number, now: number = Date.now())
     faqs,
     related,
     validUntil: validUntilFor(from, to, now),
-    updatedDate: fmtDate(w, true),
     lockedMinutes: hour * 60,
   };
 }
