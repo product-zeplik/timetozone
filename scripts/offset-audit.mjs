@@ -70,12 +70,20 @@ function nextTransition(tz) {
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-/** The transition's date as the page writes it: local date in that zone. */
-function localDateText(tz, ms) {
-  const p = new Intl.DateTimeFormat("en-US", { timeZone: tz, year: "numeric", month: "numeric", day: "numeric" })
-    .formatToParts(ms)
-    .reduce((a, x) => ((a[x.type] = x.value), a), {});
-  return `${Number(p.day)} ${MONTHS[Number(p.month) - 1]} ${p.year}`;
+/**
+ * The date a transition is named by: the clock reading at the moment it fires,
+ * in the offset in force just before it -- the convention the pages use
+ * (engine/tz.ts transitionWall).
+ *
+ * Reading the local time *after* the change is wrong whenever a fall-back
+ * crosses midnight backwards. Chile's clocks read 00:00 on 4 April and go back
+ * to 23:00 on 3 April, and the change is named for the 4th. Taking the after
+ * side made this audit report 22 correct Chilean pages as broken, which is
+ * how an audit stops being read.
+ */
+function transitionDateText(t) {
+  const d = new Date(t.at + t.from * 60_000);
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
 /** Check a place page's forward-looking DST sentence. Returns a complaint or null. */
@@ -84,13 +92,13 @@ function checkDstClaim(ans, tz) {
   const says = /does not observe daylight saving time/i.test(ans);
   const sw = /switches to\s+([A-Za-z0-9:+\u2212-]+)\s*\(\s*UTC([+\u2212-])(\d{1,2})(?::(\d{2}))?\s*\)\s*on\s+(\d{1,2} [A-Za-z]{3} \d{4})/.exec(ans);
 
-  if (says && t) return `claims no daylight saving, but ${tz} changes offset on ${localDateText(tz, t.at)}`;
+  if (says && t) return `claims no daylight saving, but ${tz} changes offset on ${transitionDateText(t)}`;
   if (sw && !t) return `claims a switch on ${sw[5]}, but ${tz} has no transition within two years`;
   if (!sw) return null;
 
   const claimedOff = (sw[2] === "-" || sw[2] === "\u2212" ? -1 : 1) * (Number(sw[3]) * 60 + Number(sw[4] ?? 0));
   if (claimedOff !== t.to) return `claims it switches to UTC${hrs(claimedOff)}, tzdata says UTC${hrs(t.to)}`;
-  const real = localDateText(tz, t.at);
+  const real = transitionDateText(t);
   if (sw[5] !== real) return `claims the switch is on ${sw[5]}, tzdata says ${real}`;
   return null;
 }
@@ -182,6 +190,15 @@ async function one(url) {
   if (!h1) return skip.set("no h1", (skip.get("no h1") || 0) + 1);
   const ans = strip(h1[1]);
   const zones = [...new Set([...html.matchAll(ZRE)].map((m) => m[0].replace("\\/", "/")))].filter(valid);
+
+  // "Georgia is on Eastern Standard Time - UTC+4 (UTC-5) right now": the
+  // abbreviation came from one zone and the offset from another. When a page
+  // prints a bare offset in place of an abbreviation, the two must agree.
+  const both = /–\s*(UTC[+−-][\d:]+)\s*\(\s*(UTC[+−-][\d:]+)\s*\)/.exec(ans);
+  if (both && both[1].replace(/\s/g, "") !== both[2].replace(/\s/g, "")) {
+    bad.push(`${url}\n      names the zone ${both[1]} but gives the offset ${both[2]}`);
+    return;
+  }
 
   // Place page: "<Place> is on <Name> - ABBR ( UTC-8 ) right now."
   const place = /\(\s*UTC([+−-])(\d{1,2})(?::(\d{2}))?\s*\)\s*right now/.exec(ans);

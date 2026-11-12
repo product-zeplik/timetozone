@@ -179,7 +179,14 @@ export function targetSide(t: PlaceTarget): Side {
   const key =
     t.kind === "country" ? countryKey(t.country) : t.kind === "region" ? `${t.region.entity}-time` : `${t.place.entity}-time`;
   const fromRegistry = sideFor(key);
-  if (fromRegistry) return fromRegistry;
+  // The registry is keyed by slug, and slugs collide across entity types: the
+  // US state Georgia and the country Georgia both want "georgia-time", and the
+  // country got there first. Taking it on trust gave /time/usa/georgia the
+  // country's zone -- "Georgia is on Eastern Standard Time - UTC+4 (UTC-5)
+  // right now. Georgia does not observe daylight saving time." -- with the
+  // abbreviation, the DST verdict and the next-change date all computed for
+  // Tbilisi. The href is what identifies the entity, so check it.
+  if (fromRegistry && fromRegistry.href === targetPath(t)) return fromRegistry;
   // the entity exists but another key claimed the slug: build it inline
   if (t.kind === "country") {
     return { key, kind: "country", label: t.country.short, long: t.country.name, tz: t.country.primary, href: targetPath(t) };

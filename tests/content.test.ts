@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { parsePair } from "@/engine/entities";
+import { COUNTRIES, PLACES, REGIONS, parsePair } from "@/engine/entities";
 import { buildHour, buildPair } from "@/content/pair";
-import { buildMultiZone, buildPlace, buildZone, resolveMultiZone, resolvePlace } from "@/content/place";
+import { buildMultiZone, buildPlace, buildZone, resolveMultiZone, resolvePlace, targetSide } from "@/content/place";
 import { buildDstCountry, buildDstHub, resolveDstCountry } from "@/content/dst";
 import { ZONE_BY_SLUG } from "@/data/zones";
 import { clip, firstThatFits, title } from "@/seo/meta";
@@ -252,5 +252,46 @@ describe("DST pages", () => {
   it("countries without DST resolve to null", () => {
     expect(resolveDstCountry("india")).toBeNull();
     expect(resolveDstCountry("japan")).toBeNull();
+  });
+});
+
+describe("every place page uses its own time zone", () => {
+  // The side registry is keyed by slug and slugs collide across entity types.
+  // The US state Georgia and the country Georgia both want "georgia-time";
+  // the country claimed it, so /time/usa/georgia read "Georgia is on Eastern
+  // Standard Time - UTC+4 (UTC-5) right now. Georgia does not observe
+  // daylight saving time" -- abbreviation, DST verdict and next-change date
+  // all computed for Tbilisi. Armenia in Colombia had the same problem with
+  // Yerevan. Neither is visible in a diff, so it is asserted over the whole
+  // data set rather than for the two names that happen to be known.
+  it("no country, region or place borrows another entity's zone", () => {
+    const wrong: string[] = [];
+    for (const country of COUNTRIES) {
+      const s = targetSide({ kind: "country", country } as never);
+      if (s.tz !== country.primary) wrong.push(`country ${country.slug}: ${s.tz} != ${country.primary}`);
+    }
+    for (const region of REGIONS) {
+      const s = targetSide({ kind: "region", region } as never);
+      if (s.tz !== region.primary) wrong.push(`region ${region.countrySlug}/${region.slug}: ${s.tz} != ${region.primary}`);
+    }
+    for (const place of PLACES) {
+      const s = targetSide({ kind: "place", place } as never);
+      if (s.tz !== place.tz) wrong.push(`place ${place.countrySlug}/${place.slug}: ${s.tz} != ${place.tz}`);
+    }
+    expect(wrong).toEqual([]);
+  });
+
+  it("the abbreviation and the offset on a page describe the same zone", () => {
+    // "Eastern Standard Time - UTC+4 (UTC-5)" was the shape of the bug: the
+    // abbreviation came from the side, the offset from the entity's own zone.
+    const wrong: string[] = [];
+    for (const region of REGIONS.slice(0, 200)) {
+      const t = resolvePlace([region.countrySlug, region.slug]);
+      if (!t) continue;
+      const c = buildPlace(t, JAN);
+      const m = /– (UTC[+\u2212-][\d:]+) \((UTC[+\u2212-][\d:]+)\)/.exec(c.answer);
+      if (m && m[1] !== m[2]) wrong.push(`${region.countrySlug}/${region.slug}: ${m[1]} vs ${m[2]}`);
+    }
+    expect(wrong).toEqual([]);
   });
 });
