@@ -15,6 +15,12 @@
  *    year and go stale the instant it changes;
  *  - our tzdata falling behind IANA, which is where DST truth actually lives.
  *    A stale tzdb is wrong time that no test of ours can catch. docs/12 §12.6.
+ *
+ * Schedule: Railway keeps cronSchedule as a service-level setting and it wins
+ * over cron/railway.json, so editing that file alone changes nothing. Both are
+ * set to every 15 minutes. If you change one, change the other, and confirm with
+ * `railway status` or the service config -- this looked applied for a full
+ * deploy while the service was still running daily.
  */
 const SITE_URL = (process.env.SITE_URL || "https://timetozone.com").replace(/\/+$/, "");
 const SECRET = process.env.REVALIDATE_SECRET || "";
