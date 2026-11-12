@@ -1,5 +1,7 @@
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createRevalidateHandler } from "@zeplik/seo-kit/next";
 import { kit } from "@/seo.config";
+import { controlRevalidatePaths } from "@/seo/sitemap-data";
 
 /**
  * Hub publishing webhook (manual 4, 16): HMAC-verified revalidation plus an
@@ -13,6 +15,12 @@ import { kit } from "@/seo.config";
  * REVALIDATE_SECRET -- the variable the older /api/revalidate route (used by
  * the DST cron with an x-revalidate-secret header) already reads. That route is
  * unchanged.
+ *
+ * Page controls: the hub sends event "redirect" when a control is activated or
+ * retired. On that event, or any event carrying urls, a verified, first-seen
+ * request also revalidates every sitemap file, /sitemap.xml and each URL in
+ * payload.urls (controlRevalidatePaths), so the change reaches the 24 h
+ * force-static sitemaps at once. Only after the seo-kit handler accepted it.
  */
 export const dynamic = "force-dynamic";
 
@@ -32,7 +40,20 @@ export async function POST(req: Request): Promise<Response> {
   }
   // One handler per secret: it keeps the replay window (ids already handled) between requests.
   if (!cached || cached.secret !== secret) {
-    cached = { secret, handle: createRevalidateHandler({ kit, secret }) };
+    cached = { secret, handle: createRevalidateHandler({ kit, secret, revalidatePath: (p) => revalidatePath(p), revalidateTag: (t) => revalidateTag(t) }) };
   }
-  return cached.handle(req);
+  const body = await req.clone().text();
+  const res = await cached.handle(req);
+  if (res.status !== 200) return res;
+  const result = (await res.clone().json()) as { ok?: boolean; duplicate?: boolean };
+  if (!result.ok || result.duplicate) return res;
+  let extra: string[] = [];
+  try {
+    extra = controlRevalidatePaths(JSON.parse(body));
+  } catch {
+    return res;
+  }
+  if (extra.length === 0) return res;
+  for (const p of extra) revalidatePath(p);
+  return Response.json({ ...result, controls: { paths: extra } }, { status: 200, headers: { "cache-control": "no-store" } });
 }

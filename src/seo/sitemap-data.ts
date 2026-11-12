@@ -133,3 +133,25 @@ export async function sitemapResponse(id: number): Promise<Response> {
   const rows = await siteControls.filterRows(sitemapEntries(id));
   return new Response(sitemapXml(rows), { headers: SITEMAP_HEADERS });
 }
+
+/**
+ * What a hub webhook must also revalidate so a page control (or any change
+ * carrying URLs) reaches the force-static sitemaps at once instead of after
+ * their 24 h revalidate: every sitemap file, the index, and each same-site URL
+ * in the payload. Empty for any other event, so nothing extra runs for it.
+ */
+export function controlRevalidatePaths(p: { event: string; urls?: readonly string[] }): string[] {
+  const urls = p.urls ?? [];
+  if (p.event !== "redirect" && urls.length === 0) return [];
+  const out = new Set<string>(["/sitemap.xml", ...SITEMAP_IDS.map(sitemapPath)]);
+  const origin = new URL(SITE.url).origin;
+  for (const u of urls) {
+    try {
+      const x = new URL(u, origin);
+      if (x.origin === origin && x.pathname.startsWith("/")) out.add(x.pathname);
+    } catch {
+      /* not a URL: skip */
+    }
+  }
+  return [...out];
+}
