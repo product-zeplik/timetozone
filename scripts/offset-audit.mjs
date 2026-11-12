@@ -14,6 +14,8 @@
  *
  * It found Cuba stating UTC-5 while Havana was on UTC-4, across 15 pages.
  */
+import { readFileSync } from "node:fs";
+
 const BASE = (process.argv.find((a) => a.startsWith("http")) || "https://timetozone.com").replace(/\/+$/, "");
 const LIMIT = Number(process.argv[process.argv.indexOf("--limit") + 1]) || Infinity;
 const CONC = Number(process.env.CONC || 24);
@@ -35,6 +37,62 @@ const valid = (tz) => {
 const strip = (t) =>
   t.replace(/<script[\s\S]*?<\/script>/g, " ").replace(/<[^>]+>/g, " ").replace(/&[a-z]+;/g, " ").replace(/\s+/g, " ");
 const hrs = (m) => (m / 60).toString();
+
+/* ------------------------------------------- the same-region rule (docs/04 4.2) */
+// A page about BST is about the named zone, which means UTC+1 by definition --
+// not about whatever Europe/London happens to be doing in November. When both
+// sides of a pair are counterpart names for one region (BST/GMT, EDT/EST), the
+// engine pins each to a fixed offset so the gap is a constant hour all year.
+// tzdata is the wrong oracle for those pages; this is the right one.
+const ZONES = (() => {
+  const src = readFileSync(new URL("../src/data/zones.ts", import.meta.url), "utf8");
+  const map = new Map();
+  for (const m of src.matchAll(/\{\s*slug: "([^"]+)"[^\n]*?iana: "([^"]+)", kind: "([^"]+)"[^\n]*?\}/g)) {
+    const [, slug, iana, kind] = m;
+    const cp = /counterpart: "([^"]+)"/.exec(m[0]);
+    map.set(slug, { slug, iana, kind, counterpart: cp?.[1] });
+  }
+  return map;
+})();
+
+/** Standard and daylight offsets for a zone this year; DST is always the larger. */
+const seasonal = (tz) => {
+  const y = new Date().getUTCFullYear();
+  const seen = new Set();
+  for (let mo = 0; mo < 12; mo++) {
+    const raw = new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "longOffset" })
+      .formatToParts(Date.UTC(y, mo, 15, 12))
+      .find((p) => p.type === "timeZoneName").value;
+    const m = /GMT([+-])(\d{1,2})(?::?(\d{2}))?/.exec(raw);
+    seen.add(raw === "GMT" ? 0 : (m[1] === "-" ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3] ?? 0)));
+  }
+  const vals = [...seen].sort((a, b) => a - b);
+  return { std: vals[0], dst: vals.length > 1 ? vals[vals.length - 1] : null };
+};
+
+const pinned = (z) => {
+  if (z.iana.startsWith("Etc/")) return 0;
+  const { std, dst } = seasonal(z.iana);
+  if (z.kind === "dst") return dst ?? std;
+  if (z.kind === "std") return std;
+  return offMin(z.iana);
+};
+
+/** If this URL is a counterpart pair, the difference the rule fixes it at. */
+function sameRegionDiff(url) {
+  const path = new URL(url).pathname.replace(/\/$/, "");
+  const seg = path.split("/").filter(Boolean);
+  const slug = seg[0] || "";
+  const i = slug.indexOf("-to-");
+  if (i === -1) return null;
+  const key = (p) => p.replace(/-time$/, "");
+  const a = ZONES.get(key(slug.slice(0, i)));
+  const b = ZONES.get(key(slug.slice(i + 4)));
+  if (!a || !b) return null;
+  const counterparts = a.counterpart === b.slug || b.counterpart === a.slug;
+  if (!counterparts && a.iana !== b.iana) return null;
+  return pinned(b) - pinned(a);
+}
 
 const text = async (u) => {
   const r = await fetch(u, { headers: { "user-agent": "timetozone-offset-audit" } });
@@ -85,6 +143,13 @@ async function one(url) {
     const d = /is\s+(?:(\d+)\s*hours?)?\s*(?:and\s*)?(?:(\d+)\s*minutes?)?\s*(ahead|behind)/.exec(ans);
     if (!d) return skip.set("no answer sentence", (skip.get("no answer sentence") || 0) + 1);
     claimed = (Number(d[1] || 0) * 60 + Number(d[2] || 0)) * (d[3] === "ahead" ? 1 : -1);
+  }
+  const fixedByRule = sameRegionDiff(url);
+  if (fixedByRule !== null) {
+    if (Math.abs(fixedByRule) !== Math.abs(claimed)) {
+      bad.push(`${url}\n      states ${hrs(claimed)}h, same-region rule fixes it at ${hrs(fixedByRule)}h`);
+    } else ok++;
+    return;
   }
   if (zones.length !== 2) return skip.set(`${zones.length} zones on page`, (skip.get(`${zones.length} zones on page`) || 0) + 1);
   const truth = offMin(zones[1]) - offMin(zones[0]);
