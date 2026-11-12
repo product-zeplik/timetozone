@@ -58,3 +58,17 @@ npm run typecheck   # tsc --noEmit
 - `npm run seo:lint` reports **0 errors** (no duplicate title, H1 or meta among indexable pages; self-canonicals; valid JSON-LD; primary keywords present).
 - Smoke checks in `docs/11` pass against the production server (`node .next/standalone/server.js`): statuses, redirects, sizes, no hydration errors.
 - Deployed to Railway staging with `SITE_ENV=staging` (noindex), then production per the launch checklist in `docs/12`.
+
+## SEO rules for this repo (do not remove)
+- When you add, rename or remove a user-facing page or tool, update seo/manifest.json in the same commit.
+- Use @zeplik/seo-kit for every page head, JSON-LD, tool page shell, CTA and ad slot. Never hand-write meta tags or schema.
+- Server-render all explanatory text. The interactive tool may run client-side.
+- Never change an existing URL. If it is unavoidable, add a 301 in the redirects config and say so in the commit message.
+- Never add noindex, robots.txt changes, canonical overrides or new ad slots unless the task says so explicitly.
+- Never write blog, guide or marketing copy in this repo. Copy lives in the content hub.
+- Run `npx seo-check` before every commit and fix every error.
+
+How this block sits with the rest of this file (engine integration, 12 Nov 2026):
+- Existing heads (`src/seo/meta.ts` `pageMeta`) and the existing JSON-LD graph are grandfathered: they pass seo-check and `npm run seo:lint`, and moving them onto seo-kit is a template change that ships behind a per-site flag on a canary (manual 11.2 rule 7). New schema comes from `@zeplik/seo-kit/jsonld` (see `src/seo/page-jsonld.ts`).
+- Where docs/ and the engine rulebook disagree, the rulebook wins for NEW markup: no FAQPage or HowTo on new pages, dates from `seo/content-dates.json` (git), never "today". Existing FAQPage markup stays (Google says it causes no harm) and is listed in `seo/seo-check.allow.json` `legacySchema`.
+- `npx seo-check` here means: `npm run build`, serve the standalone build, then `npx seo-check crawl --base http://127.0.0.1:3000 --origin https://timetozone.com --ad-site --manifest seo/manifest.json --max-pages 20000` (what `.github/workflows/seo-check.yml` runs). Also run `npm run content-dates` before committing content, and keep `npm run seo:lint` at 0 errors.
