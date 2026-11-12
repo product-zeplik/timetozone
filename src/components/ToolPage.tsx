@@ -3,6 +3,7 @@ import { Answer, Crumbs, Faq, JsonLd, Updated } from "./Blocks";
 import { graph, ld } from "@/seo/meta";
 import type { FaqItem } from "./Blocks";
 import { contentDate, contentDateLabel, type ContentFamily } from "@/seo/content-dates";
+import { homeBreadcrumbs } from "@/seo/page-jsonld";
 
 export interface ToolPageProps {
   h1: string;
@@ -59,6 +60,8 @@ export function ToolPage({
           ld.webPage(title, path, description, contentDate(family)),
         ])}
       />
+      {/* The homepage is a tool page (seo/manifest.json): WebApplication + BreadcrumbList (manual 6). */}
+      {path === "/" ? <JsonLd data={homeBreadcrumbs()} /> : null}
     </>
   );
 }

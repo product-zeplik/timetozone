@@ -5,6 +5,7 @@ import { pageMeta, graph, ld } from "@/seo/meta";
 import { Answer, Crumbs, Faq, JsonLd, LinkList, Updated } from "@/components/Blocks";
 import { Ad } from "@/components/Ad";
 import { contentDate, contentDateLabel } from "@/seo/content-dates";
+import { hubArticle } from "@/seo/page-jsonld";
 
 export const revalidate = 86400;
 
@@ -76,6 +77,16 @@ export default function DstHubPage() {
           ld.faqPage(c.faqs),
           ld.webPage(c.title, "/daylight-saving-time", c.description, contentDate("dst-hub")),
         ])}
+      />
+      {/* Article (guide page type in seo/manifest.json, manual 6). Added 2026-11-06 (first commit). */}
+      <JsonLd
+        data={hubArticle({
+          path: "/daylight-saving-time",
+          headline: c.h1,
+          description: c.description,
+          datePublished: "2026-11-06",
+          dateModified: contentDate("dst-hub"),
+        })}
       />
     </>
   );

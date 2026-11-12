@@ -1,0 +1,121 @@
+{
+  "$schema": "../node_modules/@zeplik/seo-kit/dist/manifest.schema.json",
+  "site": "timetozone.com",
+  "role": "ad",
+  "topicScope": [
+    "time zone conversion",
+    "world clock",
+    "meeting planning across time zones",
+    "dst dates"
+  ],
+  "defaultCta": "timezone:related-tools",
+  "features": [
+    {
+      "id": "time-zone-converter",
+      "path": "/",
+      "type": "tool",
+      "status": "live",
+      "primaryKeyword": "time zone converter",
+      "ymyl": false,
+      "addedAt": "2026-11-06"
+    },
+    {
+      "id": "world-clock",
+      "path": "/world-clock",
+      "type": "tool",
+      "status": "live",
+      "primaryKeyword": "world clock",
+      "ymyl": false,
+      "addedAt": "2026-11-06"
+    },
+    {
+      "id": "meeting-planner",
+      "path": "/meeting-planner",
+      "type": "tool",
+      "status": "live",
+      "primaryKeyword": "meeting planner",
+      "ymyl": false,
+      "addedAt": "2026-11-06"
+    },
+    {
+      "id": "what-time-zone-am-i-in",
+      "path": "/what-time-zone-am-i-in",
+      "type": "tool",
+      "status": "live",
+      "primaryKeyword": "what time zone am i in",
+      "ymyl": false,
+      "addedAt": "2026-11-06"
+    },
+    {
+      "id": "time-zone-map",
+      "path": "/time-zone-map",
+      "type": "tool",
+      "status": "live",
+      "primaryKeyword": "time zone map",
+      "ymyl": false,
+      "addedAt": "2026-11-06"
+    },
+    {
+      "id": "us-time-zone-map",
+      "path": "/time-zone-map/usa",
+      "type": "tool",
+      "status": "live",
+      "primaryKeyword": "us time zone map",
+      "ymyl": false,
+      "addedAt": "2026-11-06"
+    },
+    {
+      "id": "military-time-converter",
+      "path": "/military-time-converter",
+      "type": "tool",
+      "status": "live",
+      "primaryKeyword": "military time",
+      "ymyl": false,
+      "addedAt": "2026-11-06"
+    },
+    {
+      "id": "unix-timestamp-converter",
+      "path": "/unix-timestamp-converter",
+      "type": "tool",
+      "status": "live",
+      "primaryKeyword": "unix timestamp converter",
+      "ymyl": false,
+      "addedAt": "2026-11-06"
+    },
+    {
+      "id": "time-calculator",
+      "path": "/time-calculator",
+      "type": "tool",
+      "status": "live",
+      "primaryKeyword": "time calculator",
+      "ymyl": false,
+      "addedAt": "2026-11-06"
+    },
+    {
+      "id": "time-unit-converter",
+      "path": "/time-unit-converter",
+      "type": "tool",
+      "status": "live",
+      "ymyl": false,
+      "addedAt": "2026-11-06"
+    },
+    {
+      "id": "daylight-saving-time",
+      "path": "/daylight-saving-time",
+      "type": "guide",
+      "status": "live",
+      "primaryKeyword": "daylight savings 2026",
+      "ymyl": false,
+      "addedAt": "2026-11-06"
+    },
+    {
+      "id": "time-zone-abbreviations",
+      "path": "/time-zones",
+      "type": "glossary",
+      "status": "live",
+      "primaryKeyword": "time zones",
+      "ymyl": false,
+      "addedAt": "2026-11-06"
+    }
+  ]
+}

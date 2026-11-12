@@ -7,12 +7,14 @@ import { fmtOffset, offsetMinutes, seasonalOffsets, wallTime } from "@/engine/tz
 import { contentDate, contentDateLabel } from "@/seo/content-dates";
 import { graph, ld, pageMeta } from "@/seo/meta";
 import { multiZoneEntities } from "@/seo/gate";
+import { hubArticle } from "@/seo/page-jsonld";
 import { Crumbs, Faq, JsonLd, LinkList, Updated } from "@/components/Blocks";
 import { Ad } from "@/components/Ad";
 
 export const revalidate = 86400;
 
 const TITLE = "Time Zones – List of Time Zone Abbreviations";
+const H1 = "Time Zones and Abbreviations";
 const DESCRIPTION =
   "Every time zone abbreviation with its UTC offset, full name, current local time and the regions that use it: EST, PST, GMT, CET, IST, JST and 56 more.";
 
@@ -56,7 +58,7 @@ export default function TimeZonesPage() {
   return (
     <>
       <Crumbs items={crumbs} />
-      <h1>Time Zones and Abbreviations</h1>
+      <h1>{H1}</h1>
       <p className="answer">
         There are 62 commonly used time zone abbreviations, from UTC−10 (HST) to UTC+13 (NZDT). Each row below shows
         the abbreviation, its UTC offset, the full zone name and which name is in force right now.
@@ -131,6 +133,16 @@ export default function TimeZonesPage() {
           ld.faqPage(faqs),
           ld.webPage(TITLE, "/time-zones", DESCRIPTION, contentDate("time-zones")),
         ])}
+      />
+      {/* Article (glossary page type in seo/manifest.json, manual 6). Added 2026-11-06 (first commit). */}
+      <JsonLd
+        data={hubArticle({
+          path: "/time-zones",
+          headline: H1,
+          description: DESCRIPTION,
+          datePublished: "2026-11-06",
+          dateModified: contentDate("time-zones"),
+        })}
       />
     </>
   );
