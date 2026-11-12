@@ -168,7 +168,18 @@ describe("side.ts — abbrFor", () => {
     });
   }
   it("unknown offsets fall back to UTC±X", () => {
+    // CLDR has no abbreviation for Riyadh either (it answers "GMT+3"), so the
+    // bare offset is the honest answer and must stay the answer.
     expect(abbrFor("Asia/Riyadh", JAN)).toBe("UTC+3");
+  });
+  it("uses CLDR's abbreviation rather than a bare offset when one exists", () => {
+    // Canada stopped changing its clocks in 2026, so CLDR calls these zones
+    // "Pacific Time (Canada)" / "Central Time (Canada)" and the curated list
+    // -- which has "Pacific Time" -- no longer matches. CLDR still knows the
+    // abbreviation, and printing "UTC−7" while the page says "Pacific
+    // Daylight Time" helps nobody.
+    expect(abbrFor("America/Vancouver", Date.now())).toMatch(/^P[SD]T$/);
+    expect(abbrFor("America/Winnipeg", Date.now())).toMatch(/^C[SD]T$/);
   });
 });
 

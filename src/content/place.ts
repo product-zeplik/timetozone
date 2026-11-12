@@ -451,6 +451,15 @@ export function buildPlace(t: PlaceTarget, now: number = Date.now()): PlaceConte
     answer = `${names.name} is on ${longName} – ${abbr} (${fmtOffset(
       off
     )}) right now. It switches to ${info.next.toAbbr} (${fmtOffset(info.next.toOffset)}) on ${info.next.dateText}.`;
+  } else if (/\b(Daylight|Summer)\b/.test(longName)) {
+    // Some places stopped changing their clocks while staying on what had been
+    // daylight time -- British Columbia and Manitoba did it in 2026. Both
+    // halves of the normal sentence are then true and together they read as
+    // nonsense: "Vancouver is on Pacific Daylight Time ... Vancouver does not
+    // observe daylight saving time."
+    answer = `${names.name} is on ${longName} – ${abbr} (${fmtOffset(
+      off
+    )}) all year. The clocks in ${names.name} no longer change for daylight saving time.`;
   } else {
     answer = `${names.name} is on ${longName} – ${abbr} (${fmtOffset(
       off

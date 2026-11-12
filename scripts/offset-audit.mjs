@@ -23,9 +23,9 @@ const CONC = Number(process.env.CONC || 24);
 const REGIONS = "Africa|America|Antarctica|Arctic|Asia|Atlantic|Australia|Etc|Europe|Indian|Pacific";
 const ZRE = new RegExp(`(?:${REGIONS})(?:\\\\?/[A-Za-z_+-]+){1,2}`, "g");
 
-const offMin = (tz) => {
+const offMin = (tz, ms = Date.now()) => {
   const raw = new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "longOffset" })
-    .formatToParts(Date.now())
+    .formatToParts(ms)
     .find((p) => p.type === "timeZoneName").value;
   if (raw === "GMT") return 0;
   const m = /GMT([+-])(\d{1,2})(?::?(\d{2}))?/.exec(raw);
@@ -37,6 +37,63 @@ const valid = (tz) => {
 const strip = (t) =>
   t.replace(/<script[\s\S]*?<\/script>/g, " ").replace(/<[^>]+>/g, " ").replace(/&[a-z]+;/g, " ").replace(/\s+/g, " ");
 const hrs = (m) => (m / 60).toString();
+
+/* ------------------------------------------------------ DST claims on a page */
+// A place page does not only state an offset, it states what happens next:
+// "It switches to EDT (UTC-4) on 14 Mar 2027", or "does not observe daylight
+// saving time". Nothing checked either, and they are the sentences a reader
+// plans around. Both come straight out of tzdata, so both are checkable.
+const DAY = 86_400_000;
+const transCache = new Map();
+
+/** The next offset change in `tz`, or null if there is none within two years. */
+function nextTransition(tz) {
+  if (transCache.has(tz)) return transCache.get(tz);
+  const now = Date.now();
+  const base = offMin(tz, now);
+  let lo = null;
+  for (let d = 1; d <= 800; d++) {
+    if (offMin(tz, now + d * DAY) !== base) { lo = now + (d - 1) * DAY; break; }
+  }
+  let out = null;
+  if (lo !== null) {
+    let hi = lo + DAY;
+    while (hi - lo > 60_000) {
+      const mid = lo + Math.floor((hi - lo) / 2);
+      if (offMin(tz, mid) === base) lo = mid;
+      else hi = mid;
+    }
+    out = { at: hi, from: base, to: offMin(tz, hi) };
+  }
+  transCache.set(tz, out);
+  return out;
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+/** The transition's date as the page writes it: local date in that zone. */
+function localDateText(tz, ms) {
+  const p = new Intl.DateTimeFormat("en-US", { timeZone: tz, year: "numeric", month: "numeric", day: "numeric" })
+    .formatToParts(ms)
+    .reduce((a, x) => ((a[x.type] = x.value), a), {});
+  return `${Number(p.day)} ${MONTHS[Number(p.month) - 1]} ${p.year}`;
+}
+
+/** Check a place page's forward-looking DST sentence. Returns a complaint or null. */
+function checkDstClaim(ans, tz) {
+  const t = nextTransition(tz);
+  const says = /does not observe daylight saving time/i.test(ans);
+  const sw = /switches to\s+([A-Za-z0-9:+\u2212-]+)\s*\(\s*UTC([+\u2212-])(\d{1,2})(?::(\d{2}))?\s*\)\s*on\s+(\d{1,2} [A-Za-z]{3} \d{4})/.exec(ans);
+
+  if (says && t) return `claims no daylight saving, but ${tz} changes offset on ${localDateText(tz, t.at)}`;
+  if (sw && !t) return `claims a switch on ${sw[5]}, but ${tz} has no transition within two years`;
+  if (!sw) return null;
+
+  const claimedOff = (sw[2] === "-" || sw[2] === "\u2212" ? -1 : 1) * (Number(sw[3]) * 60 + Number(sw[4] ?? 0));
+  if (claimedOff !== t.to) return `claims it switches to UTC${hrs(claimedOff)}, tzdata says UTC${hrs(t.to)}`;
+  const real = localDateText(tz, t.at);
+  if (sw[5] !== real) return `claims the switch is on ${sw[5]}, tzdata says ${real}`;
+  return null;
+}
 
 /* ------------------------------------------- the same-region rule (docs/04 4.2) */
 // A page about BST is about the named zone, which means UTC+1 by definition --
@@ -131,8 +188,19 @@ async function one(url) {
   if (place && zones.length >= 1) {
     const claimed = (place[1] === "-" || place[1] === "−" ? -1 : 1) * (Number(place[2]) * 60 + Number(place[3] ?? 0));
     const truth = offMin(zones[0]);
-    if (claimed !== truth) bad.push(`${url}\n      states UTC${hrs(claimed)}, ${zones[0]} is UTC${hrs(truth)}`);
-    else ok++;
+    if (claimed !== truth) {
+      bad.push(`${url}\n      states UTC${hrs(claimed)}, ${zones[0]} is UTC${hrs(truth)}`);
+      return;
+    }
+    // Only single-zone pages make a forward-looking claim about one zone.
+    if (!/has more than one time zone/.test(ans)) {
+      const complaint = checkDstClaim(ans, zones[0]);
+      if (complaint) {
+        bad.push(`${url}\n      ${complaint}`);
+        return;
+      }
+    }
+    ok++;
     return;
   }
 

@@ -52,7 +52,14 @@ export function abbrFor(tz: string, ms: number = Date.now()): string {
   const base = resolveBase(tz, std, dst, ms);
   let out: string;
   if (!base) {
-    out = fmtOffset(offsetMinutes(tz, ms));
+    // Before giving up and printing a bare offset, ask the platform. CLDR
+    // carries a short name for ~79 of the zones we publish, and it is the
+    // authority on them: it knows America/Vancouver is PDT and Winnipeg is
+    // CDT, which our curated list cannot match since CLDR names them
+    // "Pacific Time (Canada)" rather than "Pacific Time". For the other ~228
+    // CLDR answers "GMT+5" and we keep the offset, so this cannot resurrect
+    // the Libya-is-SAST class of error that step 2 above exists to prevent.
+    out = cldrShort(tz, ms) || fmtOffset(offsetMinutes(tz, ms));
   } else if (dst !== null && isDst(tz, ms)) {
     const cp = counterpartOf(base.slug);
     out = (cp ?? base).abbr;
@@ -60,6 +67,28 @@ export function abbrFor(tz: string, ms: number = Date.now()): string {
     out = base.abbr;
   }
   abbrCache.set(cacheKey, out);
+  return out;
+}
+
+/**
+ * CLDR's own short name for a zone, but only when it is a real abbreviation.
+ * CLDR returns "GMT+5" for zones that have none, and that is not a name.
+ */
+const shortCache = new Map<string, string>();
+function cldrShort(tz: string, ms: number): string {
+  const hit = shortCache.get(tz);
+  if (hit !== undefined) return hit;
+  let out = "";
+  try {
+    const v =
+      new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "short" })
+        .formatToParts(ms)
+        .find((p) => p.type === "timeZoneName")?.value ?? "";
+    if (/^[A-Z]{2,6}$/.test(v)) out = v;
+  } catch {
+    out = "";
+  }
+  shortCache.set(tz, out);
   return out;
 }
 
