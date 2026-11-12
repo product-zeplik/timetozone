@@ -1,0 +1,175 @@
+# seo-check (Zeplik SEO engine, operating manual 16.4). Inlined from the engine's
+# packages/seo-check/examples/nextjs16-npm.yml + seo-check-reusable.yml, with
+# @zeplik/seo-check installed from the vendored tarball (devDependency) instead of
+# GitHub Packages, so no NPM_TOKEN is needed.
+#
+# Builds the app the way the Dockerfile does (SITE_ENV=production, vendored tzdata),
+# serves the standalone build, crawls it as https://timetozone.com, then (push to
+# main only) posts seo/manifest.json to the hub. A missing SEO_HUB_SECRET or a hub
+# outage is a warning, never a failure. The repo's own CI (ci.yml: typecheck, tests,
+# seo:lint, smoke) is unchanged and runs alongside.
+name: seo-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: seo-check-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  seo-check:
+    name: seo-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PORT: "3000"
+      ORIGIN: https://timetozone.com
+      HUB_URL: https://hub-production-b4aad4f9.up.railway.app
+      SITE_URL: https://timetozone.com
+      SITE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history: content-dates:check reads git log per page family, and
+          # HEAD~1 is needed for the manifest diff (16.2-4) and the hub post.
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: npm ci --no-audit --no-fund
+
+      - name: Content dates agree with git (GR-36)
+        run: npm run content-dates:check
+
+      - name: Build
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+        run: npm run build
+
+      - name: Start (standalone server, as in the Dockerfile)
+        shell: bash
+        run: |
+          cp -r public .next/standalone/
+          mkdir -p .next/standalone/.next
+          cp -r .next/static .next/standalone/.next/
+          ICU_TIMEZONE_FILES_DIR="$GITHUB_WORKSPACE/vendor/icu-tz" HOSTNAME=0.0.0.0 \
+            nohup node .next/standalone/server.js > "$RUNNER_TEMP/app.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/app.pid"
+
+      - name: Wait for the port
+        shell: bash
+        run: |
+          for i in $(seq 1 180); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${PORT}/" || true)
+            if [ "$code" != "000" ]; then echo "app answers $code on :${PORT} after ${i}s"; exit 0; fi
+            sleep 1
+          done
+          echo "::error title=seo-check::the app did not answer on port ${PORT} within 180s"
+          tail -n 100 "$RUNNER_TEMP/app.log"
+          exit 1
+
+      - name: Playwright version
+        shell: bash
+        run: echo "PLAYWRIGHT_VERSION=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_ENV"
+
+      - name: Cache Playwright Chromium
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: seo-check-playwright-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}
+
+      - name: Install Chromium for Playwright
+        run: npx --no-install playwright install --with-deps chromium
+
+      - name: seo-check crawl
+        id: crawl
+        shell: bash
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+        run: |
+          set +e
+          npx --no-install seo-check crawl --base "http://127.0.0.1:${PORT}" --origin "$ORIGIN" --ad-site \
+            --manifest seo/manifest.json --allowlist seo/seo-check.allow.json --max-pages 20000 \
+            --json "$RUNNER_TEMP/seo-check-crawl.json"
+          echo "code=$?" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      # Report-only: lab perf on shared runners is noisy. Field CWV (CrUX) is the binding check.
+      - name: seo-check perf (report-only)
+        id: perf
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          npx --no-install seo-check perf --base "http://127.0.0.1:${PORT}" --manifest seo/manifest.json --ad-site \
+            --json "$RUNNER_TEMP/seo-check-perf.json"
+          code=$?
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          [ "$code" = "0" ] || echo "::warning title=seo-check perf::lab budget missed (report-only, see seo-check-perf.json)"
+          exit 0
+
+      - name: Upload seo-check reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-check-report
+          path: |
+            ${{ runner.temp }}/seo-check-crawl.json
+            ${{ runner.temp }}/seo-check-perf.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Gate
+        shell: bash
+        env:
+          CRAWL: ${{ steps.crawl.outputs.code }}
+          PERF: ${{ steps.perf.outputs.code || 'n/a' }}
+        run: |
+          # Only the crawl blocks; perf is reported above and never fails the job.
+          echo "seo-check crawl exit $CRAWL, perf exit $PERF (report-only)"
+          if [ "$CRAWL" != "0" ]; then
+            echo "::error title=seo-check::The indexability contract is broken. See the annotations and the seo-check-report artifact."
+            exit 1
+          fi
+
+      - name: Post manifest to the hub (16.4 step 3)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          SEO_HUB_SECRET: ${{ secrets.SEO_HUB_SECRET }}
+        run: |
+          set +e
+          if [ -z "$SEO_HUB_SECRET" ]; then
+            echo "::warning title=seo-check::SEO_HUB_SECRET is not set; manifest not posted to the hub"
+            exit 0
+          fi
+          # A hub outage must not block a deploy that passed the contract: failure here is a warning.
+          if ! npx --no-install seo-check post-manifest --hub "$HUB_URL" --site timetozone.com \
+            --manifest seo/manifest.json --repo "$GITHUB_REPOSITORY" --commit "$GITHUB_SHA" --ref "$GITHUB_REF"; then
+            echo "::warning title=seo-check::posting the manifest to $HUB_URL failed; the hub picks it up on the next push"
+          fi
+          exit 0
+
+      - name: App log
+        if: failure()
+        shell: bash
+        run: tail -n 200 "$RUNNER_TEMP/app.log" || true
+
+      - name: Stop the app
+        if: always()
+        shell: bash
+        run: kill "$(cat "$RUNNER_TEMP/app.pid")" 2>/dev/null || true
