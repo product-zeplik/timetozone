@@ -1,5 +1,6 @@
 import { defineSeoKit, type SeoKit } from "@zeplik/seo-kit";
-import { pageControls, seoMiddleware, type PageControlsOptions } from "@zeplik/seo-kit/middleware";
+import { pageControls, seoMiddleware, type PageControlsOptions, type PageControlsStatus } from "@zeplik/seo-kit/middleware";
+import { HUB_FALLBACK } from "@/seo/hub-url";
 
 /**
  * Hub page controls (engine core page-controls.ts): the hub can take a URL out
@@ -42,7 +43,7 @@ export function controlsKit(): SeoKit | null {
     return defineSeoKit({
       site: "timetozone.com",
       origin: "https://timetozone.com",
-      hubUrl: process.env.ZEPLIK_HUB_URL || "https://cms.zeplik.com",
+      hubUrl: process.env.ZEPLIK_HUB_URL || HUB_FALLBACK,
       role: "ad",
       trailingSlash: false,
       locales: ["en"],
@@ -56,11 +57,15 @@ export function controlsKit(): SeoKit | null {
   }
 }
 
+/** What the status document says when the control kit could not load. */
+const OFF_STATUS: PageControlsStatus = { enabled: false, version: null, count: 0, fetchedAt: null, lastError: "kit invalid", dropped: [], refused: null };
+
 const OFF = {
   enabled: false as const,
   respond: async (_req: Request): Promise<Response | undefined> => undefined,
   decorate: async <R extends Response>(_req: Request, res: R): Promise<R> => res,
   filterRows: async <T extends { url: string }>(rows: readonly T[]): Promise<T[]> => [...rows],
+  status: (): PageControlsStatus => OFF_STATUS,
 };
 
 export function createPageControls(opts: Omit<PageControlsOptions, "kit"> = {}) {
@@ -103,6 +108,10 @@ export function createPageControls(opts: Omit<PageControlsOptions, "kit"> = {}) 
     /** Drops every controlled URL from sitemap rows. Returns the rows unchanged when off. */
     filterRows<T extends { url: string }>(rows: readonly T[]): Promise<T[]> {
       return controls.filterRows(rows);
+    },
+    /** On or off, set version, count, a short error word: for /.well-known/zeplik-seo.json. No values. */
+    status(): PageControlsStatus {
+      return controls.status();
     },
   };
 }

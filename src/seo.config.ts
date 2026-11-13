@@ -1,4 +1,5 @@
 import { defineSeoKit } from "@zeplik/seo-kit";
+import { HUB_FALLBACK } from "@/seo/hub-url";
 
 /**
  * @zeplik/seo-kit config for timetozone.com (operating manual 16,
@@ -14,7 +15,7 @@ import { defineSeoKit } from "@zeplik/seo-kit";
 export const kit = defineSeoKit({
   site: "timetozone.com",
   origin: "https://timetozone.com",
-  hubUrl: process.env.ZEPLIK_HUB_URL || "https://cms.zeplik.com",
+  hubUrl: process.env.ZEPLIK_HUB_URL || HUB_FALLBACK,
   role: "ad",
   // Ads through seo-kit slots switch on only when the publisher id is set (15.5).
   // The site's own <Ad> slots are unchanged and still read SITE.adsenseClient.
