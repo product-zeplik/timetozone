@@ -56,6 +56,7 @@ const MACHINE_200 = [
   "/manifest.webmanifest",
   "/ads.txt",
   "/icon.svg",
+  "/.well-known/zeplik-seo.json",
 ];
 
 const EXPECT_404 = ["/nonexistent-to-x", "/time/narnia", "/zones/zzz", "/pst-to-est/25am", "/time-zone/france"];
