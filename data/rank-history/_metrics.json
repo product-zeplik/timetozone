@@ -1,8 +1,18 @@
 {
- "2026-11-11": {
-  "clicks": 15,
-  "impressions": 31300,
-  "position": 15.5,
-  "queries": 1000
+ "2026-11-09": {
+  "clicks": 14,
+  "impressions": 28163,
+  "position": 14.9,
+  "queries": 4981,
+  "top3": 73,
+  "top10": 2022
+ },
+ "2026-11-10": {
+  "clicks": 23,
+  "impressions": 36944,
+  "position": 15.3,
+  "queries": 6885,
+  "top3": 116,
+  "top10": 2664
  }
 }
