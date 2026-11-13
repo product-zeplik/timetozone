@@ -75,9 +75,10 @@ async function fetchMissing() {
   for (const { outbound } of pages.values()) {
     for (const to of outbound) if (!pages.has(to)) wanted.add(to);
   }
-  if (!wanted.size) return 0;
+  if (!wanted.size) return { added: 0, unreachable: 0, wanted: 0 };
   const list = [...wanted];
   let added = 0;
+  let unreachable = 0;
   for (let i = 0; i < list.length; i += 24) {
     const batch = list.slice(i, i + 24);
     await Promise.all(
@@ -97,16 +98,29 @@ async function fetchMissing() {
           pages.set(path, { indexed: !robots.toLowerCase().includes("noindex"), outbound, isr: true });
           added++;
         } catch {
-          /* server not running: fall back to the static picture */
+          // The server could not be reached. This is not a page that is
+          // missing, it is a page we failed to look at, and the difference
+          // matters: counting it as absent invents an orphan out of every
+          // city whose only editorial link lives on an on-demand country
+          // page. Record the blind spot so the report can refuse to assert.
+          unreachable++;
         }
       })
     );
   }
-  return added;
+  return { added, unreachable, wanted: list.length };
 }
 
-const fetched = await fetchMissing();
-if (fetched) console.log(`fetched ${fetched} on-demand page(s) from ${BASE}`);
+const fetchStats = await fetchMissing();
+if (fetchStats.added) console.log(`fetched ${fetchStats.added} on-demand page(s) from ${BASE}`);
+// Orphans, inbound counts, reachability and depth are all read straight off
+// the link graph, so a graph with holes cannot support any of them.
+const graphComplete = fetchStats.unreachable === 0;
+if (!graphComplete) {
+  console.log(
+    `link-audit: could not reach ${BASE} for ${fetchStats.unreachable} of ${fetchStats.wanted} linked path(s) rendered on demand`
+  );
+}
 for (const p of pages.keys()) if (!p) pages.delete(p);
 
 /* ------------------------------------------------------------- the graph */
@@ -225,10 +239,18 @@ if (REPORT) {
 }
 
 const problems = [];
-if (orphans.length) problems.push(`${orphans.length} indexable page(s) with no inbound link: ${orphans.slice(0, 8).join(", ")}`);
-if (thin.length) problems.push(`${thin.length} indexable page(s) with fewer than 5 inbound links: ${thin.slice(0, 8).join(", ")}`);
-if (unreached.length) problems.push(`${unreached.length} indexable page(s) unreachable from home: ${unreached.slice(0, 8).join(", ")}`);
-if (deep.length) problems.push(`${deep.length} indexable page(s) more than 3 clicks from home: ${deep.slice(0, 8).join(", ")}`);
+const notAssertable = [];
+if (graphComplete) {
+  if (orphans.length) problems.push(`${orphans.length} indexable page(s) with no inbound link: ${orphans.slice(0, 8).join(", ")}`);
+  if (thin.length) problems.push(`${thin.length} indexable page(s) with fewer than 5 inbound links: ${thin.slice(0, 8).join(", ")}`);
+  if (unreached.length) problems.push(`${unreached.length} indexable page(s) unreachable from home: ${unreached.slice(0, 8).join(", ")}`);
+  if (deep.length) problems.push(`${deep.length} indexable page(s) more than 3 clicks from home: ${deep.slice(0, 8).join(", ")}`);
+} else {
+  notAssertable.push(
+    `orphans, inbound counts, reachability and depth (${orphans.length}/${thin.length}/${unreached.length}/${deep.length} would have been reported from an incomplete graph)`,
+    "re-run against a server that serves the on-demand pages: node scripts/link-audit.mjs https://timetozone.com"
+  );
+}
 if (toNoindex.size) {
   const ex = [...toNoindex.entries()].slice(0, 5).map(([t, f]) => `${t} (from ${[...f][0]})`);
   problems.push(`${toNoindex.size} noindex URL(s) linked from indexable pages: ${ex.join(", ")}`);
@@ -238,10 +260,18 @@ if (broken.size) {
   problems.push(`${broken.size} internal link(s) to URLs that cannot exist: ${ex.join(", ")}`);
 }
 
-if (!problems.length) {
-  console.log("\nlink-audit: no problems found");
-  process.exit(0);
+if (notAssertable.length) {
+  console.log(`\n${notAssertable.length} thing(s) not assertable:`);
+  for (const n of notAssertable) console.log(`  - ${n}`);
 }
-console.log(`\n${problems.length} problem(s):`);
-for (const p of problems) console.log(`  x ${p}`);
-process.exit(1);
+if (problems.length) {
+  console.log(`\n${problems.length} problem(s):`);
+  for (const p of problems) console.log(`  x ${p}`);
+  process.exit(1);
+}
+if (!graphComplete) {
+  console.log("\nlink-audit: INCONCLUSIVE - the graph checks could not run");
+  process.exit(1);
+}
+console.log("\nlink-audit: no problems found");
+process.exit(0);
