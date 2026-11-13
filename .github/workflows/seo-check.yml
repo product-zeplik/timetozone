@@ -37,6 +37,8 @@ jobs:
       # Hub page controls stay off in CI: CI judges the code alone, and a hub
       # decision can never turn a push red (src/seo/page-controls.ts).
       ZEPLIK_PAGE_CONTROLS: "off"
+      # So does AI-crawler hit reporting (src/seo/crawler-hits.ts): production only.
+      ZEPLIK_CRAWLER_HITS: "off"
     steps:
       - uses: actions/checkout@v4
         with:

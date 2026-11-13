@@ -1,5 +1,6 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 import { siteControls } from "@/seo/page-controls";
+import { hits } from "@/seo/crawler-hits";
 
 /** Canonical hostname from SITE_URL, e.g. "timetozone.com". */
 const CANONICAL_HOST = (() => {
@@ -40,18 +41,27 @@ export const config = {
  *    noindex control adds `X-Robots-Tag: noindex, follow` to the response
  *    that leaves. A no-op unless ZEPLIK_PAGE_CONTROLS=on (production only).
  *    Do not remove this hook.
+ * 5. AI-crawler hits (src/seo/crawler-hits.ts): hits.record(req, res, event)
+ *    is the last line before EVERY return, with the response that leaves.
+ *    Synchronous, never throws, never changes the response; a no-op unless
+ *    ZEPLIK_CRAWLER_HITS=on (production only). Do not remove it.
+ *
+ * The matcher is unchanged: /.well-known/zeplik-seo.json (a .json path) never
+ * reaches this middleware, so neither page controls nor hit counting touch it.
  */
 
-export async function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest, event?: NextFetchEvent) {
   const { pathname, search } = req.nextUrl;
   const isProd = process.env.SITE_ENV === "production";
 
   // IndexNow key file, served here so it does not collide with /[pair].
   const key = process.env.INDEXNOW_KEY;
   if (key && pathname === `/${key}.txt`) {
-    return new NextResponse(key, {
+    const res = new NextResponse(key, {
       headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=86400" },
     });
+    hits.record(req, res, event);
+    return res;
   }
 
   if (/[A-Z]/.test(pathname)) {
@@ -60,18 +70,22 @@ export async function middleware(req: NextRequest) {
     const target = `${proto}://${host}${pathname.toLowerCase()}${search}`;
     const res = NextResponse.redirect(target, 301);
     if (!isProd || isOffCanonicalHost(req)) res.headers.set("X-Robots-Tag", "noindex, nofollow");
+    hits.record(req, res, event);
     return res;
   }
 
   const controlled = await siteControls.respond(req);
   if (controlled) {
     if (!isProd || isOffCanonicalHost(req)) controlled.headers.set("X-Robots-Tag", "noindex, nofollow");
+    hits.record(req, controlled, event);
     return controlled;
   }
 
   const res = NextResponse.next();
   if (!isProd || isOffCanonicalHost(req)) res.headers.set("X-Robots-Tag", "noindex, nofollow");
-  return siteControls.decorate(req, res);
+  const out = await siteControls.decorate(req, res);
+  hits.record(req, out, event);
+  return out;
 }
 
 function isOffCanonicalHost(req: NextRequest): boolean {
