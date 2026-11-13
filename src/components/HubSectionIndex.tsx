@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs, JsonLd, buildMetadata } from "@zeplik/seo-kit";
 import { breadcrumbList, itemList } from "@zeplik/seo-kit/jsonld";
 import { kit } from "@/seo.config";
+import { isNextInternalError } from "@zeplik/seo-kit/hub";
 import { publishedEntries, type HubRouteSection } from "@/seo/content-routes";
 
 type Section = HubRouteSection;
@@ -15,13 +16,24 @@ type Section = HubRouteSection;
  * publishes the first one; the revalidate webhook refreshes it then.
  *
  * Head and JSON-LD come from @zeplik/seo-kit (CLAUDE.md). A hub outage at
- * request time throws (publishedEntries), so ISR keeps the last good index
- * instead of turning a live index into a 404; during the build it only means
- * the index is not prebuilt.
+ * request time serves the last list this process rendered; with none, it
+ * throws (an uncached 500), so a live index is never replaced by a cached 404.
+ * During the build an outage only means the index is not prebuilt.
  */
+const lastGood = new Map<string, Awaited<ReturnType<Section["route"]["list"]>>>();
+
 async function items(section: Section) {
-  await publishedEntries();
-  return section.route.list({ limit: 200 });
+  try {
+    await publishedEntries();
+  } catch (err) {
+    if (isNextInternalError(err)) throw err;
+    const kept = lastGood.get(section.basePath);
+    if (kept) return kept;
+    throw err;
+  }
+  const list = await section.route.list({ limit: 200 });
+  lastGood.set(section.basePath, list);
+  return list;
 }
 
 export async function sectionIndexMetadata(section: Section): Promise<Metadata> {
