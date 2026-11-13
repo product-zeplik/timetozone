@@ -103,6 +103,8 @@ describe("hub sections", () => {
       expect(slug).toMatch(/from "@\/seo\/content-routes"/);
       expect(slug).toMatch(/export const revalidate = 3600;/);
       expect(slug).toMatch(/export default \w+\.Page;/);
+      // Never prebuilt: hub content must not be able to fail the build-time seo:lint.
+      expect(slug).toMatch(/export function generateStaticParams\(\) \{\n  return \[\];\n\}/);
     }
   });
 

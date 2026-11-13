@@ -8,6 +8,14 @@ import { alternatives } from "@/seo/content-routes";
  */
 export const revalidate = 3600;
 export const dynamicParams = true;
-export const generateStaticParams = alternatives.generateStaticParams;
+/**
+ * Rendered on first request, never at build: the Docker build runs seo:lint
+ * over every prebuilt page, so hub content must never be able to fail a
+ * deploy (a duplicate title or description between two hub pages would).
+ * seo-check crawls them at runtime instead.
+ */
+export function generateStaticParams() {
+  return [];
+}
 export const generateMetadata = alternatives.generateMetadata;
 export default alternatives.Page;
