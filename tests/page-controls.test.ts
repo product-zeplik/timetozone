@@ -71,9 +71,12 @@ describe("page controls", () => {
       expect(res.headers.get("x-robots-tag")).toBeNull();
       expect(res.headers.get("x-zeplik-control")).toBeNull();
     }
+    // The middleware asks the hub nothing at all while controls are off.
+    expect(f).not.toHaveBeenCalled();
     const xml = await (await sm.sitemapResponse(0)).text();
     for (const p of SET.map((x) => x.path)) expect(xml).toContain(`<loc>https://timetozone.com${p}</loc>`);
-    expect(f).not.toHaveBeenCalled();
+    // Sitemap 0 reads the hub's published pages (tests/hub-content.test.ts), never the control set.
+    expect(f.mock.calls.filter(([u]) => String(u).includes("/api/public/page-controls/"))).toHaveLength(0);
   });
 
   it("with a control set: gone -> 410, redirect -> 301, noindex -> header, all four leave the sitemap", async () => {
@@ -148,7 +151,8 @@ describe("page controls", () => {
     expect(mw).toMatch(/siteControls\.respond\(req\)/);
     expect(mw).toMatch(/siteControls\.decorate\(req, res\)/);
     const sm = readFileSync("src/seo/sitemap-data.ts", "utf8");
-    expect(sm).toMatch(/siteControls\.filterRows\(sitemapEntries\(id\)\)/);
+    // The control filter is the last step on the final list: the code's rows and the hub's rows.
+    expect(sm).toMatch(/siteControls\.filterRows\(\[\.\.\.sitemapEntries\(id\), \.\.\.\(await hubSitemapRows\(id\)\)\]\)/);
     for (const id of [0, 1, 2, 3, 4]) {
       expect(readFileSync(`src/app/sitemap-${id}.xml/route.ts`, "utf8")).toMatch(new RegExp(`sitemapResponse\\(${id}\\)`));
     }

@@ -1,5 +1,5 @@
 import { SITE } from "@/site";
-import { SITEMAP_HEADERS, SITEMAP_IDS, sitemapLastmod, sitemapPath } from "@/seo/sitemap-data";
+import { SITEMAP_HEADERS, SITEMAP_IDS, sitemapFileLastmod, sitemapPath } from "@/seo/sitemap-data";
 
 export const dynamic = "force-static";
 export const revalidate = 86400;
@@ -12,11 +12,12 @@ export const revalidate = 86400;
  * conventional /sitemap.xml means one URL to submit, and crawlers that look
  * for it by convention find the whole set.
  */
-export function GET() {
-  // Each file's lastmod is its newest URL's content date (seo/content-dates.json),
-  // never the build or request clock.
+export async function GET() {
+  // Each file's lastmod is its newest URL's content date (seo/content-dates.json,
+  // or the hub's dateModified for hub pages), never the build or request clock.
+  const lastmods = await Promise.all(SITEMAP_IDS.map((i) => sitemapFileLastmod(i)));
   const entry = (i: number) => {
-    const lastmod = sitemapLastmod(i);
+    const lastmod = lastmods[i];
     return `  <sitemap><loc>${SITE.url}${sitemapPath(i)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</sitemap>`;
   };
   const body = `<?xml version="1.0" encoding="UTF-8"?>

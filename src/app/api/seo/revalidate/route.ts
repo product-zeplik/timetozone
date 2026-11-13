@@ -21,6 +21,14 @@ import { controlRevalidatePaths } from "@/seo/sitemap-data";
  * request also revalidates every sitemap file, /sitemap.xml and each URL in
  * payload.urls (controlRevalidatePaths), so the change reaches the 24 h
  * force-static sitemaps at once. Only after the seo-kit handler accepted it.
+ *
+ * Hub content (src/seo/hub-sections.ts): the seo-kit handler already
+ * revalidates the payload's paths and the zeplik:article:<slug>,
+ * zeplik:tool:<id>, zeplik:sitemap and zeplik:related tags that the hub
+ * sections, the hub copy slot and sitemap 0 fetch with, and clears the
+ * hasPage and "no copy yet" memories. An article event also revalidates every
+ * hub section index here (controlRevalidatePaths), so a section's first
+ * article turns its 404 index into a listing at once.
  */
 export const dynamic = "force-dynamic";
 

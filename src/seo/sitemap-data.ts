@@ -6,6 +6,10 @@ import { hourLabel } from "@/engine/tz";
 import { TOOL_LINKS } from "@/content/nav";
 import { contentDate, type ContentFamily } from "@/seo/content-dates";
 import { siteControls } from "@/seo/page-controls";
+import { HUB_SECTIONS, sectionOf } from "@/seo/hub-sections";
+import { hubDaily } from "@/seo/hub";
+import { isNextInternalError } from "@zeplik/seo-kit/hub";
+import type { SitemapEntry as HubSitemapEntry } from "@zeplik/core";
 
 /** The five sitemap files, each well under the 50,000-URL limit. docs/08 §8.3. */
 export const SITEMAP_IDS = [0, 1, 2, 3, 4] as const;
@@ -93,6 +97,70 @@ export function sitemapEntries(id: number): SitemapEntry[] {
   }
 }
 
+/** The last hub sitemap list this process read, for a request-time hub outage. */
+let lastGoodHub: HubSitemapEntry[] | null = null;
+
+/**
+ * Hub pages in sitemap 0 (the file that already holds the tools, trust pages
+ * and other hand-built sections): every page the hub has published in a
+ * mounted section (src/seo/hub-sections.ts), and each section index that
+ * has at least one, so a hub page is in exactly one sitemap. lastmod is the
+ * hub's dateModified (its sitemap `lastmod`) as a day, never the clock; an
+ * index takes its newest page's. Nothing for the other files, and nothing off
+ * production (as sitemapEntries).
+ *
+ * The fetch is cached for 86400 s like the file itself and tagged
+ * zeplik:sitemap, so the revalidate webhook refreshes it on publish. A hub
+ * outage never fails or empties the file: it uses the last list this process
+ * read, else no hub rows (the build, a fresh process), and the code's own rows
+ * are always there. Page controls still run last, in sitemapResponse.
+ */
+export async function hubSitemapRows(id: number): Promise<SitemapEntry[]> {
+  if (Number(id) !== 0 || !SITE.isProduction) return [];
+  if (!hubDaily) return [];
+  let entries: HubSitemapEntry[];
+  try {
+    entries = await hubDaily.getSitemapEntries();
+    lastGoodHub = entries;
+  } catch (err) {
+    if (isNextInternalError(err)) throw err;
+    console.warn(`[sitemap] hub entries unavailable, ${lastGoodHub ? "using the last good list" : "no hub rows"}: ${err instanceof Error ? err.message : String(err)}`);
+    entries = lastGoodHub ?? [];
+  }
+  const host = new URL(SITE.url).host;
+  const pages = new Map<string, SitemapEntry>();
+  const newest = new Map<string, string>();
+  for (const e of entries) {
+    let path: string;
+    try {
+      const u = new URL(e.url);
+      if (u.host !== host) continue;
+      path = u.pathname.replace(/\/+$/, "");
+    } catch {
+      continue;
+    }
+    const section = sectionOf(path);
+    if (!section || e.pageType !== section.pageType || e.locale !== "en") continue;
+    const slug = path.slice(section.basePath.length + 1);
+    if (!slug || slug.includes("/") || !/^\d{4}-\d{2}-\d{2}/.test(e.lastmod)) continue;
+    const day = e.lastmod.slice(0, 10);
+    pages.set(path, { url: abs(path), lastModified: day, changeFrequency: "daily", priority: 0.6 });
+    if ((newest.get(section.basePath) ?? "") < day) newest.set(section.basePath, day);
+  }
+  const out: SitemapEntry[] = [];
+  for (const sec of HUB_SECTIONS) {
+    const day = newest.get(sec.basePath);
+    if (day) out.push({ url: abs(sec.basePath), lastModified: day, changeFrequency: "daily", priority: 0.5 });
+  }
+  out.push(...[...pages.values()].sort((a, b) => a.url.localeCompare(b.url)));
+  return out;
+}
+
+/** The newest lastmod in one sitemap file, hub rows included, for the index. */
+export async function sitemapFileLastmod(id: number): Promise<string | undefined> {
+  return [...sitemapEntries(id), ...(await hubSitemapRows(id))].map((e) => e.lastModified).sort().at(-1);
+}
+
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 /** Serialise to the sitemaps.org 0.9 schema. */
@@ -126,11 +194,12 @@ export const SITEMAP_HEADERS = {
 /**
  * The final step before a sitemap file is written: hub page controls
  * (src/seo/page-controls.ts) drop every 410, 301 source, noindex and exclude
- * URL. Returns the rows unchanged unless ZEPLIK_PAGE_CONTROLS=on, so the
- * Docker build and CI always write the code's own sitemap. Do not remove.
+ * URL -- from the code's rows and the hub's rows alike. Returns the rows
+ * unchanged unless ZEPLIK_PAGE_CONTROLS=on, so the Docker build and CI always
+ * write the code's own sitemap. Do not remove.
  */
 export async function sitemapResponse(id: number): Promise<Response> {
-  const rows = await siteControls.filterRows(sitemapEntries(id));
+  const rows = await siteControls.filterRows([...sitemapEntries(id), ...(await hubSitemapRows(id))]); // last step: nothing is added after it
   return new Response(sitemapXml(rows), { headers: SITEMAP_HEADERS });
 }
 
@@ -138,12 +207,17 @@ export async function sitemapResponse(id: number): Promise<Response> {
  * What a hub webhook must also revalidate so a page control (or any change
  * carrying URLs) reaches the force-static sitemaps at once instead of after
  * their 24 h revalidate: every sitemap file, the index, and each same-site URL
- * in the payload. Empty for any other event, so nothing extra runs for it.
+ * in the payload. A hub article event (publish, update, unpublish, delete)
+ * also refreshes every hub section index (src/seo/hub-sections.ts), so a
+ * first article turns its section's 404 index into a listing and a removed
+ * one leaves it. Empty for any other event, so nothing extra runs for it.
  */
-export function controlRevalidatePaths(p: { event: string; urls?: readonly string[] }): string[] {
+export function controlRevalidatePaths(p: { event: string; kind?: string; urls?: readonly string[] }): string[] {
   const urls = p.urls ?? [];
-  if (p.event !== "redirect" && urls.length === 0) return [];
+  const article = p.kind === "article";
+  if (p.event !== "redirect" && urls.length === 0 && !article) return [];
   const out = new Set<string>(["/sitemap.xml", ...SITEMAP_IDS.map(sitemapPath)]);
+  if (article) for (const s of HUB_SECTIONS) out.add(s.basePath);
   const origin = new URL(SITE.url).origin;
   for (const u of urls) {
     try {

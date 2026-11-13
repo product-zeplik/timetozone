@@ -116,6 +116,38 @@
       "primaryKeyword": "time zones",
       "ymyl": false,
       "addedAt": "2026-11-06"
+    },
+    {
+      "id": "guides",
+      "path": "/guides",
+      "type": "guide",
+      "status": "building",
+      "ymyl": false,
+      "addedAt": "2026-11-13"
+    },
+    {
+      "id": "compare",
+      "path": "/compare",
+      "type": "comparison",
+      "status": "building",
+      "ymyl": false,
+      "addedAt": "2026-11-13"
+    },
+    {
+      "id": "alternatives",
+      "path": "/alternatives",
+      "type": "alternatives",
+      "status": "building",
+      "ymyl": false,
+      "addedAt": "2026-11-13"
+    },
+    {
+      "id": "best",
+      "path": "/best",
+      "type": "best_of",
+      "status": "building",
+      "ymyl": false,
+      "addedAt": "2026-11-13"
     }
   ]
 }
