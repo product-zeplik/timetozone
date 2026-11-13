@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { HubCopySlot } from "@/components/HubCopySlot";
 import Link from "next/link";
 import { buildDstHub } from "@/content/dst";
 import { pageMeta, graph, ld } from "@/seo/meta";
@@ -69,6 +70,8 @@ export default function DstHubPage() {
 
       <Faq items={c.faqs} heading="Daylight saving time FAQ" id="faq" />
 
+      {/* Hub copy for this page's manifest feature: renders nothing until the owner approves copy. */}
+      <HubCopySlot path="/daylight-saving-time" />
       <Updated date={contentDateLabel("dst-hub")} />
 
       <JsonLd

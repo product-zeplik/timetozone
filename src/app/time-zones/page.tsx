@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { HubCopySlot } from "@/components/HubCopySlot";
 import Link from "next/link";
 import { ZONES } from "@/data/zones";
 import { COUNTRIES, COUNTRY_BY_SLUG, REGION_BY_ENTITY } from "@/engine/entities";
@@ -125,6 +126,8 @@ export default function TimeZonesPage() {
 
       <Faq items={faqs} heading="Time zone FAQ" id="faq" />
 
+      {/* Hub copy for this page's manifest feature: renders nothing until the owner approves copy. */}
+      <HubCopySlot path="/time-zones" />
       <Updated date={contentDateLabel("time-zones")} />
 
       <JsonLd

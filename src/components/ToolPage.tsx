@@ -4,6 +4,7 @@ import { graph, ld } from "@/seo/meta";
 import type { FaqItem } from "./Blocks";
 import { contentDate, contentDateLabel, type ContentFamily } from "@/seo/content-dates";
 import { homeBreadcrumbs } from "@/seo/page-jsonld";
+import { HubCopySlot } from "./HubCopySlot";
 
 export interface ToolPageProps {
   h1: string;
@@ -51,6 +52,8 @@ export function ToolPage({
       <Ad slot={adSlot} lazy={false} />
       {extra}
       <Faq items={faqs} heading={faqHeading} id="faq" />
+      {/* Hub copy for this page's manifest feature: renders nothing until the owner approves copy. */}
+      <HubCopySlot path={path} />
       <Updated date={contentDateLabel(family)} />
       <JsonLd
         data={graph([
