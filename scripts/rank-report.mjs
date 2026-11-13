@@ -93,6 +93,17 @@ function add(file) {
 
 const fmt = (n) => (n === undefined ? "—" : n.toFixed(1));
 
+/** The newest recorded value of a site-wide metric, or null if never recorded. */
+function latestMetric(key) {
+  if (!existsSync(METRICS)) return null;
+  const all = JSON.parse(readFileSync(METRICS, "utf8"));
+  for (const d of Object.keys(all).sort().reverse()) {
+    const v = all[d][key];
+    if (typeof v === "number") return v;
+  }
+  return null;
+}
+
 function report() {
   const snaps = snapshots();
   if (snaps.length === 0) {
@@ -107,6 +118,14 @@ function report() {
   const now = byKw(cur);
   const before = prev ? byKw(prev) : new Map();
 
+  // A snapshot proves things only about the keywords in it. Search Console
+  // counted this many distinct queries for the site; a snapshot holding a
+  // small fraction of that is a sample, and "0 of 479 targeted keywords are
+  // ranking" read off a sample is not a finding about the site, it is a
+  // finding about the sample. Say which one this is.
+  const siteQueries = latestMetric("queries");
+  const partial = siteQueries ? cur.rows.length < siteQueries * 0.5 : cur.rows.length < 100;
+
   const top3 = cur.rows.filter((r) => r.position <= 3).length;
   const top10 = cur.rows.filter((r) => r.position <= 10).length;
   const top20 = cur.rows.filter((r) => r.position <= 20).length;
@@ -115,7 +134,16 @@ function report() {
   console.log(`\nrank report — ${cur.date}${prev ? ` (vs ${prev.date})` : " (baseline, no prior day)"}\n`);
   console.log(`  ranked keywords : ${cur.rows.length}${prev ? ` (${sign(cur.rows.length - prev.rows.length)})` : ""}`);
   console.log(`  top 3 / 10 / 20 : ${top3} / ${top10} / ${top20}`);
-  console.log(`  of our mapped   : ${mapped.length} of ${targets.size} targeted keywords are ranking`);
+  if (partial) {
+    console.log(`  of our mapped   : ${mapped.length} of ${targets.size} targeted keywords appear in this snapshot`);
+    console.log(
+      `  COVERAGE        : this is a sample of ${cur.rows.length} keyword(s)` +
+        (siteQueries ? `, against ${siteQueries} queries Search Console reported` : "") +
+        " — the counts above describe the sample, not the site"
+    );
+  } else {
+    console.log(`  of our mapped   : ${mapped.length} of ${targets.size} targeted keywords are ranking`);
+  }
   metricsReport();
 
   if (!prev) {
@@ -144,7 +172,19 @@ function report() {
   show("improved", up, (r) => `${fmt(r.from)} -> ${fmt(r.position)}  ${r.keyword}`);
   show("declined", down, (r) => `${fmt(r.from)} -> ${fmt(r.position)}  ${r.keyword}`);
   show("newly ranking", gained.sort((a, b) => a.position - b.position), (r) => `${fmt(r.position).padStart(6)}  ${r.keyword}`);
-  show("dropped out", lost, (r) => `was ${fmt(r.position)}  ${r.keyword}`);
+  // A keyword missing from a smaller snapshot has not necessarily lost its
+  // ranking -- it may simply have fallen below the cut of whatever export
+  // was recorded. Only claim a drop when both days were measured alike.
+  const biggest = Math.max(cur.rows.length, prev.rows.length);
+  const sizeShift = Math.abs(cur.rows.length - prev.rows.length) > Math.max(10, 0.25 * biggest);
+  if (sizeShift) {
+    console.log(
+      `\n  dropped out: not assertable — ${prev.date} held ${prev.rows.length} keyword(s) and ` +
+        `${cur.date} holds ${cur.rows.length}, so ${lost.length} absence(s) cannot be told from a shorter export`
+    );
+  } else {
+    show("dropped out", lost, (r) => `was ${fmt(r.position)}  ${r.keyword}`);
+  }
   console.log("");
 }
 
@@ -171,17 +211,30 @@ function history(keyword) {
  */
 function addMetrics(spec) {
   const m = {};
+  // Search Console data lags two to three days, so the day a number is read
+  // is not the day it describes. Keying by the reading date silently shifts
+  // the whole series and invents movement between days that were never
+  // measured. An explicit date=YYYY-MM-DD names the day the figures are for.
+  let date = today();
   for (const pair of spec.split(",")) {
     const [k, v] = pair.split("=").map((x) => x.trim());
     if (!k) continue;
+    if (k === "date") {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(v || "")) {
+        console.error(`--metrics: date must be YYYY-MM-DD, got "${v}"`);
+        process.exit(1);
+      }
+      date = v;
+      continue;
+    }
     const n = Number(String(v).replace(/[,%]/g, ""));
     m[k] = Number.isFinite(n) ? n : v;
   }
   mkdirSync(HIST, { recursive: true });
   const all = existsSync(METRICS) ? JSON.parse(readFileSync(METRICS, "utf8")) : {};
-  all[today()] = m;
+  all[date] = m;
   writeFileSync(METRICS, JSON.stringify(all, null, 1));
-  console.log(`recorded metrics for ${today()}: ${JSON.stringify(m)}`);
+  console.log(`recorded metrics for ${date}: ${JSON.stringify(m)}`);
 }
 
 function metricsReport() {

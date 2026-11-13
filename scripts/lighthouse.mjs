@@ -23,6 +23,20 @@ const URLS = process.argv.slice(3).length
       "/world-clock",
     ];
 
+// Lighthouse scores a page it cannot load as zero in every category, which in
+// the output is indistinguishable from a site in ruins. Nothing listening on
+// the target is not a failing site, it is an absent one, so establish that the
+// target answers before measuring -- and before paying for a browser.
+try {
+  const probe = await fetch(BASE + "/", { redirect: "manual" });
+  if (probe.status >= 500) throw new Error(`HTTP ${probe.status}`);
+} catch (err) {
+  console.error(`lighthouse: nothing is answering at ${BASE} (${err.message})`);
+  console.error("  start the production server first, or name a target:");
+  console.error("    node scripts/lighthouse.mjs https://timetozone.com");
+  process.exit(1);
+}
+
 const browser = await chromium.launch({ args: ["--remote-debugging-port=9222"] });
 const port = 9222;
 
@@ -51,6 +65,7 @@ const ADS = await adsLive();
 console.log(`ads ${ADS ? "live on the target — best-practices target 70" : "off — best-practices target 95"}\n`);
 const TARGET = { performance: 95, seo: 100, accessibility: 95, "best-practices": ADS ? 70 : 95 };
 const fails = [];
+const unmeasured = [];
 const table = [];
 
 for (const path of URLS) {
@@ -59,6 +74,14 @@ for (const path of URLS) {
     { port, output: "json", logLevel: "error", onlyCategories: Object.keys(TARGET) },
     undefined
   );
+  // Same reasoning per page: a load failure is not a score of zero, and
+  // averaging it in drags the whole report toward a conclusion nobody measured.
+  if (res.lhr.runtimeError) {
+    console.log(`${path.padEnd(28)} NOT MEASURED — ${res.lhr.runtimeError.code}`);
+    unmeasured.push(`${path}: ${res.lhr.runtimeError.code} ${res.lhr.runtimeError.message ?? ""}`.trim());
+    continue;
+  }
+
   const c = res.lhr.categories;
   const cls = res.lhr.audits["cumulative-layout-shift"]?.numericValue ?? 0;
   const lcp = res.lhr.audits["largest-contentful-paint"]?.numericValue ?? 0;
@@ -103,12 +126,27 @@ for (const path of URLS) {
 
 await browser.close();
 
-const avg = (k) => Math.round(table.reduce((n, r) => n + r[k], 0) / table.length);
-console.log(`\naverage — perf ${avg("perf")} · a11y ${avg("a11y")} · best-practices ${avg("bp")} · seo ${avg("seo")}`);
+if (table.length) {
+  const avg = (k) => Math.round(table.reduce((n, r) => n + r[k], 0) / table.length);
+  console.log(
+    `\naverage of the ${table.length} page(s) measured — perf ${avg("perf")} · a11y ${avg("a11y")} · ` +
+      `best-practices ${avg("bp")} · seo ${avg("seo")}`
+  );
+}
+
+if (unmeasured.length) {
+  console.log(`\n${unmeasured.length} page(s) could not be measured:`);
+  for (const u of unmeasured) console.log(`  - ${u}`);
+}
+if (!table.length) {
+  console.log("\nlighthouse: nothing was measured");
+  process.exit(1);
+}
 
 if (fails.length) {
   console.log(`\n${fails.length} below target:`);
   for (const f of fails) console.log(`  x ${f}`);
   process.exit(1);
 }
+if (unmeasured.length) process.exit(1);
 console.log("lighthouse: all targets met");

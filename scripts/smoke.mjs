@@ -72,11 +72,16 @@ const EXPECT_308 = [
 
 let pass = 0;
 const fails = [];
+const unknown = [];
 
 const check = (ok, label, detail) => {
   if (ok) pass++;
   else fails.push(`${label}${detail ? ` — ${detail}` : ""}`);
 };
+
+// Neither a pass nor a failure: a check whose oracle we could not establish.
+// Counting one of these as either is how a gate starts lying.
+const cannotTell = (label, why) => unknown.push(`${label}: ${why}`);
 
 async function get(path, headers = {}) {
   const r = await fetch(BASE + path, { redirect: "manual", headers, keepalive: false });
@@ -90,7 +95,33 @@ async function get(path, headers = {}) {
   return { status: r.status, headers: r.headers, location: parts.length === 1 ? parts[0] : raw, text };
 }
 
-console.log(`smoke: ${BASE}\n`);
+// What robots.txt and the X-Robots-Tag ought to say is a property of the site
+// being tested, not of the shell running the test. /api/health reports the
+// SITE_ENV the target was actually built and started with, so ask the target.
+// Reading a local variable instead fails a perfectly good production site
+// whenever the variable is unset -- noise that trains you to ignore the gate --
+// and, worse, silently passes production-shaped expectations against staging.
+let TARGET_ENV = null;
+let envSource = null;
+try {
+  const h = await fetch(`${BASE}/api/health`, { redirect: "manual" });
+  if (h.status === 200) {
+    const env = JSON.parse(await h.text()).env;
+    if (env) {
+      TARGET_ENV = env;
+      envSource = `${BASE}/api/health`;
+    }
+  }
+} catch {
+  /* fall through to the local variable */
+}
+if (!TARGET_ENV && process.env.SITE_ENV) {
+  TARGET_ENV = process.env.SITE_ENV;
+  envSource = "local SITE_ENV (the target did not report one)";
+}
+
+console.log(`smoke: ${BASE}`);
+console.log(`  environment: ${TARGET_ENV ?? "unknown"}${envSource ? ` (from ${envSource})` : ""}\n`);
 
 for (const p of OK_200) {
   const r = await get(p);
@@ -119,8 +150,16 @@ for (const p of MACHINE_200) {
   }
   if (p === "/robots.txt" && r.status === 200) {
     const t = r.text;
-    const prod = process.env.SITE_ENV === "production";
-    check(prod ? /Allow: \/$/m.test(t) : /Disallow: \/$/m.test(t), "robots matches SITE_ENV", t.slice(0, 80));
+    if (!TARGET_ENV) {
+      cannotTell("robots matches the environment", "could not establish the target's SITE_ENV");
+    } else {
+      const prod = TARGET_ENV === "production";
+      check(
+        prod ? /Allow: \/$/m.test(t) : /Disallow: \/$/m.test(t),
+        `robots matches the target's environment (${TARGET_ENV})`,
+        t.slice(0, 80)
+      );
+    }
   }
   if (p === "/map/world.svg" && r.status === 200) {
     const t = r.text;
@@ -173,7 +212,9 @@ for (const [from, to] of EXPECT_308) {
 {
   const r = await get("/pst-to-est");
   const tag = r.headers.get("x-robots-tag") || "";
-  if (process.env.SITE_ENV === "production") {
+  if (!TARGET_ENV) {
+    cannotTell("noindex header", "could not establish the target's SITE_ENV");
+  } else if (TARGET_ENV === "production") {
     check(!tag.includes("noindex"), "no noindex header on production", tag);
   } else {
     check(tag.includes("noindex"), "noindex header off production", tag || "(absent)");
@@ -309,6 +350,10 @@ for (const [from, to] of EXPECT_308) {
 }
 
 console.log(`\n${pass} checks passed`);
+if (unknown.length) {
+  console.log(`${unknown.length} not assertable:`);
+  for (const u of unknown) console.log(`  - ${u}`);
+}
 if (fails.length) {
   console.log(`${fails.length} FAILED:`);
   for (const f of fails) console.log(`  x ${f}`);
