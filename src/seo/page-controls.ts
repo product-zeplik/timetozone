@@ -1,4 +1,4 @@
-import { defineSeoKit, type SeoKit } from "@zeplik/seo-kit";
+import { defineSeoKit, type SeoKit } from "@zeplik/seo-kit/server";
 import { pageControls, seoMiddleware, type PageControlsOptions, type PageControlsStatus } from "@zeplik/seo-kit/middleware";
 import { HUB_FALLBACK } from "@/seo/hub-url";
 

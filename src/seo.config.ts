@@ -1,4 +1,4 @@
-import { defineSeoKit } from "@zeplik/seo-kit";
+import { defineSeoKit } from "@zeplik/seo-kit/server";
 import { HUB_FALLBACK } from "@/seo/hub-url";
 
 /**
@@ -29,5 +29,8 @@ export const kit = defineSeoKit({
     name: "TimeToZone",
     sameAs: process.env.NEXT_PUBLIC_CHROME_STORE_URL ? [process.env.NEXT_PUBLIC_CHROME_STORE_URL] : [],
   },
+  // Plain server CTA links on hub pages: this site runs no PostHog, so
+  // seo-kit's tracked CtaLink (window.posthog) could never report a click.
+  ctaTracking: false,
   indexNowKey: process.env.INDEXNOW_KEY || process.env.ZEPLIK_INDEXNOW_KEY || undefined,
 });

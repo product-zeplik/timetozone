@@ -1,5 +1,5 @@
 import { revalidatePath, revalidateTag } from "next/cache";
-import { createRevalidateHandler } from "@zeplik/seo-kit/next";
+import { createRevalidateHandler } from "@zeplik/seo-kit/server";
 import { kit } from "@/seo.config";
 import { controlRevalidatePaths } from "@/seo/sitemap-data";
 

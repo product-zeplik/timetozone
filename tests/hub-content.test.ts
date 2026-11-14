@@ -30,12 +30,30 @@ const ENTRIES: Entry[] = [
   { url: "https://timetozone.com/guides/fr-only", pageType: "guide", locale: "fr", lastmod: "2026-11-22" },
 ];
 
-function hub(o: { entries?: Entry[]; down?: boolean; controls?: unknown[] } = {}) {
+// Three more guides, so /guides can be listable (an approved intro and 3 readable pages).
+const GUIDES3: Entry[] = ["g-one", "g-two", "g-three"].map((slug, i) => ({ url: `https://timetozone.com/guides/${slug}`, pageType: "guide", locale: "en", lastmod: `2026-11-1${i}` }));
+const article = (slug: string) => ({
+  contractVersion: 1, site: "timetozone.com", slug, path: `/guides/${slug}`, pageType: "guide", locale: "en",
+  title: `Fixture guide ${slug}`, metaDescription: "A fixture guide.", h1: `Fixture guide ${slug}`, bodyHtml: "<p data-answer>Fixture answer.</p>", jsonLd: [],
+  author: { name: "Fixture Author", slug: "fixture-author", url: null, bio: null, sameAs: [] }, reviewer: null,
+  datePublished: "2026-10-01", dateModified: "2026-11-12", canonical: `https://timetozone.com/guides/${slug}`, robots: "index,follow",
+  hreflang: [], breadcrumbs: [{ name: "Home", url: "https://timetozone.com/" }], cta: null, related: [], adsAllowed: false, ymyl: false, volatileFacts: [],
+});
+const section = (basePath: string, pageType: string, listable: boolean) => ({
+  basePath, locale: "en", pageTypes: [pageType], listable, reason: listable ? null : "no approved intro", pages: listable ? 3 : 1, minPages: 3,
+  intro: listable ? { title: `Fixture ${basePath} title`, metaDescription: "Fixture section intro.", h1: `Fixture ${basePath}`, introHtml: "<p>Fixture intro.</p>" } : null,
+});
+
+function hub(o: { entries?: Entry[]; down?: boolean; controls?: unknown[]; listable?: string[] } = {}) {
   return vi.fn(async (input: RequestInfo | URL) => {
     if (o.down) throw new TypeError("fetch failed");
     const u = String(input);
     const json = (b: unknown) => new Response(JSON.stringify(b), { status: 200, headers: { "content-type": "application/json" } });
     if (u === `${HUB}/api/public/sitemap/timetozone.com`) return json(o.entries ?? []);
+    if (u.startsWith(`${HUB}/api/public/sections/timetozone.com`))
+      return json({ contractVersion: 1, site: "timetozone.com", sections: (o.entries?.length ? SECTIONS : []).map(([b, t]) => section(b, t, (o.listable ?? []).includes(b))) });
+    const g = /^http:\/\/hub\.test\/api\/public\/content\/timetozone\.com\/([a-z0-9-]+)$/.exec(u);
+    if (g && (o.entries ?? []).some((e) => e.url.endsWith(`/guides/${g[1]}`))) return json(article(g[1]));
     if (u === `${HUB}/api/public/page-controls/timetozone.com`)
       return json({ contractVersion: 1, site: "timetozone.com", generatedAt: "2026-11-13T00:00:00Z", version: "t1", controls: o.controls ?? [] });
     return new Response(JSON.stringify({ contractVersion: 1, error: "not found" }), { status: 404 });
@@ -80,6 +98,9 @@ describe("status document (/.well-known/zeplik-seo.json)", () => {
     expect(doc.site).toBe("timetozone.com");
     expect(doc.kit.version).toBe("0.1.12");
     expect(doc.contentRoutes.map((r: { basePath: string; pageTypes: string[] }) => [r.basePath, r.pageTypes.join()])).toEqual(SECTIONS.map(([b, t]) => [b, t]));
+    // Every section is hub-only: its index is seo-kit route.IndexPage.
+    for (const r of doc.contentRoutes) expect(r.index).toBe(true);
+    expect(doc.media).toEqual({ rendered: true, base: null });
     expect(doc.toolCopy).toEqual({ rendered: true, families: ["tool", "map", "site"] });
     expect(doc.indexNow.keyPresent).toBe(true);
     expect(doc.pageControls.enabled).toBe(false);
@@ -99,6 +120,9 @@ describe("hub sections", () => {
     for (const [base] of SECTIONS) {
       const idx = readFileSync(`src/app${base}/page.tsx`, "utf8");
       expect(idx).toContain(`routeSection("${base}")`);
+      // The index is seo-kit's: the hub's intro, a real 404 until listable.
+      expect(idx).toMatch(/export const generateMetadata = SECTION\.generateIndexMetadata;/);
+      expect(idx).toMatch(/await SECTION\.IndexPage\(props\)/);
       const slug = readFileSync(`src/app${base}/[slug]/page.tsx`, "utf8");
       expect(slug).toMatch(/from "@\/seo\/content-routes"/);
       expect(slug).toMatch(/export const revalidate = 3600;/);
@@ -125,6 +149,36 @@ describe("hub sections", () => {
 
   it("hub pages carry no ad slot", () => {
     expect(readFileSync("src/seo/content-routes.ts", "utf8")).not.toMatch(/adSlot:/);
+  });
+
+  it("pages, the copy slot and the hub modules import seo-kit's server entry only (no client JS)", () => {
+    const files = ["src/seo.config.ts", "src/seo/page-controls.ts", "src/seo/content-routes.ts", "src/seo/sitemap-data.ts", "src/components/HubCopySlot.tsx", "src/app/.well-known/zeplik-seo.json/route.ts", "src/app/api/seo/revalidate/route.ts"];
+    for (const [base] of SECTIONS) files.push(`src/app${base}/page.tsx`, `src/app${base}/[slug]/page.tsx`);
+    for (const f of files) expect(readFileSync(f, "utf8"), f).not.toMatch(/from "@zeplik\/seo-kit(\/next|\/client)?"/);
+  });
+
+  it("a section index is a real 404 until the hub says it is listable, then the hub's intro and pages", async () => {
+    const run = async (f: ReturnType<typeof hub>) => {
+      vi.resetModules();
+      vi.stubEnv("ZEPLIK_HUB_URL", HUB);
+      vi.stubGlobal("fetch", f);
+      const { routeSection } = await import("@/seo/content-routes");
+      return routeSection("/guides").route;
+    };
+    const digest = async (p: Promise<unknown>) => p.then(() => "rendered", (e) => String((e as { digest?: string }).digest ?? e));
+    const empty = await run(hub());
+    expect(await digest(empty.IndexPage({}))).toContain("404");
+    expect(await digest(empty.generateIndexMetadata({}))).toContain("404");
+    const thin = await run(hub({ entries: [...ENTRIES, ...GUIDES3] }));
+    expect(await digest(thin.IndexPage({}))).toContain("404");
+    const listed = await run(hub({ entries: [...ENTRIES, ...GUIDES3], listable: ["/guides"] }));
+    const { renderToStaticMarkup } = await import("react-dom/server");
+    const html = renderToStaticMarkup(await listed.IndexPage({}));
+    expect(html).toContain("<h1>Fixture /guides</h1>");
+    for (const g of GUIDES3) expect(html).toContain(`href="${new URL(g.url).pathname}"`);
+    const meta = JSON.stringify(await listed.generateIndexMetadata({}));
+    expect(meta).toContain("Fixture /guides title");
+    expect(meta).toContain("https://timetozone.com/guides");
   });
 });
 
@@ -153,19 +207,25 @@ describe("hub copy slot", () => {
 });
 
 describe("sitemap 0 lists hub pages", () => {
-  it("published pages of mounted sections and their indexes, lastmod from the hub, in sitemap 0 only", async () => {
-    const sm = await load({ ZEPLIK_PAGE_CONTROLS: "off" }, hub({ entries: ENTRIES }));
-    const zero = locs(await (await sm.sitemapResponse(0)).text());
+  it("published pages of mounted sections and their listable indexes, lastmod from the hub, in sitemap 0 only", async () => {
+    const sm = await load({ ZEPLIK_PAGE_CONTROLS: "off" }, hub({ entries: [...ENTRIES, ...GUIDES3], listable: ["/guides"] }));
+    const res0 = await sm.sitemapResponse(0);
+    // Request-time sitemap 0: seo-kit's cache header and where its hub rows came from.
+    expect(res0.headers.get("cache-control")).toBe("public, max-age=0, s-maxage=300, stale-while-revalidate=3600");
+    expect(res0.headers.get("x-zeplik-sitemap")).toBe("live");
+    const zero = locs(await res0.text());
     expect(zero).toEqual(
       expect.arrayContaining([
         "https://timetozone.com/guides 2026-11-20",
         "https://timetozone.com/guides/how-dst-works 2026-11-20",
-        "https://timetozone.com/compare 2026-11-21",
         "https://timetozone.com/compare/a-vs-b 2026-11-21",
       ]),
     );
+    // /compare has a page but is not listable: its pages are listed, its index is not.
+    expect(zero.some((r) => r.startsWith("https://timetozone.com/compare "))).toBe(false);
     const hubRows = zero.filter((r) => /\/(guides|compare|alternatives|best)(\/| )/.test(r));
-    expect(hubRows).toHaveLength(4);
+    expect(hubRows).toHaveLength(6);
+    expect((await sm.sitemapResponse(1)).headers.get("cache-control")).toBe("public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400");
     for (const id of [1, 2, 3, 4]) expect(await (await sm.sitemapResponse(id)).text()).not.toMatch(/\/(guides|compare)\//);
     const index = await (await import("@/app/sitemap.xml/route")).GET();
     expect(await index.text()).toContain("<loc>https://timetozone.com/sitemap-0.xml</loc><lastmod>2026-11-21</lastmod>");

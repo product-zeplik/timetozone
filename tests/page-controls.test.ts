@@ -152,7 +152,8 @@ describe("page controls", () => {
     expect(mw).toMatch(/siteControls\.decorate\(req, res\)/);
     const sm = readFileSync("src/seo/sitemap-data.ts", "utf8");
     // The control filter is the last step on the final list: the code's rows and the hub's rows.
-    expect(sm).toMatch(/siteControls\.filterRows\(\[\.\.\.sitemapEntries\(id\), \.\.\.\(await hubSitemapRows\(id\)\)\]\)/);
+    expect(sm).toMatch(/const hub = await hubSitemap\(id\);\n\s+const rows = await siteControls\.filterRows\(\[\.\.\.sitemapEntries\(id\), \.\.\.hub\.rows\]\);/);
+    expect(sm).toMatch(/return new Response\(sitemapXml\(rows\), \{ headers \}\);/);
     for (const id of [0, 1, 2, 3, 4]) {
       expect(readFileSync(`src/app/sitemap-${id}.xml/route.ts`, "utf8")).toMatch(new RegExp(`sitemapResponse\\(${id}\\)`));
     }

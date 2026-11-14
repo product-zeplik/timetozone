@@ -1,4 +1,4 @@
-import { HubCopy } from "@zeplik/seo-kit";
+import { HubCopy } from "@zeplik/seo-kit/server";
 import { hubDaily, hubKit } from "@/seo/hub";
 import { hubCopyFeature } from "@/seo/hub-copy";
 

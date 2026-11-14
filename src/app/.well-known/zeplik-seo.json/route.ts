@@ -1,4 +1,4 @@
-import { createSiteStatusHandler, crawlerHitsState } from "@zeplik/seo-kit/next";
+import { createSiteStatusHandler, crawlerHitsState } from "@zeplik/seo-kit/server";
 import { kit } from "@/seo.config";
 import { CONTENT_ROUTES } from "@/seo/content-routes";
 import { siteControls } from "@/seo/page-controls";
@@ -9,7 +9,9 @@ import { HUB_COPY_FAMILIES } from "@/seo/hub-copy";
  * can receive from the content hub -- the kit and core versions, the hub
  * content routes it mounts, the page families whose template carries the hub
  * copy slot, whether an IndexNow key is set, the page-control state and the
- * crawler-hit hook's state. Booleans, versions and route shapes only: no key,
+ * crawler-hit hook's state, and media: true (no Content-Security-Policy here
+ * and hub pictures are plain <picture> markup, so the hub may send them).
+ * Each section declares index: true (its index is seo-kit route.IndexPage). Booleans, versions and route shapes only: no key,
  * no hub URL, no environment value. The hub reads it daily.
  *
  * Not a page: not in any sitemap, not linked, `X-Robots-Tag: noindex` (set by
@@ -23,4 +25,5 @@ export const GET = createSiteStatusHandler({
   toolCopy: HUB_COPY_FAMILIES,
   pageControls: siteControls,
   crawlerHits: crawlerHitsState(),
+  media: true,
 });

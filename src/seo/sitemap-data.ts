@@ -7,8 +7,9 @@ import { TOOL_LINKS } from "@/content/nav";
 import { contentDate, type ContentFamily } from "@/seo/content-dates";
 import { siteControls } from "@/seo/page-controls";
 import { HUB_SECTIONS, sectionOf } from "@/seo/hub-sections";
-import { hubDaily } from "@/seo/hub";
-import { isNextInternalError } from "@zeplik/seo-kit/hub";
+import { hubDaily, hubKit } from "@/seo/hub";
+import { createHubClient, isNextInternalError } from "@zeplik/seo-kit/hub";
+import { createContentRoute, SITEMAP_ROUTE_CACHE_CONTROL, SITEMAP_SOURCE_HEADER } from "@zeplik/seo-kit/server";
 import type { SitemapEntry as HubSitemapEntry } from "@zeplik/core";
 
 /** The five sitemap files, each well under the 50,000-URL limit. docs/08 §8.3. */
@@ -101,24 +102,47 @@ export function sitemapEntries(id: number): SitemapEntry[] {
 let lastGoodHub: HubSitemapEntry[] | null = null;
 
 /**
+ * The sections' route objects as the sitemap sees them: same base path, page
+ * type and index flag as src/seo/content-routes.ts, but on the page-control
+ * kit (src/seo/hub.ts), so a bad unrelated setting in src/seo.config.ts can
+ * never take a sitemap down. Used only for indexStaticRoutes(): a section
+ * index is listed only while the hub says it is listable (an approved intro
+ * and at least 3 published pages); otherwise it answers 404 and is never
+ * listed. Hourly, like the index pages themselves.
+ */
+function sectionIndexRoutes() {
+  const k = hubKit;
+  if (!k) return [];
+  const hub = createHubClient(k, { revalidate: 3600, timeoutMs: 2500 });
+  return HUB_SECTIONS.map((sec) => ({ sec, route: createContentRoute({ kit: k, hub, basePath: sec.basePath, pageTypes: [sec.pageType], index: true }) }));
+}
+const indexRoutes = sectionIndexRoutes();
+
+/**
  * Hub pages in sitemap 0 (the file that already holds the tools, trust pages
  * and other hand-built sections): every page the hub has published in a
- * mounted section (src/seo/hub-sections.ts), and each section index that
- * has at least one, so a hub page is in exactly one sitemap. lastmod is the
+ * mounted section (src/seo/hub-sections.ts), and each section index the hub
+ * says is listable, so a hub page is in exactly one sitemap. lastmod is the
  * hub's dateModified (its sitemap `lastmod`) as a day, never the clock; an
  * index takes its newest page's. Nothing for the other files, and nothing off
  * production (as sitemapEntries).
  *
- * The fetch is cached for 86400 s like the file itself and tagged
- * zeplik:sitemap, so the revalidate webhook refreshes it on publish. A hub
- * outage never fails or empties the file: it uses the last list this process
- * read, else no hub rows (the build, a fresh process), and the code's own rows
- * are always there. Page controls still run last, in sitemapResponse.
+ * Sitemap 0 is read at request time (src/app/sitemap-0.xml/route.ts), so a
+ * hub page published before a deploy is in it on the first request. The
+ * fetch is tagged zeplik:sitemap, so the revalidate webhook refreshes it on
+ * publish. A hub outage never fails or empties the file: it uses the last
+ * list this process read, else no hub rows (a fresh process), and the code's
+ * own rows are always there. Page controls still run last, in sitemapResponse.
  */
 export async function hubSitemapRows(id: number): Promise<SitemapEntry[]> {
-  if (Number(id) !== 0 || !SITE.isProduction) return [];
-  if (!hubDaily) return [];
+  return (await hubSitemap(id)).rows;
+}
+
+async function hubSitemap(id: number): Promise<{ rows: SitemapEntry[]; source: "live" | "last-good" | null }> {
+  if (Number(id) !== 0 || !SITE.isProduction) return { rows: [], source: null };
+  if (!hubDaily) return { rows: [], source: null };
   let entries: HubSitemapEntry[];
+  let source: "live" | "last-good" | null = "live";
   try {
     entries = await hubDaily.getSitemapEntries();
     lastGoodHub = entries;
@@ -126,6 +150,7 @@ export async function hubSitemapRows(id: number): Promise<SitemapEntry[]> {
     if (isNextInternalError(err)) throw err;
     console.warn(`[sitemap] hub entries unavailable, ${lastGoodHub ? "using the last good list" : "no hub rows"}: ${err instanceof Error ? err.message : String(err)}`);
     entries = lastGoodHub ?? [];
+    source = lastGoodHub ? "last-good" : null;
   }
   const host = new URL(SITE.url).host;
   const pages = new Map<string, SitemapEntry>();
@@ -148,12 +173,14 @@ export async function hubSitemapRows(id: number): Promise<SitemapEntry[]> {
     if ((newest.get(section.basePath) ?? "") < day) newest.set(section.basePath, day);
   }
   const out: SitemapEntry[] = [];
-  for (const sec of HUB_SECTIONS) {
+  for (const { sec, route } of indexRoutes) {
     const day = newest.get(sec.basePath);
-    if (day) out.push({ url: abs(sec.basePath), lastModified: day, changeFrequency: "daily", priority: 0.5 });
+    if (!day) continue;
+    const listed = await route.indexStaticRoutes(); // never throws; [] while not listable
+    if (listed.some((r) => r.path === sec.basePath)) out.push({ url: abs(sec.basePath), lastModified: day, changeFrequency: "daily", priority: 0.5 });
   }
   out.push(...[...pages.values()].sort((a, b) => a.url.localeCompare(b.url)));
-  return out;
+  return { rows: out, source };
 }
 
 /** The newest lastmod in one sitemap file, hub rows included, for the index. */
@@ -199,8 +226,15 @@ export const SITEMAP_HEADERS = {
  * write the code's own sitemap. Do not remove.
  */
 export async function sitemapResponse(id: number): Promise<Response> {
-  const rows = await siteControls.filterRows([...sitemapEntries(id), ...(await hubSitemapRows(id))]); // last step: nothing is added after it
-  return new Response(sitemapXml(rows), { headers: SITEMAP_HEADERS });
+  const hub = await hubSitemap(id);
+  const rows = await siteControls.filterRows([...sitemapEntries(id), ...hub.rows]); // last step: nothing is added after it
+  // Sitemap 0 holds the hub's pages and is read at request time: seo-kit's
+  // sitemap cache header (5 min at the edge) and the source it was read from.
+  const headers =
+    Number(id) === 0
+      ? { ...SITEMAP_HEADERS, "Cache-Control": SITEMAP_ROUTE_CACHE_CONTROL, ...(hub.source ? { [SITEMAP_SOURCE_HEADER]: hub.source } : {}) }
+      : SITEMAP_HEADERS;
+  return new Response(sitemapXml(rows), { headers });
 }
 
 /**
