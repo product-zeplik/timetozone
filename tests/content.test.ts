@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { COUNTRIES, PLACES, REGIONS, parsePair } from "@/engine/entities";
 import { buildHour, buildPair } from "@/content/pair";
+import { diffMinutes } from "@/engine/pair";
 import { buildMultiZone, buildPlace, buildZone, resolveMultiZone, resolvePlace, targetSide } from "@/content/place";
 import { buildDstCountry, buildDstHub, resolveDstCountry } from "@/content/dst";
 import { ZONE_BY_SLUG } from "@/data/zones";
@@ -293,5 +294,70 @@ describe("every place page uses its own time zone", () => {
       if (m && m[1] !== m[2]) wrong.push(`${region.countrySlug}/${region.slug}: ${m[1]} vs ${m[2]}`);
     }
     expect(wrong).toEqual([]);
+  });
+});
+
+describe("hour pages are told apart from their siblings", () => {
+  // Google was serving /pst-to-est/12am to people searching "5am pst to est".
+  // Titles, H1s, canonicals and sibling anchors were all already correct and
+  // distinct; what was not was the body, where the answer sentence was followed
+  // by sixty words of converter chrome identical on all 24 pages.
+  const SLUGS = ["pst-to-est", "est-to-ist", "ist-to-est", "pst-to-pkt"];
+
+  it("all 24 hours of a pair carry a different lead", () => {
+    for (const slug of SLUGS) {
+      const p = pair(slug);
+      const leads = new Set(Array.from({ length: 24 }, (_, h) => buildHour(p, h, JAN).lead));
+      expect(leads.size, slug).toBe(24);
+    }
+  });
+
+  it("the lead carries the hour in 24-hour form, which the answer never does", () => {
+    const p = pair("pst-to-est");
+    for (const [h, want] of [
+      [0, "00:00"],
+      [5, "05:00"],
+      [12, "12:00"],
+      [17, "17:00"],
+      [23, "23:00"],
+    ] as [number, string][]) {
+      expect(buildHour(p, h, JAN).lead, `${h} lead`).toContain(want);
+    }
+    // And it is genuinely a form the answer does not already carry -- except at
+    // noon, where the 12-hour clock also reads 12:00.
+    for (const [h, want] of [
+      [0, "00:00"],
+      [5, "05:00"],
+      [17, "17:00"],
+      [23, "23:00"],
+    ] as [number, string][]) {
+      expect(buildHour(p, h, JAN).answer, `${h} answer`).not.toContain(want);
+    }
+  });
+
+  // The half hour and the reverse direction each cross midnight on their own
+  // schedule: reading PST to EST backwards, midnight EST is 9 PM PST the day
+  // before, and on a +5:30 offset 18:00 lands on one day while 18:30 lands on
+  // the next. A clause that inherits the hour's shift, or omits one, dates the
+  // conversion wrongly. Checked against the offset arithmetic directly rather
+  // than against the same shift bookkeeping that produced the sentence.
+  it("every clause of the lead states its own day shift", () => {
+    for (const slug of SLUGS) {
+      const p = pair(slug);
+      const diff = diffMinutes(p.from, p.to, JAN);
+      const marker = (mins: number) => (mins < 0 ? "(previous day)" : mins >= 1440 ? "(next day)" : "");
+      for (let h = 0; h < 24; h++) {
+        const lead = buildHour(p, h, JAN).lead;
+        const half = lead.slice(lead.indexOf("Half past"), lead.indexOf("Read the other way"));
+        const rev = lead.slice(lead.indexOf("Read the other way"));
+        const wantHalf = marker(h * 60 + 30 + diff);
+        const wantRev = marker(h * 60 - diff);
+        const shifted = (t: string) => t.includes("(next day)") || t.includes("(previous day)");
+        expect(shifted(half), `${slug} ${h} half past: ${half}`).toBe(wantHalf !== "");
+        expect(shifted(rev), `${slug} ${h} reverse: ${rev}`).toBe(wantRev !== "");
+        if (wantHalf) expect(half, `${slug} ${h} half past`).toContain(wantHalf);
+        if (wantRev) expect(rev, `${slug} ${h} reverse`).toContain(wantRev);
+      }
+    }
   });
 });

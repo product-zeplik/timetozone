@@ -166,6 +166,7 @@ export function HourView({ c }: { c: HourContent }) {
       <Crumbs items={c.crumbs} />
       <h1>{c.h1}</h1>
       <Answer text={c.answer} />
+      <p>{c.lead}</p>
 
       <Converter initial={[c.from, c.to]} lockedMinutes={c.lockedMinutes} validUntil={c.validUntil} heading={c.h1} />
 

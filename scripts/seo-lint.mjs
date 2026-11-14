@@ -137,6 +137,53 @@ const byTitle = new Map();
 const byH1 = new Map();
 const byDesc = new Map();
 
+/**
+ * The block between the H1 and the first table, per sibling group.
+ *
+ * Google began serving /pst-to-est/12am to people searching "5am pst to est"
+ * while every signal this linter already checked was correct and distinct:
+ * the titles, the H1s, the canonicals, the descriptions. What was not distinct
+ * was the body. Of the 72 words between the H1 and the first table, 68 were
+ * identical on all 24 sibling pages, so four words had to carry the choice
+ * between two dozen URLs. No duplicate-title check can see that, which is why
+ * this one reads the block a reader actually skims.
+ */
+const atfByGroup = new Map();
+const HOUR_PATH = /^\/([a-z0-9-]+)\/(\d{1,2})(am|pm)$/;
+
+/** `9`,`am` -> `09:00`; `12`,`am` -> `00:00`; `5`,`pm` -> `17:00`. */
+function hour24(n, ap) {
+  const h = Number(n) % 12 + (ap === "pm" ? 12 : 0);
+  return `${String(h).padStart(2, "0")}:00`;
+}
+
+/** The words of the above-the-fold block, in order, markup and entities gone. */
+function aboveFold(html) {
+  const start = html.indexOf("<h1");
+  if (start === -1) return [];
+  const rest = html.slice(start);
+  // The first <h2> is the first section heading; before it sits the answer,
+  // any supporting prose, and the converter's own labels.
+  const end = rest.search(/<h2[\s>]/i);
+  return stripTags(end > 0 ? rest.slice(0, end) : rest.slice(0, 6000))
+    .toLowerCase()
+    .split(/[^a-z0-9:+-]+/)
+    .filter(Boolean);
+}
+
+/** Words of `a` that `b` does not also have, counting repeats. */
+function ownWords(a, b) {
+  const bag = new Map();
+  for (const w of b) bag.set(w, (bag.get(w) ?? 0) + 1);
+  let own = 0;
+  for (const w of a) {
+    const n = bag.get(w) ?? 0;
+    if (n > 0) bag.set(w, n - 1);
+    else own++;
+  }
+  return own;
+}
+
 let indexable = 0;
 let noindex = 0;
 
@@ -200,6 +247,14 @@ for (const file of files) {
     push(byH1, norm(h1));
     push(byDesc, norm(desc));
 
+    const hour = HOUR_PATH.exec(path);
+    if (hour) {
+      const entry = { path, words: aboveFold(html), own24: hour24(hour[2], hour[3]) };
+      const group = atfByGroup.get(hour[1]);
+      if (group) group.push(entry);
+      else atfByGroup.set(hour[1], [entry]);
+    }
+
     if (title.length > 65) warnings.push(`${path}: title is ${title.length} chars — "${title}"`);
     if (desc.length > 160) warnings.push(`${path}: description is ${desc.length} chars`);
     // docs/09 budgets 60 KB of HTML "per pair/place page", so the ceiling
@@ -238,9 +293,54 @@ for (const [key, paths] of byTitle) if (paths.length > 1) errors.push(`duplicate
 for (const [key, paths] of byH1) if (paths.length > 1) errors.push(`duplicate h1 across ${paths.length} pages: "${key}" -> ${paths.slice(0, 6).join(", ")}${paths.length > 6 ? " …" : ""}`);
 for (const [key, paths] of byDesc) if (paths.length > 1) errors.push(`duplicate description across ${paths.length} pages: "${key}" -> ${paths.slice(0, 6).join(", ")}${paths.length > 6 ? " …" : ""}`);
 
+let closestSiblings = { words: Infinity, pairing: "" };
+// What is enforced is an invariant the content can actually satisfy: each hour
+// page names its own hour in 24-hour form above the fold. That form appears
+// nowhere else on the page and nowhere in the 12-hour answer sentence, so it is
+// the one token that separates /pst-to-est/5am from its 23 siblings, and losing
+// it is the regression that put the 12am page in front of "5am pst to est"
+// searches.
+//
+// A minimum word-distance from the nearest sibling was tried here first and
+// removed: consecutive hours legitimately share nearly all their digits -- the
+// 1am page converts 1:00 to 2:00 and the 2am page converts 2:00 to 3:00 -- so
+// no wording can push them apart, and the gate would have failed 586 pages
+// forever for a thing that is not wrong. The distance is reported instead, so
+// the number stays visible without blocking a deploy over it.
+for (const [group, pages] of atfByGroup) {
+  for (const page of pages) {
+    if (!page.words.includes(page.own24)) {
+      errors.push(
+        `${page.path}: does not state its own hour as ${page.own24} above the fold, ` +
+          `so only the 12-hour form separates it from the other ${pages.length - 1} pages under /${group}`
+      );
+    }
+  }
+  if (pages.length < 2) continue;
+  let worst = Infinity;
+  let pairing = "";
+  for (const a of pages) {
+    for (const b of pages) {
+      if (a.path === b.path) continue;
+      const own = ownWords(a.words, b.words);
+      if (own < worst) {
+        worst = own;
+        pairing = `${a.path} vs ${b.path}`;
+      }
+    }
+  }
+  if (worst < closestSiblings.words) closestSiblings = { words: worst, pairing };
+}
+
 /* -------------------------------------------------------------------- report */
 
 console.log(`seo-lint: ${files.length} HTML pages (${indexable} indexable, ${noindex} noindex)`);
+if (closestSiblings.pairing) {
+  // Reported every run rather than only on regression, because the number is
+  // the thing worth watching: it is what decides whether a search engine can
+  // tell two sibling hour pages apart.
+  console.log(`  closest sibling hour pages: all but ${closestSiblings.words} word(s) shared above the fold (${closestSiblings.pairing})`);
+}
 if (warnings.length) {
   console.log(`\n${warnings.length} warning(s):`);
   for (const w of warnings.slice(0, 60)) console.log(`  ! ${w}`);
