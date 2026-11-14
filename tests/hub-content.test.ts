@@ -288,8 +288,14 @@ describe("AI-crawler hits", () => {
   });
 
   it("CI pins the switch off next to the page-controls pin", () => {
-    for (const wf of [".github/workflows/ci.yml", ".github/workflows/seo-check.yml"]) {
-      expect(readFileSync(wf, "utf8")).toMatch(/ZEPLIK_PAGE_CONTROLS: "off"\n(?:\s+#[^\n]*\n)?\s+ZEPLIK_CRAWLER_HITS: "off"/);
+    // The Docker build (Dockerfile: `npm test`) runs without .git and .github, both in
+    // .dockerignore, so the workflows can only be read from a checkout. In a checkout
+    // (CI, local) they must be there and must pin the switch off.
+    const dockerContext = !existsSync(".git") && !existsSync(".github");
+    if (!dockerContext) {
+      for (const wf of [".github/workflows/ci.yml", ".github/workflows/seo-check.yml"]) {
+        expect(readFileSync(wf, "utf8")).toMatch(/ZEPLIK_PAGE_CONTROLS: "off"\n(?:\s+#[^\n]*\n)?\s+ZEPLIK_CRAWLER_HITS: "off"/);
+      }
     }
     expect(existsSync("Dockerfile") && readFileSync("Dockerfile", "utf8")).not.toMatch(/ZEPLIK_CRAWLER_HITS/);
   });
