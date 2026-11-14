@@ -423,6 +423,17 @@ export interface HourContent {
   description: string;
   h1: string;
   answer: string;
+  /**
+   * Facts about this hour specifically, between the answer sentence and the
+   * converter. Everything on an hour page from the converter down to the
+   * first table was identical across all 24 siblings, so after the H1 and the
+   * answer -- about fourteen words -- the next sixty were the same on every
+   * one of them. That is the region a reader skims and a search engine weighs
+   * when it decides which of two dozen near-identical URLs answers "5am pst
+   * to est", and it was choosing wrong: the 12am page was being served for
+   * 5am queries. These three facts are different on every hour page.
+   */
+  lead: string;
   crumbs: { name: string; path: string }[];
   otherHeading: string;
   otherRows: { href: string | null; label: string; time: string; abbr: string; shift: number }[];
@@ -554,6 +565,32 @@ export function buildHour(p: ParsedPair, hour: number, now: number = Date.now())
     break;
   }
 
+  // Same date, same engine, same conversion as the answer above: the 24-hour
+  // rendering of this hour, the half hour, and the same clock read the other
+  // way round. All three carry the hour in forms the answer sentence does not
+  // ("17:00", "5:30 PM"), which is also how people type the query.
+  //
+  // Each of the three states its own day shift rather than inheriting the
+  // hour's. Reading PST to EST backwards, midnight EST is 9 PM PST on the
+  // PREVIOUS day, and on a half-hour offset such as +5:30 the hour can land
+  // on one day and the half hour on the next -- 18:00 is 23:30 the same day,
+  // 18:30 is 00:00 the day after.
+  const reverse = convertAt(to, from, w.year, w.month, w.day, hour, 0);
+  const half = convertAt(from, to, w.year, w.month, w.day, hour, 30);
+  const dayNote =
+    c.shift === 0
+      ? "the same calendar day"
+      : c.shift === 1
+        ? "the next calendar day"
+        : "the previous calendar day";
+  const lead =
+    `In 24-hour time that is ${fmtClock(c.fromH, c.fromM, false)} ${c.fromAbbr} and ` +
+    `${fmtClock(c.toH, c.toM, false)} ${c.toAbbr}, on ${dayNote}. ` +
+    `Half past is ${fmtClock(half.fromH, half.fromM)} ${half.fromAbbr} = ` +
+    `${fmtClock(half.toH, half.toM)} ${half.toAbbr}${shiftWord(half.shift)}. ` +
+    `Read the other way, ${display} ${B} is ${fmtClock(reverse.toH, reverse.toM)} ${reverse.toAbbr}` +
+    `${shiftWord(reverse.shift)}.`;
+
   const prev = (hour + 23) % 24;
   const next = (hour + 1) % 24;
 
@@ -585,6 +622,7 @@ export function buildHour(p: ParsedPair, hour: number, now: number = Date.now())
     description,
     h1: `${display}${noonTag} ${A} to ${B}`,
     answer: `${fromClock} ${c.fromAbbr} is ${toClock} ${c.toAbbr}${shift}.`,
+    lead,
     crumbs: [
       { name: "Home", path: "/" },
       { name: "Time zones", path: "/time-zones" },
