@@ -78,7 +78,7 @@ describe("status document (/.well-known/zeplik-seo.json)", () => {
     for (const secret of ["test-secret-value-123", "abcdef0123456789", "hub.test", "hub-production"]) expect(text).not.toContain(secret);
     const doc = JSON.parse(text);
     expect(doc.site).toBe("timetozone.com");
-    expect(doc.kit.version).toBe("0.1.8");
+    expect(doc.kit.version).toBe("0.1.12");
     expect(doc.contentRoutes.map((r: { basePath: string; pageTypes: string[] }) => [r.basePath, r.pageTypes.join()])).toEqual(SECTIONS.map(([b, t]) => [b, t]));
     expect(doc.toolCopy).toEqual({ rendered: true, families: ["tool", "map", "site"] });
     expect(doc.indexNow.keyPresent).toBe(true);
