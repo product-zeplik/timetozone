@@ -81,6 +81,13 @@ export const ld = {
         height: 512,
       },
       ...(sameAs.length ? { sameAs } : {}),
+      // The operating company (rulebook 8.5): the node zeplik.com publishes for itself.
+      parentOrganization: {
+        "@type": "Organization",
+        "@id": "https://zeplik.com/#organization",
+        name: "Zeplik, Inc.",
+        url: "https://zeplik.com",
+      },
     };
   },
 

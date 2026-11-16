@@ -70,7 +70,7 @@ export function sitemapEntries(id: number): SitemapEntry[] {
       const out = [entry("/", 1, "home")];
       for (const t of TOOL_LINKS) if (t.href !== "/") out.push(entry(t.href, 0.8, toolFamily(t.href)));
       out.push(entry("/time-zone-map/usa", 0.8, "time-zone-map"));
-      out.push(entry("/about", 0.3, "about"), entry("/contact", 0.3, "contact"), entry("/privacy", 0.3, "privacy"), entry("/terms", 0.3, "terms"));
+      out.push(entry("/about", 0.3, "about"), entry("/editorial-policy", 0.3, "editorial-policy"), entry("/contact", 0.3, "contact"), entry("/privacy", 0.3, "privacy"), entry("/terms", 0.3, "terms"));
       for (const z of ZONES) out.push(entry(`/zones/${z.slug}`, 0.7, "zone"));
       for (const c of dstCountries()) out.push(entry(`/daylight-saving-time/${c}`, 0.6, "dst-country"));
       for (const e of multiZoneEntities()) out.push(entry(`/time-zone/${e.slug}`, 0.6, "multi-zone"));

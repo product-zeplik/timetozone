@@ -34,6 +34,7 @@ const OK_200 = [
   "/time-unit-converter",
   "/time-zones",
   "/about",
+  "/editorial-policy",
   "/contact",
   "/privacy",
   "/terms",

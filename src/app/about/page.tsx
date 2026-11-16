@@ -21,6 +21,9 @@ export default function AboutPage() {
       <p className="answer">
         TimeToZone converts a time from any zone to any other zone, correctly, on any date. {SITE.tagline}
       </p>
+      <p>
+        TimeToZone is made by <a href="https://zeplik.com">Zeplik, Inc.</a>
+      </p>
 
       <h2>What this site does</h2>
       <p>
@@ -89,7 +92,11 @@ export default function AboutPage() {
           contact page
         </Link>
         . If you find a conversion that is wrong, please tell us the two zones and the date — that is enough to
-        reproduce it.
+        reproduce it. How pages are made, checked and corrected is set out in the{" "}
+        <Link href="/editorial-policy" prefetch={false}>
+          editorial policy
+        </Link>
+        .
       </p>
     </>
   );

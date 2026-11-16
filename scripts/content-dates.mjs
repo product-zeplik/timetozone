@@ -68,6 +68,7 @@ export const FAMILIES = {
   "time-calculator": [...TOOL, "src/app/time-calculator/page.tsx", "src/components/tools/SmallTools.tsx", "src/components/tools/ZoneDifference.tsx"],
   "time-unit-converter": [...TOOL, "src/app/time-unit-converter/page.tsx", "src/components/tools/SmallTools.tsx"],
   about: ["src/app/about/page.tsx"],
+  "editorial-policy": ["src/app/editorial-policy/page.tsx"],
   contact: ["src/app/contact/page.tsx"],
   privacy: ["src/app/privacy/page.tsx"],
   terms: ["src/app/terms/page.tsx"],

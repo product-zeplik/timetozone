@@ -124,6 +124,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     </Link>
                   </li>
                   <li>
+                    <Link href="/editorial-policy" prefetch={false}>
+                      Editorial Policy
+                    </Link>
+                  </li>
+                  <li>
                     <Link href="/contact" prefetch={false}>
                       Contact
                     </Link>
