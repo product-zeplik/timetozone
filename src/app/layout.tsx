@@ -6,6 +6,7 @@ import { graph, ld } from "@/seo/meta";
 import { JsonLd } from "@/components/Blocks";
 import { Lockup } from "@/components/Logo";
 import { Analytics } from "@/components/Analytics";
+import { PostHogAnalytics } from "@/analytics/PostHog";
 import { FOOTER_PAIRS, FOOTER_PLACES, TOOL_LINKS } from "@/content/nav";
 
 export const metadata: Metadata = {
@@ -191,6 +192,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ) : null}
 
         <Analytics gaId={SITE.gaId} />
+        <PostHogAnalytics />
       </body>
     </html>
   );
