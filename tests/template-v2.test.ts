@@ -17,27 +17,37 @@ const pair = (slug: string) => {
   if (!p) throw new Error(`no pair ${slug}`);
   return p;
 };
+// The Docker build runs these tests with SITE_ENV=production, where the variable is ignored unless the run says it is
+// a local measurement (TTZ_TEMPLATE_V2_LOCAL=1), so the "on" cases set both.
 const set = (v: string | undefined) => {
-  if (v === undefined) delete process.env.TTZ_TEMPLATE_V2;
-  else process.env.TTZ_TEMPLATE_V2 = v;
+  if (v === undefined) {
+    delete process.env.TTZ_TEMPLATE_V2;
+    delete process.env.TTZ_TEMPLATE_V2_LOCAL;
+  } else {
+    process.env.TTZ_TEMPLATE_V2 = v;
+    process.env.TTZ_TEMPLATE_V2_LOCAL = "1";
+  }
 };
+const siteEnv = process.env.SITE_ENV;
 afterEach(() => {
   set(undefined);
-  delete process.env.TTZ_TEMPLATE_V2_LOCAL;
+  if (siteEnv === undefined) delete process.env.SITE_ENV;
+  else process.env.SITE_ENV = siteEnv;
 });
 
 describe("the template v2 flag", () => {
   it("is off in the committed constant, and production never reads the environment variable", () => {
     expect(TEMPLATE_V2).toBe(false);
-    const env = process.env.SITE_ENV;
+    process.env.SITE_ENV = "production";
+    process.env.TTZ_TEMPLATE_V2 = "on";
+    expect(templateV2()).toBe(false);
+    delete process.env.SITE_ENV;
+    expect(templateV2()).toBe(true);
+    process.env.TTZ_TEMPLATE_V2 = "off";
+    expect(templateV2()).toBe(false);
     process.env.SITE_ENV = "production";
     set("on");
-    expect(templateV2()).toBe(false);
-    if (env === undefined) delete process.env.SITE_ENV;
-    else process.env.SITE_ENV = env;
     expect(templateV2()).toBe(true);
-    set("off");
-    expect(templateV2()).toBe(false);
   });
 
   it("off: pair and hour pages carry no v2 block and keep the 24-hour sibling links", () => {
