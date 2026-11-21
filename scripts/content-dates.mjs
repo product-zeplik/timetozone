@@ -17,6 +17,11 @@
  * content. Styling (globals.css), presentational blocks, the layout, tests and
  * scripts are not content and are not listed.
  *
+ * A commit that changes a family's sources but nothing production renders (a template held behind
+ * src/seo/template-flags.ts while it is off, a refactor) carries the trailer `Content-Dates: unchanged`
+ * in its message; it is skipped here, so the dates keep meaning "what a reader sees changed". The commit
+ * that flips the flag carries no such trailer, and that is the day pair and hour pages change.
+ *
  * Why a committed file and not git at build time: CI checks out one commit and
  * Railway builds from a source snapshot, so the build has no usable history.
  * In a shallow clone `git log -1 -- <file>` answers with the clone boundary,
@@ -47,12 +52,14 @@ const COMMON = [
   "vendor/icu-tz",
 ];
 const TOOL = [...COMMON, "src/components/ToolPage.tsx"];
+/** Template v2 of pair and hour pages: rendered only while src/seo/template-flags.ts is on. */
+const FLAGGED = ["src/seo/template-flags.ts", "src/content/value.ts", "src/components/ValueBlocks.tsx"];
 const PLACE = [...COMMON, "src/components/PlaceView.tsx", "src/content/place.ts"];
 
 export const FAMILIES = {
   home: [...TOOL, "src/app/page.tsx", "src/components/Converter.tsx", "src/content/nav.ts"],
-  pair: [...COMMON, "src/app/[pair]/page.tsx", "src/components/PairView.tsx", "src/content/pair.ts", "src/components/Converter.tsx"],
-  hour: [...COMMON, "src/app/[pair]/[hour]/page.tsx", "src/components/PairView.tsx", "src/content/pair.ts", "src/components/Converter.tsx"],
+  pair: [...COMMON, "src/app/[pair]/page.tsx", "src/components/PairView.tsx", "src/content/pair.ts", "src/components/Converter.tsx", ...FLAGGED],
+  hour: [...COMMON, "src/app/[pair]/[hour]/page.tsx", "src/components/PairView.tsx", "src/content/pair.ts", "src/components/Converter.tsx", ...FLAGGED],
   place: [...PLACE, "src/app/time/[...place]/page.tsx"],
   "multi-zone": [...PLACE, "src/app/time-zone/[place]/page.tsx"],
   zone: [...PLACE, "src/app/zones/[abbr]/page.tsx"],
@@ -81,8 +88,15 @@ function familyDate(sources) {
   if (!existing.length) return null;
   const dirty = git("status", "--porcelain", "--", ...existing);
   if (dirty) return new Date().toISOString().slice(0, 10);
-  const ts = git("log", "-1", "--format=%ct", "--", ...existing);
-  return ts ? utcDay(Number(ts)) : null;
+  // Newest commit that is not marked `Content-Dates: unchanged` (see the header).
+  const log = git("log", "--format=%ct%x09%(trailers:key=Content-Dates,valueonly,separator=%x2C)", "--", ...existing);
+  for (const line of log.split("\n")) {
+    if (!line.trim()) continue;
+    const [ts, trailer = ""] = line.split("\t");
+    if (/^\s*unchanged\b/i.test(trailer)) continue;
+    return utcDay(Number(ts));
+  }
+  return null;
 }
 
 function compute() {

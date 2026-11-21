@@ -9,6 +9,8 @@ import { graph, ld } from "@/seo/meta";
 import { zoneNote } from "@/content/labels";
 import type { HourContent, PairContent } from "@/content/pair";
 import { directionPhrase, type Row } from "@/engine/pair";
+import { HourValueBlocks, PairValueBlocks } from "./ValueBlocks";
+import { TEMPLATE_V2_VERSION } from "@/seo/template-flags";
 
 const shiftText = (shift: number) => (shift === 1 ? "next day" : shift === -1 ? "previous day" : "");
 const shiftMark = (shift: number) => (shift === 1 ? "+1" : shift === -1 ? "−1" : "");
@@ -138,6 +140,12 @@ export function PairView({ c }: { c: PairContent }) {
         </p>
       </section>
 
+      {c.v2 ? (
+        <div data-template-version={TEMPLATE_V2_VERSION}>
+          <PairValueBlocks v={c.v2} />
+        </div>
+      ) : null}
+
       <Faq items={c.faqs} heading={c.faqHeading} id="faq" />
 
       <Ad slot="pair-3" />
@@ -232,6 +240,12 @@ export function HourView({ c }: { c: HourContent }) {
           </div>
         </section>
       </div>
+
+      {c.v2 ? (
+        <div data-template-version={TEMPLATE_V2_VERSION}>
+          <HourValueBlocks v={c.v2} />
+        </div>
+      ) : null}
 
       <Faq items={c.faqs} heading={c.faqHeading} id="faq" />
 

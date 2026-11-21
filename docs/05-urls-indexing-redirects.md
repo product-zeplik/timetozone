@@ -45,7 +45,8 @@ Place pages: all countries, regions and cities are indexable. Pre-build the rank
 ## 5.5 Internal linking (only to indexed URLs)
 - Every page has a breadcrumb trail, a header nav (World clock, Time zones, Map, Meeting planner, My time zone) and a footer (10 popular conversions, 8 place clocks, all tools, trust pages).
 - Pair page: reverse pair (if indexed), up to 8 same-source pairs over the top zones, up to 8 same-target pairs, all 24 hour pages (if an HOUR_PAIR), and the zone/place pages of both sides.
-- Hour page: previous hour · parent pair · next hour, plus the parent pair's related blocks.
+- Hour page: previous hour · parent pair · next hour, plus the parent pair's related blocks. (Template v2, flagged: the six neighbouring hours, the parent, the reverse pair and the zone pages; see docs/06 A/B v2.)
+- Place page: also up to 12 indexed conversions of the zone abbreviation the place keeps (IST for India, PHT for the Philippines, CET for Paris), ranked by measured volume, so the keyword-map pairs get links from the place pages.
 - Place page: its country, 10 comparison cities (linked to the pair page when that pair is indexed, else the city page), child regions and cities (country pages), and cities in the same country.
 - Zone page: up to 24 indexed conversions involving the zone, countries sharing the same seasonal offsets, and major cities on that IANA id.
 - Home: the top 48 pairs by measured volume, 18 hour pages, 40 city clocks.

@@ -36,6 +36,8 @@ import { hourPairs, isIndexedPair, pairsFrom, pairsTo, keywordsBySlot } from "@/
 import { clip, firstThatFits, title as brandTitle } from "@/seo/meta";
 import { familyName, pairLabelFromSides, regionText, tLabel, zoneNote } from "./labels";
 import type { FaqItem, RelatedGroup } from "@/components/Blocks";
+import { templateV2 } from "@/seo/template-flags";
+import { buildHourValue, buildPairValue, type HourValue, type PairValue } from "./value";
 
 export interface PairContent {
   slug: string;
@@ -74,6 +76,8 @@ export interface PairContent {
   validUntil: number | null;
   isHourPair: boolean;
   diffMinutesNow: number;
+  /** Template v2 (src/seo/template-flags.ts): computed per-pair value blocks; null while the flag is off. */
+  v2: PairValue | null;
 }
 
 const WORK_NOTE = "Today's date. Highlighted rows are 9 AM–5 PM in both places.";
@@ -387,6 +391,7 @@ export function buildPair(p: ParsedPair, now: number = Date.now()): PairContent 
     validUntil: validUntilFor(from, to, now),
     isHourPair: hourPair,
     diffMinutesNow: ab.minutes,
+    v2: templateV2() ? buildPairValue(p, now) : null,
   };
 }
 
@@ -444,6 +449,8 @@ export interface HourContent {
   related: RelatedGroup[];
   validUntil: number | null;
   lockedMinutes: number;
+  /** Template v2 (src/seo/template-flags.ts): computed per-hour value blocks; null while the flag is off. */
+  v2: HourValue | null;
 }
 
 /** `9`, `12` — the 12-hour number for quarter-hour headings. */
@@ -592,7 +599,16 @@ export function buildHour(p: ParsedPair, hour: number, now: number = Date.now())
   const next = (hour + 1) % 24;
 
   const parent = buildPair(p, now);
-  const related: RelatedGroup[] = [
+  const v2 = templateV2() ? buildHourValue(p, hour, now) : null;
+  // Template v2: the parent pair lists all 24 hours and its own related blocks; an hour page links to its parent,
+  // its reverse, the zone pages and the neighbouring hours only, so the 24 siblings stop sharing one long link block.
+  const related: RelatedGroup[] = v2
+    ? [
+        { heading: `Nearby ${A} to ${B} times`, items: v2.neighbours, cols: true },
+        { heading: `All ${A} to ${B} times`, items: [{ href: `/${p.slug}`, label: `${A} to ${B} converter and 24-hour table` }], cols: true },
+        ...parent.related.filter((g) => g.heading.startsWith(`Convert ${B} to ${A}`) || g.heading === "Learn more"),
+      ]
+    : [
     {
       heading: `All ${A} to ${B} times`,
       items: Array.from({ length: 24 }, (_, h) => ({
@@ -602,7 +618,7 @@ export function buildHour(p: ParsedPair, hour: number, now: number = Date.now())
       cols: true,
     },
     ...parent.related.filter((g) => !g.heading.endsWith("by hour")),
-  ];
+      ];
 
   return {
     slug: p.slug,
@@ -637,6 +653,7 @@ export function buildHour(p: ParsedPair, hour: number, now: number = Date.now())
     related,
     validUntil: validUntilFor(from, to, now),
     lockedMinutes: hour * 60,
+    v2,
   };
 }
 
