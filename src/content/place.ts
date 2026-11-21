@@ -31,11 +31,27 @@ import {
   seasonalOffsets,
   transitionsInYear,
   wallTime, transitionWall } from "@/engine/tz";
-import { diffMinutes, dstInfo } from "@/engine/pair";
+import { diffMinutes, diffPeriods, dstInfo } from "@/engine/pair";
 import { dstCountries, isIndexedPair, multiZoneEntities, pairsWith } from "@/seo/gate";
 import { clip, firstThatFits, title as brandTitle } from "@/seo/meta";
 import { familyName, tLabel } from "./labels";
 import type { FaqItem } from "@/components/Blocks";
+
+/* ------------------------------------------------------------ clock zones */
+
+/**
+ * The curated zones that keep the same clock as `tz` every day of `year`: the exact IANA id first (any named zone
+ * but the generic ones), else a top standard or fixed zone with no difference all year (Paris keeps CET's clock).
+ */
+export function clockZones(tz: string, year: number): Zone[] {
+  const exact = ZONES.filter((z) => z.iana === tz && z.kind !== "generic" && !z.pairAlias);
+  if (exact.length) return exact.sort((a, b) => (a.top === b.top ? 0 : a.top ? -1 : 1));
+  const here: Side = { key: "_", kind: "zone", label: "", long: "", tz };
+  return ZONES.filter((z) => z.top && (z.kind === "std" || z.kind === "fixed")).filter((z) => {
+    const p = diffPeriods(here, { key: z.slug, kind: "zone", label: z.abbr, long: z.name, tz: z.iana }, year);
+    return p.length === 1 && p[0].minutes === 0;
+  });
+}
 
 /* ------------------------------------------------------------------ targets */
 
@@ -551,6 +567,19 @@ export function buildPlace(t: PlaceTarget, now: number = Date.now()): PlaceConte
   });
   if (placePairs.length) {
     children.push({ heading: `Convert ${names.name} time`, items: placePairs });
+  }
+  // The conversions searched by the zone abbreviation this place keeps (IST for India, PHT for the Philippines, CET
+  // for Paris), ranked by measured demand. The place-keyed pairs above never name the zone, so the zone pairs with
+  // the most searches (/est-to-ist, /est-to-philippine-time) had no link from the place pages Google still indexes.
+  for (const z of clockZones(names.primary, year).slice(0, 1)) {
+    const zonePairs = pairsWith(z.slug, 12).map((slug) => {
+      const at = slug.indexOf("-to-");
+      const q = pairFromKeys(slug.slice(0, at), slug.slice(at + 4));
+      return { href: `/${slug}`, label: q ? `${tLabel(q.from)} to ${tLabel(q.to)}` : slug };
+    });
+    if (zonePairs.length) {
+      children.push({ heading: `Convert ${z.abbr}, the time zone ${names.multiZone ? `most of ${names.name} uses` : `of ${names.name}`}`, items: zonePairs });
+    }
   }
   if (t.kind === "country") {
     const regions = REGIONS.filter((r) => r.countrySlug === t.country.slug);
