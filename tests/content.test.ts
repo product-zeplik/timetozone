@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { COUNTRIES, PLACES, REGIONS, parsePair } from "@/engine/entities";
 import { buildHour, buildPair } from "@/content/pair";
 import { diffMinutes } from "@/engine/pair";
-import { transitionWall, transitionsInYear } from "@/engine/tz";
+import { fmtDate, fmtOffset, seasonalOffsets, transitionWall, transitionsInYear, type Transition } from "@/engine/tz";
+import { abbrFor } from "@/engine/side";
 import { buildMultiZone, buildPlace, buildZone, resolveMultiZone, resolvePlace, targetSide } from "@/content/place";
 import { buildDstCountry, buildDstHub, resolveDstCountry } from "@/content/dst";
 import { ZONE_BY_SLUG } from "@/data/zones";
@@ -10,6 +11,7 @@ import { clip, firstThatFits, title } from "@/seo/meta";
 
 const JAN = Date.UTC(2027, 0, 15, 12);
 const JUL = Date.UTC(2027, 6, 15, 12);
+const dstDateText = (t: Transition) => fmtDate(transitionWall(t), true);
 
 const pair = (slug: string) => {
   const p = parsePair(slug);
@@ -209,6 +211,61 @@ describe("buildMultiZone", () => {
     ]);
     // The same text in July: the FAQ and the card name seasons, not the clock of the day.
     expect(buildMultiZone(t!, JUL).faqs).toEqual(c.faqs);
+  });
+  it("Arizona's title, answer, meta and DST section tell its two MST zones apart, from the engine", () => {
+    const t = resolveMultiZone("arizona")!;
+    const phoenix = seasonalOffsets("America/Phoenix", 2027);
+    const denver = seasonalOffsets("America/Denver", 2027);
+    expect(phoenix.dst).toBeNull();
+    expect(denver.dst).not.toBeNull();
+    const mst = abbrFor("America/Phoenix", JAN);
+    const navajo = `${abbrFor("America/Denver", JAN)}/${abbrFor("America/Denver", JUL)}`;
+    const navajoOffsets = `${fmtOffset(denver.std)}/${fmtOffset(denver.dst!)}`;
+    const answers: string[] = [];
+    for (const at of [JAN, JUL]) {
+      const c = buildMultiZone(t, at);
+      // The abbreviation list of the title names each abbreviation once.
+      const list = c.title.replace(/ \| TimeToZone$/, "").split("? ")[1].split(", ");
+      expect(new Set(list).size).toBe(list.length);
+      expect(c.title).toBe("What Time Zone Is Arizona? MST, MDT | TimeToZone");
+      expect(c.title.length).toBeLessThanOrEqual(60);
+      expect(c.answer).not.toMatch(/MST \(UTC−7\), MST \(UTC−7\)/);
+      expect(c.answer).toContain(`Most of Arizona stays on ${mst} (${fmtOffset(phoenix.std)}) all year and does not observe daylight saving time.`);
+      expect(c.answer).toContain(`The Navajo Nation in the northeast follows ${navajo} (${navajoOffsets})`);
+      expect(c.description).toContain(`(${mst}, ${navajo})`);
+      // The DST section no longer says flatly that Arizona does not observe DST: it names the Navajo Nation and
+      // lists that zone's computed clock changes.
+      expect(c.dstLead).toContain("Most of Arizona does not observe daylight saving time");
+      expect(c.dstLead).toContain("The Navajo Nation in the northeast does");
+      const changes = c.dstYears.flatMap((y) => y.changes);
+      expect(changes.length).toBe(4);
+      const year = c.dstYears[0].year;
+      const firstChange = transitionsInYear("America/Denver", year)[0];
+      expect(changes[0].dateText).toBe(dstDateText(firstChange));
+      expect(changes[0].text).toContain(`from ${abbrFor("America/Denver", JAN)} (${fmtOffset(denver.std)}) to ${abbrFor("America/Denver", JUL)} (${fmtOffset(denver.dst!)})`);
+      answers.push(c.answer);
+    }
+    // The same answer in winter and summer.
+    expect(answers[0]).toBe(answers[1]);
+    expect(answers[0]).toBe(
+      "Most of Arizona stays on MST (UTC−7) all year and does not observe daylight saving time. The Navajo Nation in the northeast follows MST/MDT (UTC−7/UTC−6): it is on MDT from March to November."
+    );
+  });
+  it("zones that share an abbreviation are named by their seasons; distinct ones are not", () => {
+    const tam = buildMultiZone(resolveMultiZone("tamaulipas")!, JAN);
+    expect(tam.title).toBe("What Time Zone Is Tamaulipas? CST, CDT | TimeToZone");
+    expect(tam.answer).toBe(
+      "Tamaulipas uses 2 time zones: CST/CDT (UTC−6/UTC−5), CST (UTC−6 all year). Reynosa is on CST."
+    );
+    expect(tam.dstLead).toBeNull();
+    const mexico = buildMultiZone(resolveMultiZone("mexico")!, JAN);
+    expect(mexico.dstLead).toContain("The main time zone of Mexico, CST (America/Mexico_City), does not observe daylight saving time");
+    for (const slug of ["texas", "florida", "indiana", "idaho"]) {
+      const c = buildMultiZone(resolveMultiZone(slug)!, JAN);
+      expect(c.answer).toMatch(new RegExp(`^${c.names.name} uses ${c.zoneRows.length} time zones: ${c.zoneRows.map((r) => `${r.abbr} \\(${r.offsetText}\\)`).join(", ")}\\.`));
+      expect(c.dstLead).toBeNull();
+    }
+    expect(buildMultiZone(resolveMultiZone("texas")!, JAN).title).toBe("What Time Zone Is Texas? CST, MST | TimeToZone");
   });
   it("the Navajo Nation zone changes on the US DST dates", () => {
     const days = (tz: string) =>

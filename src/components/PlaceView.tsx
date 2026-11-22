@@ -107,34 +107,43 @@ function DstSection({
   observes,
   offsetFallback,
   dstHref,
+  lead,
 }: {
   years: { year: number; changes: { dateText: string; text: string; direction: string }[] }[];
   name: string;
   observes: boolean;
   offsetFallback: string;
   dstHref?: string | null;
+  /** Says which part of a multi-zone place changes its clocks when the main zone does not. */
+  lead?: string | null;
 }) {
+  const changes = years.map((y) => (
+    <div key={y.year}>
+      <h3>{y.year}</h3>
+      <ul>
+        {y.changes.map((c, i) => (
+          <li key={i}>
+            <strong>{c.dateText}:</strong> {c.text}
+          </li>
+        ))}
+      </ul>
+    </div>
+  ));
   return (
     <section>
       <h2>Daylight saving time in {name}</h2>
-      {!observes || !years.length ? (
+      {lead ? (
+        <>
+          <p>{lead}</p>
+          {changes}
+        </>
+      ) : !observes || !years.length ? (
         <p>
           {name} does not observe daylight saving time. The clocks stay on {offsetFallback} all year, so conversions
           never shift.
         </p>
       ) : (
-        years.map((y) => (
-          <div key={y.year}>
-            <h3>{y.year}</h3>
-            <ul>
-              {y.changes.map((c, i) => (
-                <li key={i}>
-                  <strong>{c.dateText}:</strong> {c.text}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))
+        changes
       )}
       {dstHref ? (
         <p>
@@ -268,6 +277,7 @@ export function MultiZoneView({ c }: { c: MultiZoneContent }) {
         observes={c.observesDst}
         offsetFallback={c.zoneFacts.find((f) => f.label === "UTC offset")?.value ?? "the same offset"}
         dstHref={c.dstHref}
+        lead={c.dstLead}
       />
 
       {c.siblings.length ? (

@@ -68,6 +68,7 @@ Held by engine rulebook 11.2 rules 5 and 7 while the November 2026 core update r
 **H1:** `What Time Zone Is {name}?`
 **Body:** the same components as D, **minus** the comparison table and children lists (avoids duplicating D). The zones table is the main content.
 **Meta:** `{name} uses {n} time zones ({abbrs}). See which areas use each zone, the current time in each and DST dates.`
+**Shared abbreviations:** when two different IANA zones of the page show the same abbreviation now (Arizona in winter: America/Phoenix and America/Denver are both MST), each of them is named by its seasons, from the engine: `MST (UTC−7 all year)` for a zone without DST, `MST/MDT (UTC−7/UTC−6)` for one with it, in the answer, meta and FAQ; the title lists each abbreviation once (`MST, MDT`). Zones with distinct abbreviations keep `{abbr} ({offset now})`. A curated area (`src/data/zone-areas.ts`) is always named by its seasons and gets its own answer. When the main zone has no DST but another zone has a clock change ahead, the DST section says which part changes (and, for a curated area, lists its changes) instead of "{name} does not observe daylight saving time".
 
 ## F. Zone page `/zones/{slug}`
 **Title:** `{ABBR} Time Now – {Name} (UTC±X)`, falling back to `{ABBR} Time Now – {Name}`.

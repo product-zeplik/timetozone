@@ -797,6 +797,8 @@ export interface MultiZoneContent {
   converterSides: Side[];
   zoneFacts: { label: string; value: string }[];
   dstYears: { year: number; changes: DstChange[] }[];
+  /** A sentence that replaces "{name} does not observe daylight saving time" when only part of it does. */
+  dstLead: string | null;
   observesDst: boolean;
   faqs: FaqItem[];
   placeHref: string;
@@ -805,6 +807,57 @@ export interface MultiZoneContent {
 }
 
 const MONTH_NAME = new Intl.DateTimeFormat("en-US", { month: "long", timeZone: "UTC" });
+
+/** A zone's standard and daylight abbreviations and offsets in `year`, by offset, so they hold in either hemisphere. */
+function seasonsOf(tz: string, year: number): { std: number; dst: number | null; stdAbbr: string; dstAbbr: string | null } {
+  const s = seasonalOffsets(tz, year);
+  const jan = Date.UTC(year, 0, 15, 12);
+  const jul = Date.UTC(year, 6, 15, 12);
+  if (s.dst === null) return { std: s.std, dst: null, stdAbbr: abbrFor(tz, jan), dstAbbr: null };
+  const stdAt = offsetMinutes(tz, jan) === s.std ? jan : jul;
+  const dstAt = stdAt === jan ? jul : jan;
+  return { std: s.std, dst: s.dst, stdAbbr: abbrFor(tz, stdAt), dstAbbr: abbrFor(tz, dstAt) };
+}
+
+/**
+ * How a multi-zone page names each of its zones. A zone is named by the abbreviation on its clock now
+ * (`short`) and that abbreviation with the offset now (`long`), as before. When two different IANA zones of the
+ * page show the same abbreviation now (Arizona in winter: America/Phoenix and America/Denver are both MST), each
+ * of them is named by its seasons instead, from the engine: a zone that keeps one offset all year is
+ * "MST (UTC−7 all year)", a zone that changes is "MST/MDT (UTC−7/UTC−6)". `always` names a zone by its seasons
+ * whether or not it collides now (a curated area of src/data/zone-areas.ts), so its page reads the same all year.
+ * `tokens` are the abbreviations a row contributes to the title.
+ */
+interface ZoneLabel {
+  short: string;
+  long: string;
+  tokens: string[];
+}
+
+function zoneLabels(rows: ZoneRow[], now: number, always: string[] = []): ZoneLabel[] {
+  const year = new Date(now).getUTCFullYear();
+  const count = new Map<string, number>();
+  for (const r of rows) count.set(r.abbr, (count.get(r.abbr) ?? 0) + 1);
+  const labels = rows.map((r): ZoneLabel => {
+    if ((count.get(r.abbr) ?? 0) < 2 && !always.includes(r.tz)) {
+      return { short: r.abbr, long: `${r.abbr} (${r.offsetText})`, tokens: [r.abbr] };
+    }
+    const s = seasonsOf(r.tz, year);
+    if (s.dst === null || s.dstAbbr === null) {
+      return { short: r.abbr, long: `${r.abbr} (${fmtOffset(s.std)} all year)`, tokens: [r.abbr] };
+    }
+    const offsets = `${fmtOffset(s.std)}/${fmtOffset(s.dst)}`;
+    if (s.stdAbbr === s.dstAbbr) return { short: offsets, long: offsets, tokens: [offsets] };
+    const pair = `${s.stdAbbr}/${s.dstAbbr}`;
+    return { short: pair, long: `${pair} (${offsets})`, tokens: [s.stdAbbr, s.dstAbbr] };
+  });
+  // Two zones that still read alike (no known case) are told apart by their IANA ids.
+  const seen = new Map<string, number>();
+  for (const l of labels) seen.set(l.long, (seen.get(l.long) ?? 0) + 1);
+  return labels.map((l, i) =>
+    (seen.get(l.long) ?? 0) > 1 ? { ...l, short: `${l.short} (${rows[i].tz})`, long: `${l.long} – ${rows[i].tz}` } : l
+  );
+}
 
 /**
  * The named-area rows and FAQ of a region in src/data/zone-areas.ts, or null when the region has no entry or
@@ -815,7 +868,13 @@ function zoneAreasFor(
   entity: string,
   rows: ZoneRow[],
   now: number
-): { rows: ZoneRow[]; faqs: (name: string) => FaqItem[] } | null {
+): {
+  rows: ZoneRow[];
+  faqs: (name: string) => FaqItem[];
+  answer: (name: string) => string;
+  dstLead: (name: string) => string;
+  dstTz: string;
+} | null {
   const spec: RegionZoneAreas | undefined = REGION_ZONE_AREAS[entity];
   if (!spec) return null;
   const main = rows.find((r) => r.tz === spec.main.tz);
@@ -854,6 +913,17 @@ function zoneAreasFor(
     rows: rows.map((r) =>
       r === other ? { ...r, cities: [], area: { label: `${area.name} (${area.tz})`, seasonal, places: area.places } } : r
     ),
+    answer: (name) =>
+      `Most of ${name} stays on ${mainAbbr} (${fmtOffset(mainOff.std)}) all year and does not observe daylight saving time. The ${
+        area.name
+      } ${area.where} follows ${stdAbbr}/${dstAbbr} (${fmtOffset(areaOff.std)}/${fmtOffset(areaOff.dst!)}): it is on ${dstAbbr} from ${month(
+        forward
+      )} to ${month(back)}.`,
+    dstLead: (name) =>
+      `Most of ${name} does not observe daylight saving time and stays on ${mainAbbr} (${fmtOffset(
+        mainOff.std
+      )}) all year. The ${area.name} ${area.where} does, on ${spec.dstDates} (${spec.main.alsoIn} inside it does not):`,
+    dstTz: spec.area.tz,
     faqs: (name) => [
       {
         q: `What time zone is ${name} in?`,
@@ -888,7 +958,12 @@ export function buildMultiZone(t: MultiZoneTarget, now: number = Date.now()): Mu
   const base = buildPlace(placeTarget, now);
   const names = base.names;
   const path = `/time-zone/${t.kind === "country" ? t.country.slug : t.region.entity}`;
-  const abbrs = base.zoneRows.map((r) => r.abbr);
+  const areas = t.kind === "region" ? zoneAreasFor(t.region.entity, base.zoneRows, now) : null;
+  const rows = areas ? areas.rows : base.zoneRows;
+  const year = new Date(now).getUTCFullYear();
+  // Each zone's name on this page: its abbreviation now, unless another zone of the page shares it (zoneLabels).
+  const labels = zoneLabels(base.zoneRows, now, areas ? [areas.dstTz] : []);
+  const abbrs = [...new Set(labels.flatMap((l) => l.tokens))];
 
   const titleText = firstThatFits(
     t.kind === "country"
@@ -906,49 +981,82 @@ export function buildMultiZone(t: MultiZoneTarget, now: number = Date.now()): Mu
     60
   );
 
-  const areas = t.kind === "region" ? zoneAreasFor(t.region.entity, base.zoneRows, now) : null;
-  const rows = areas ? areas.rows : base.zoneRows;
+  const answer = areas
+    ? areas.answer(names.name)
+    : `${names.name} uses ${base.zoneRows.length} time zones: ${labels
+        .map((l) => l.long)
+        .join(", ")}. ${base.zoneRows[0].cities[0]?.name ? `${base.zoneRows[0].cities[0].name} is on ${base.zoneRows[0].abbr}.` : ""}`.trim();
 
-  const answer = `${names.name} uses ${base.zoneRows.length} time zones: ${base.zoneRows
-    .map((r) => `${r.abbr} (${r.offsetText})`)
-    .join(", ")}. ${base.zoneRows[0].cities[0]?.name ? `${base.zoneRows[0].cities[0].name} is on ${base.zoneRows[0].abbr}.` : ""}`.trim();
-
+  const observing = base.zoneRows.filter((r) => seasonalOffsets(r.tz, year).dst !== null);
   const faqs: FaqItem[] = areas
     ? areas.faqs(names.name)
     : [
         {
           q: `What time zone is ${names.name} in?`,
-          a: `${names.name} spans ${base.zoneRows.length} time zones: ${base.zoneRows
-            .map((r) => `${r.abbr} (${r.offsetText})`)
-            .join(", ")}.`,
+          a: `${names.name} spans ${base.zoneRows.length} time zones: ${labels.map((l) => l.long).join(", ")}.`,
         },
         {
           q: `Which areas of ${names.name} use each time zone?`,
           a: base.zoneRows
-            .map((r) => `${r.abbr}: ${r.cities.slice(0, 4).map((c) => c.name).join(", ") || r.tz}`)
+            .map((r, i) => `${labels[i].short}: ${r.cities.slice(0, 4).map((c) => c.name).join(", ") || r.tz}`)
             .join(". "),
         },
         {
           q: `Does all of ${names.name} observe daylight saving time?`,
           a: (() => {
-            const observing = base.zoneRows.filter((r) => seasonalOffsets(r.tz, new Date(now).getUTCFullYear()).dst !== null);
             if (observing.length === base.zoneRows.length) return `Yes, every zone in ${names.name} changes its clocks.`;
             if (observing.length === 0) return `No. No part of ${names.name} changes its clocks.`;
-            return `No. ${observing.map((r) => r.abbr).join(", ")} change, while ${base.zoneRows
+            const short = (r: ZoneRow) => labels[base.zoneRows.indexOf(r)].short;
+            return `No. ${observing.map(short).join(", ")} change, while ${base.zoneRows
               .filter((r) => !observing.includes(r))
-              .map((r) => r.abbr)
+              .map(short)
               .join(", ")} stay the same all year.`;
           })(),
         },
       ];
 
+  /*
+   * Daylight saving time. The section follows the main zone; when the main zone keeps one offset all year but
+   * another zone of the page changes (Arizona's Navajo Nation, Mexico's border zones), "{name} does not observe
+   * daylight saving time" would be false, so the section says which part does. A curated area lists its own
+   * clock changes; otherwise each changing zone is named by its seasons and IANA id.
+   */
+  let dstLead: string | null = null;
+  let dstYears = base.dstYears;
+  // Zones other than the main one with a clock change ahead (a zone that stopped changing this year has none).
+  const changingNow = base.zoneRows
+    .slice(1)
+    .filter((r) => dstInfo({ key: r.tz, kind: "zone", label: r.abbr, long: r.longName, tz: r.tz }, now).next);
+  if (!base.observesDst && changingNow.length) {
+    if (areas) {
+      dstLead = areas.dstLead(names.name);
+      const y0 = wallTime(names.primary, now).year;
+      dstYears = [y0, y0 + 1]
+        .map((y) => ({ year: y, changes: dstChangesFor(areas.dstTz, y) }))
+        .filter((x) => x.changes.length);
+    } else {
+      const main = seasonsOf(base.zoneRows[0].tz, year);
+      const changing = changingNow.map((r) => {
+        const s = seasonsOf(r.tz, year);
+        const pair =
+          s.dst === null || s.stdAbbr === s.dstAbbr ? `${fmtOffset(s.std)}/${fmtOffset(s.dst ?? s.std)}` : `${s.stdAbbr}/${s.dstAbbr}`;
+        return `${pair} (${r.tz})`;
+      });
+      const list =
+        changing.length > 1 ? `${changing.slice(0, -1).join(", ")} and ${changing[changing.length - 1]}` : changing[0];
+      dstLead = `The main time zone of ${names.name}, ${base.zoneRows[0].abbr} (${base.zoneRows[0].tz}), does not observe daylight saving time and stays on ${fmtOffset(
+        main.std
+      )} all year. ${list} ${changing.length > 1 ? "change their" : "changes its"} clocks for daylight saving time.`;
+    }
+  }
+
   return {
     path,
     title: titleText,
     description: clip(
-      `${names.name} uses ${base.zoneRows.length} time zones (${abbrs.join(
-        ", "
-      )}). See which areas use each zone, the current time in each and DST dates.`,
+      `${names.name} uses ${base.zoneRows.length} time zones (${labels
+        .map((l) => l.short)
+        .join(", ")}). See which areas use each zone, the current time in each and DST dates.`,
       155
     ),
     h1: `What Time Zone Is ${names.name}?`,
@@ -963,7 +1071,8 @@ export function buildMultiZone(t: MultiZoneTarget, now: number = Date.now()): Mu
     zoneRows: rows,
     converterSides: base.converterSides,
     zoneFacts: base.zoneFacts,
-    dstYears: base.dstYears,
+    dstYears,
+    dstLead,
     observesDst: base.observesDst,
     faqs,
     placeHref: base.path,
