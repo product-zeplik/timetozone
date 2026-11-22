@@ -155,8 +155,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
             </div>
             <div className="footnote">
+              {/* The operating company is the site's one link to the Zeplik hub,
+                  zeplik.com (owner decision, 22 Nov 2026): by name, once, never a
+                  list of the sibling products. */}
               <span>
-                © {new Date().getUTCFullYear()} {SITE.name}. {SITE.tagline}
+                © {new Date().getUTCFullYear()} {SITE.name} · <a href="https://zeplik.com/">Zeplik, Inc.</a>{" "}
+                {SITE.tagline}
               </span>
               <span>All times computed from the IANA time zone database.</span>
             </div>
