@@ -228,7 +228,11 @@ describe("sitemap 0 lists hub pages", () => {
     expect((await sm.sitemapResponse(1)).headers.get("cache-control")).toBe("public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400");
     for (const id of [1, 2, 3, 4]) expect(await (await sm.sitemapResponse(id)).text()).not.toMatch(/\/(guides|compare)\//);
     const index = await (await import("@/app/sitemap.xml/route")).GET();
-    expect(await index.text()).toContain("<loc>https://timetozone.com/sitemap-0.xml</loc><lastmod>2026-11-21</lastmod>");
+    // The index dates sitemap-0 by its newest row: the hub rows (2026-11-21 here) or a content family
+    // (seo/content-dates.json), whichever is later, never by the clock.
+    const newest = zero.map((r) => r.split(" ")[1].slice(0, 10)).sort().at(-1)!;
+    expect(newest >= "2026-11-21").toBe(true);
+    expect(await index.text()).toContain(`<loc>https://timetozone.com/sitemap-0.xml</loc><lastmod>${newest}</lastmod>`);
   });
 
   it("an empty hub adds nothing: sitemap 0 is the code's own list", async () => {
