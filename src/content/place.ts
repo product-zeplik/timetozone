@@ -3,6 +3,7 @@
  * docs/06.
  */
 import { ZONES, ZONE_BY_SLUG, type Zone } from "@/data/zones";
+import { REGION_ZONE_AREAS, type RegionZoneAreas } from "@/data/zone-areas";
 import type { Side } from "@/engine/side";
 import { abbrFor, counterpartOf, sideAbbr, zoneSide } from "@/engine/side";
 import {
@@ -30,7 +31,8 @@ import {
   offsetMinutes,
   seasonalOffsets,
   transitionsInYear,
-  wallTime, transitionWall } from "@/engine/tz";
+  wallTime, transitionWall,
+  type Transition } from "@/engine/tz";
 import { diffMinutes, diffPeriods, dstInfo } from "@/engine/pair";
 import { dstCountries, isIndexedPair, multiZoneEntities, pairsWith } from "@/seo/gate";
 import { clip, firstThatFits, title as brandTitle } from "@/seo/meta";
@@ -303,6 +305,11 @@ export interface ZoneRow {
   offsetText: string;
   longName: string;
   cities: { name: string; href: string }[];
+  /**
+   * A named area of the region that keeps this zone (src/data/zone-areas.ts), shown in place of the zone's
+   * long name and of cities that lie outside the region. Multi-zone pages only.
+   */
+  area?: { label: string; seasonal: string; places: string[] };
 }
 
 function zoneRows(names: Names, now: number): ZoneRow[] {
@@ -797,6 +804,82 @@ export interface MultiZoneContent {
   siblings: { href: string; label: string }[];
 }
 
+const MONTH_NAME = new Intl.DateTimeFormat("en-US", { month: "long", timeZone: "UTC" });
+
+/**
+ * The named-area rows and FAQ of a region in src/data/zone-areas.ts, or null when the region has no entry or
+ * the engine does not bear the entry out this year: the main zone must keep one offset all year, the area's zone
+ * must change for DST, and both must be zones of the region. Every abbreviation, offset and month is computed.
+ */
+function zoneAreasFor(
+  entity: string,
+  rows: ZoneRow[],
+  now: number
+): { rows: ZoneRow[]; faqs: (name: string) => FaqItem[] } | null {
+  const spec: RegionZoneAreas | undefined = REGION_ZONE_AREAS[entity];
+  if (!spec) return null;
+  const main = rows.find((r) => r.tz === spec.main.tz);
+  const other = rows.find((r) => r.tz === spec.area.tz);
+  if (!main || !other || rows.length !== 2) return null;
+  const year = new Date(now).getUTCFullYear();
+  const mainOff = seasonalOffsets(spec.main.tz, year);
+  const areaOff = seasonalOffsets(spec.area.tz, year);
+  if (mainOff.dst !== null || areaOff.dst === null) return null;
+  const changes = transitionsInYear(spec.area.tz, year);
+  const forward = changes.find((c) => c.to > c.from);
+  const back = changes.find((c) => c.to < c.from);
+  if (!forward || !back) return null;
+
+  // The instant of each season, by offset, so the names hold in either hemisphere.
+  const jan = Date.UTC(year, 0, 15, 12);
+  const jul = Date.UTC(year, 6, 15, 12);
+  const stdAt = offsetMinutes(spec.area.tz, jan) === areaOff.std ? jan : jul;
+  const dstAt = stdAt === jan ? jul : jan;
+  const mainYear = Date.UTC(year, 0, 15, 12);
+  const mainAbbr = abbrFor(spec.main.tz, mainYear);
+  const stdAbbr = abbrFor(spec.area.tz, stdAt);
+  const dstAbbr = abbrFor(spec.area.tz, dstAt);
+  const month = (t: Transition) => {
+    const w = transitionWall(t);
+    return MONTH_NAME.format(Date.UTC(w.year, w.month - 1, 1));
+  };
+  const area = spec.area;
+
+  const seasonal = `${longZoneName(spec.area.tz, stdAt)} (${stdAbbr}, ${fmtOffset(areaOff.std)}) in winter and ${longZoneName(
+    spec.area.tz,
+    dstAt
+  )} (${dstAbbr}, ${fmtOffset(areaOff.dst)}) in summer`;
+
+  return {
+    rows: rows.map((r) =>
+      r === other ? { ...r, cities: [], area: { label: `${area.name} (${area.tz})`, seasonal, places: area.places } } : r
+    ),
+    faqs: (name) => [
+      {
+        q: `What time zone is ${name} in?`,
+        a: `Most of ${name} uses ${longZoneName(spec.main.tz, mainYear)} (${mainAbbr}, ${fmtOffset(
+          mainOff.std
+        )}) all year. The ${area.name} ${area.where} observes daylight saving time, so it is on ${dstAbbr} (${fmtOffset(
+          areaOff.dst!
+        )}) from ${month(forward)} to ${month(back)}.`,
+      },
+      {
+        q: `Which areas of ${name} use each time zone?`,
+        a: `${mainAbbr} all year: ${main.cities
+          .slice(0, 4)
+          .map((c) => c.name)
+          .join(", ")} (and ${spec.main.alsoIn}). ${stdAbbr}/${dstAbbr} with DST: the ${area.name} (${area.places
+          .slice(0, 3)
+          .join(", ")}).`,
+      },
+      {
+        q: `Does all of ${name} observe daylight saving time?`,
+        a: `No. ${name} outside the ${area.name} stays on ${mainAbbr} all year; the ${area.name} changes its clocks on ${spec.dstDates}, while ${spec.main.alsoIn} inside it does not.`,
+      },
+    ],
+  };
+}
+
 export function buildMultiZone(t: MultiZoneTarget, now: number = Date.now()): MultiZoneContent {
   const placeTarget: PlaceTarget =
     t.kind === "country"
@@ -823,36 +906,41 @@ export function buildMultiZone(t: MultiZoneTarget, now: number = Date.now()): Mu
     60
   );
 
+  const areas = t.kind === "region" ? zoneAreasFor(t.region.entity, base.zoneRows, now) : null;
+  const rows = areas ? areas.rows : base.zoneRows;
+
   const answer = `${names.name} uses ${base.zoneRows.length} time zones: ${base.zoneRows
     .map((r) => `${r.abbr} (${r.offsetText})`)
     .join(", ")}. ${base.zoneRows[0].cities[0]?.name ? `${base.zoneRows[0].cities[0].name} is on ${base.zoneRows[0].abbr}.` : ""}`.trim();
 
-  const faqs: FaqItem[] = [
-    {
-      q: `What time zone is ${names.name} in?`,
-      a: `${names.name} spans ${base.zoneRows.length} time zones: ${base.zoneRows
-        .map((r) => `${r.abbr} (${r.offsetText})`)
-        .join(", ")}.`,
-    },
-    {
-      q: `Which areas of ${names.name} use each time zone?`,
-      a: base.zoneRows
-        .map((r) => `${r.abbr}: ${r.cities.slice(0, 4).map((c) => c.name).join(", ") || r.tz}`)
-        .join(". "),
-    },
-    {
-      q: `Does all of ${names.name} observe daylight saving time?`,
-      a: (() => {
-        const observing = base.zoneRows.filter((r) => seasonalOffsets(r.tz, new Date(now).getUTCFullYear()).dst !== null);
-        if (observing.length === base.zoneRows.length) return `Yes, every zone in ${names.name} changes its clocks.`;
-        if (observing.length === 0) return `No. No part of ${names.name} changes its clocks.`;
-        return `No. ${observing.map((r) => r.abbr).join(", ")} change, while ${base.zoneRows
-          .filter((r) => !observing.includes(r))
-          .map((r) => r.abbr)
-          .join(", ")} stay the same all year.`;
-      })(),
-    },
-  ];
+  const faqs: FaqItem[] = areas
+    ? areas.faqs(names.name)
+    : [
+        {
+          q: `What time zone is ${names.name} in?`,
+          a: `${names.name} spans ${base.zoneRows.length} time zones: ${base.zoneRows
+            .map((r) => `${r.abbr} (${r.offsetText})`)
+            .join(", ")}.`,
+        },
+        {
+          q: `Which areas of ${names.name} use each time zone?`,
+          a: base.zoneRows
+            .map((r) => `${r.abbr}: ${r.cities.slice(0, 4).map((c) => c.name).join(", ") || r.tz}`)
+            .join(". "),
+        },
+        {
+          q: `Does all of ${names.name} observe daylight saving time?`,
+          a: (() => {
+            const observing = base.zoneRows.filter((r) => seasonalOffsets(r.tz, new Date(now).getUTCFullYear()).dst !== null);
+            if (observing.length === base.zoneRows.length) return `Yes, every zone in ${names.name} changes its clocks.`;
+            if (observing.length === 0) return `No. No part of ${names.name} changes its clocks.`;
+            return `No. ${observing.map((r) => r.abbr).join(", ")} change, while ${base.zoneRows
+              .filter((r) => !observing.includes(r))
+              .map((r) => r.abbr)
+              .join(", ")} stay the same all year.`;
+          })(),
+        },
+      ];
 
   return {
     path,
@@ -872,7 +960,7 @@ export function buildMultiZone(t: MultiZoneTarget, now: number = Date.now()): Mu
     ],
     names,
     side: base.side,
-    zoneRows: base.zoneRows,
+    zoneRows: rows,
     converterSides: base.converterSides,
     zoneFacts: base.zoneFacts,
     dstYears: base.dstYears,

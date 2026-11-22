@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { COUNTRIES, PLACES, REGIONS, parsePair } from "@/engine/entities";
 import { buildHour, buildPair } from "@/content/pair";
 import { diffMinutes } from "@/engine/pair";
+import { transitionWall, transitionsInYear } from "@/engine/tz";
 import { buildMultiZone, buildPlace, buildZone, resolveMultiZone, resolvePlace, targetSide } from "@/content/place";
 import { buildDstCountry, buildDstHub, resolveDstCountry } from "@/content/dst";
 import { ZONE_BY_SLUG } from "@/data/zones";
@@ -185,6 +186,44 @@ describe("buildMultiZone", () => {
     expect(c.h1).toBe("What Time Zone Is Texas?");
     expect(c.zoneRows.length).toBe(2);
     expect(c.title.length).toBeLessThanOrEqual(60);
+  });
+  it("Arizona names the Navajo Nation zone (America/Denver) and keeps out-of-state cities off the page", () => {
+    const t = resolveMultiZone("arizona");
+    const c = buildMultiZone(t!, JAN);
+    expect(c.zoneRows.map((r) => r.tz)).toEqual(["America/Phoenix", "America/Denver"]);
+    const navajo = c.zoneRows[1];
+    expect(navajo.area?.label).toBe("Navajo Nation (America/Denver)");
+    expect(navajo.area?.seasonal).toBe(
+      "Mountain Standard Time (MST, UTC\u22127) in winter and Mountain Daylight Time (MDT, UTC\u22126) in summer"
+    );
+    expect(navajo.area?.places).toEqual(["Window Rock", "Tuba City", "Kayenta", "Chinle"]);
+    expect(navajo.cities).toEqual([]);
+    const text = JSON.stringify(c.zoneRows.map((r) => [r.cities, r.area?.places])) + JSON.stringify(c.faqs);
+    for (const city of ["Denver", "Albuquerque", "El Paso", "Salt Lake City", "Aurora", "Colorado Springs"]) {
+      expect(text).not.toContain(city);
+    }
+    expect(c.faqs.map((f) => f.a)).toEqual([
+      "Most of Arizona uses Mountain Standard Time (MST, UTC\u22127) all year. The Navajo Nation in the northeast observes daylight saving time, so it is on MDT (UTC\u22126) from March to November.",
+      "MST all year: Phoenix, Mesa, Tucson, Glendale (and the Hopi Reservation). MST/MDT with DST: the Navajo Nation (Window Rock, Tuba City, Kayenta).",
+      "No. Arizona outside the Navajo Nation stays on MST all year; the Navajo Nation changes its clocks on the US DST dates, while the Hopi Reservation inside it does not.",
+    ]);
+    // The same text in July: the FAQ and the card name seasons, not the clock of the day.
+    expect(buildMultiZone(t!, JUL).faqs).toEqual(c.faqs);
+  });
+  it("the Navajo Nation zone changes on the US DST dates", () => {
+    const days = (tz: string) =>
+      transitionsInYear(tz, 2026).map((x) => {
+        const w = transitionWall(x);
+        return `${w.month}-${w.day}`;
+      });
+    expect(days("America/Denver")).toEqual(days("America/Chicago"));
+    expect(days("America/Denver")).toEqual(days("America/New_York"));
+    expect(transitionsInYear("America/Phoenix", 2026)).toEqual([]);
+  });
+  it("other multi-zone regions keep the generic rows and FAQ", () => {
+    const c = buildMultiZone(resolveMultiZone("texas")!, JAN);
+    expect(c.zoneRows.every((r) => r.area === undefined)).toBe(true);
+    expect(c.faqs[0].a.startsWith("Texas spans 2 time zones")).toBe(true);
   });
   it("single-zone places are rejected", () => {
     expect(resolveMultiZone("france")).toBeNull();

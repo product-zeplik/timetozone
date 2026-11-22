@@ -34,14 +34,26 @@ function ZonesTable({
             {rows.map((r) => (
               <tr key={r.tz}>
                 <th scope="row">
-                  {r.longName} <span className="mono">({r.abbr})</span>
+                  {r.area ? (
+                    <>
+                      {r.area.label}
+                      <br />
+                      <span className="small">{r.area.seasonal}</span>
+                    </>
+                  ) : (
+                    <>
+                      {r.longName} <span className="mono">({r.abbr})</span>
+                    </>
+                  )}
                 </th>
                 <td className="t">{r.offsetText}</td>
                 <td className="t">
                   <LiveTime tz={r.tz} />
                 </td>
                 <td className="wide">
-                  {r.cities.length
+                  {r.area
+                    ? r.area.places.join(", ")
+                    : r.cities.length
                     ? r.cities.map((c, i) => (
                         <span key={c.href}>
                           {i > 0 ? ", " : ""}

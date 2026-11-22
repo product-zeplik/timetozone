@@ -61,7 +61,7 @@ export const FAMILIES = {
   pair: [...COMMON, "src/app/[pair]/page.tsx", "src/components/PairView.tsx", "src/content/pair.ts", "src/components/Converter.tsx", ...FLAGGED],
   hour: [...COMMON, "src/app/[pair]/[hour]/page.tsx", "src/components/PairView.tsx", "src/content/pair.ts", "src/components/Converter.tsx", ...FLAGGED],
   place: [...PLACE, "src/app/time/[...place]/page.tsx"],
-  "multi-zone": [...PLACE, "src/app/time-zone/[place]/page.tsx"],
+  "multi-zone": [...PLACE, "src/data/zone-areas.ts", "src/app/time-zone/[place]/page.tsx"],
   zone: [...PLACE, "src/app/zones/[abbr]/page.tsx"],
   "dst-hub": [...COMMON, "src/app/daylight-saving-time/page.tsx", "src/content/dst.ts"],
   "dst-country": [...COMMON, "src/app/daylight-saving-time/[country]/page.tsx", "src/content/dst.ts"],
