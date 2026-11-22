@@ -267,6 +267,50 @@ describe("buildMultiZone", () => {
     }
     expect(buildMultiZone(resolveMultiZone("texas")!, JAN).title).toBe("What Time Zone Is Texas? CST, MST | TimeToZone");
   });
+  it("/time/usa/arizona says from the engine that most of Arizona has no DST and the Navajo Nation does", () => {
+    const t = resolvePlace(["usa", "arizona"])!;
+    const phoenix = seasonalOffsets("America/Phoenix", 2027);
+    const denver = seasonalOffsets("America/Denver", 2027);
+    const mst = abbrFor("America/Phoenix", JAN);
+    const mdt = abbrFor("America/Denver", JUL);
+    for (const at of [JAN, JUL]) {
+      const c = buildPlace(t, at);
+      expect(c.h1).toBe("Current Time in Arizona, United States");
+      expect(c.title).toBe("Time in Arizona Now – Current Local Time | TimeToZone");
+      const zones = c.faqs.find((f) => f.q === "What time zone is Arizona in?")!.a;
+      expect(zones).toContain(`uses 2 time zones: ${mst}, ${abbrFor("America/Denver", JAN)}/${mdt}.`);
+      expect(zones).not.toContain(`${mst}, ${mst}.`);
+      const dst = c.faqs.find((f) => f.q === "Does Arizona observe daylight saving time?")!.a;
+      expect(dst).not.toMatch(/^No\./);
+      expect(dst).toContain(`Most of Arizona stays on ${mst} (${fmtOffset(phoenix.std)}) all year.`);
+      expect(dst).toContain(`The Navajo Nation in the northeast observes daylight saving time`);
+      expect(dst).toContain(`${mdt} (${fmtOffset(denver.dst!)})`);
+      expect(dst).toContain("The Hopi Reservation inside it does not.");
+      expect(c.description).toContain("No daylight saving time, except in the Navajo Nation.");
+      expect(c.dstLead).toContain("The Navajo Nation in the northeast does");
+      expect(c.dstYears.flatMap((y) => y.changes).length).toBe(4);
+      expect(c.zoneRows[1].area?.label).toBe("Navajo Nation (America/Denver)");
+      expect(c.zoneRows[1].cities).toEqual([]);
+    }
+  });
+  it("zone rows list only cities the data places in the region", () => {
+    for (const r of REGIONS.filter((x) => x.multiZone)) {
+      const t = resolvePlace([r.countrySlug, r.slug]);
+      if (!t) continue;
+      const c = buildPlace(t, JAN);
+      const own = new Set(
+        PLACES.filter((p) => p.countrySlug === r.countrySlug && p.regionSlug === r.slug.replace(/-state$/, "")).map(
+          (p) => `/time/${p.countrySlug}/${p.slug}`
+        )
+      );
+      for (const row of c.zoneRows) for (const city of row.cities) expect(own.has(city.href), `${r.slug}: ${city.name}`).toBe(true);
+    }
+    const florida = buildMultiZone(resolveMultiZone("florida")!, JAN);
+    expect(florida.zoneRows[0].cities[0].name).toBe("Miami");
+    expect(florida.answer).toContain("Miami is on EST.");
+    const texas = buildMultiZone(resolveMultiZone("texas")!, JAN);
+    expect(texas.zoneRows.flatMap((x) => x.cities.map((y) => y.name))).not.toContain("Chicago");
+  });
   it("the Navajo Nation zone changes on the US DST dates", () => {
     const days = (tz: string) =>
       transitionsInYear(tz, 2026).map((x) => {

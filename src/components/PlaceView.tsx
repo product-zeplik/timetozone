@@ -217,6 +217,7 @@ export function PlaceView({ c }: { c: PlaceContent }) {
         observes={c.observesDst}
         offsetFallback={c.zoneFacts.find((f) => f.label === "UTC offset")?.value ?? "the same offset"}
         dstHref={c.dstHref}
+        lead={c.dstLead}
       />
 
       <Ad slot="place-2" />
