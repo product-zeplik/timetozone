@@ -4,7 +4,7 @@
  */
 import { COUNTRIES, COUNTRY_BY_SLUG, PLACES, type Country } from "@/engine/entities";
 import { abbrFor } from "@/engine/side";
-import { describeRuleOn, fmtClock, fmtDate, fmtOffset, seasonalOffsets, transitionWall, transitionsInYear, wallTime } from "@/engine/tz";
+import { describeRuleOn, fmtClock, fmtDate, fmtOffset, fmtShift, seasonalOffsets, transitionWall, transitionsInYear, wallTime } from "@/engine/tz";
 import { clip, firstThatFits, title as brandTitle } from "@/seo/meta";
 import { dstCountries } from "@/seo/gate";
 import type { FaqItem } from "@/components/Blocks";
@@ -313,7 +313,7 @@ export function buildDstCountry(country: Country, now: number = Date.now()): Dst
     {
       q: `When do the clocks go forward in ${country.name}?`,
       a: fwd
-        ? `On ${fwd.dateText} at ${fwd.localHour} local time, clocks go forward one hour from ${fwd.fromAbbr} (${fmtOffset(
+        ? `On ${fwd.dateText} at ${fwd.localHour} local time, clocks go forward ${fmtShift(fwd.fromOffset, fwd.toOffset)} from ${fwd.fromAbbr} (${fmtOffset(
             fwd.fromOffset
           )}) to ${fwd.toAbbr} (${fmtOffset(fwd.toOffset)}). The rule is the ${fwd.rule}.`
         : `${country.name} has no spring-forward change in ${year}.`,
@@ -321,7 +321,7 @@ export function buildDstCountry(country: Country, now: number = Date.now()): Dst
     {
       q: `When do the clocks go back in ${country.name}?`,
       a: back
-        ? `On ${back.dateText} at ${back.localHour} local time, clocks go back one hour from ${back.fromAbbr} (${fmtOffset(
+        ? `On ${back.dateText} at ${back.localHour} local time, clocks go back ${fmtShift(back.fromOffset, back.toOffset)} from ${back.fromAbbr} (${fmtOffset(
             back.fromOffset
           )}) to ${back.toAbbr} (${fmtOffset(back.toOffset)}). The rule is the ${back.rule}.`
         : `${country.name} has no autumn change in ${year}.`,

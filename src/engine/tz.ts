@@ -256,6 +256,17 @@ export function fmtOffsetShort(min: number): string {
   return `${sign}${h}${m ? ":" + String(m).padStart(2, "0") : ""}`;
 }
 
+/**
+ * How far clocks move at a change from `fromOffset` to `toOffset` (minutes):
+ * `one hour` (`1 hour` when `spelled` is false), or `30 minutes` on Lord Howe
+ * Island (UTC+10:30 <-> UTC+11). Never assume a change is one hour.
+ */
+export function fmtShift(fromOffset: number, toOffset: number, spelled = true): string {
+  const d = Math.abs(toOffset - fromOffset);
+  if (d === 60) return spelled ? "one hour" : "1 hour";
+  return fmtDuration(d);
+}
+
 /** `3 hours`, `9 hours 30 minutes`, `45 minutes`, `1 hour`. */
 export function fmtDuration(min: number): string {
   const a = Math.abs(min);

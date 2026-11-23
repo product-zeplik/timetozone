@@ -21,6 +21,7 @@ import {
   type Row,
 } from "@/engine/pair";
 import {
+  fmtShift,
   fmtClock,
   fmtDate,
   fmtDuration,
@@ -166,7 +167,7 @@ function dstBulletsFor(sides: Side[], now: number): string[] {
       )} all year.`;
     }
     const n = info.next;
-    return `${label} next changes on ${n.dateText}: clocks go ${n.direction} one hour at ${n.localHour} local time, from ${n.fromAbbr} (${fmtOffset(
+    return `${label} next changes on ${n.dateText}: clocks go ${n.direction} ${fmtShift(n.fromOffset, n.toOffset)} at ${n.localHour} local time, from ${n.fromAbbr} (${fmtOffset(
       n.fromOffset
     )}) to ${n.toAbbr} (${fmtOffset(n.toOffset)}).`;
   });
@@ -300,7 +301,7 @@ export function buildPair(p: ParsedPair, now: number = Date.now()): PairContent 
     faqs.push({
       q: `Does ${label} change for daylight saving time?`,
       a: info.observes && info.next
-        ? `Yes. ${label} next changes on ${info.next.dateText}, when clocks go ${info.next.direction} one hour from ${info.next.fromAbbr} to ${info.next.toAbbr}.`
+        ? `Yes. ${label} next changes on ${info.next.dateText}, when clocks go ${info.next.direction} ${fmtShift(info.next.fromOffset, info.next.toOffset)} from ${info.next.fromAbbr} to ${info.next.toAbbr}.`
         : `No. ${label} stays on the same offset all year, so conversions never shift for daylight saving time.`,
     });
   }

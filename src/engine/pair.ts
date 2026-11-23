@@ -144,19 +144,30 @@ export interface Period {
  * Segments of `year` in which the difference is constant.
  * Segments shorter than 2 days are merged into the previous one: ET and PT both
  * switch at 2 AM local, which creates a 3-hour sliver. docs/04 §4.3, docs/14 #3.
+ *
+ * Dates: a segment starts on the local date of the clock change that opens it,
+ * in the zone that changes (Europe/Paris switches on 29 Mar 2026 at 01:00 UTC,
+ * which is still 28 Mar in New York; the reader's answer is 29 Mar), and ends
+ * the calendar day before the next segment starts. The year runs 1 Jan to
+ * 31 Dec. Labelling every boundary in the `from` zone put each European change
+ * one day early on every US-to-Europe pair and started the year on 31 Dec.
  */
 export function diffPeriods(from: Side, to: Side, year: number): Period[] {
   const yStart = Date.UTC(year, 0, 1);
   const yEnd = Date.UTC(year + 1, 0, 1);
 
-  const cuts = new Set<number>([yStart, yEnd]);
+  // instant -> the side whose clock changes there (null for the year bounds)
+  const cuts = new Map<number, Side | null>([
+    [yStart, null],
+    [yEnd, null],
+  ]);
   for (const side of [from, to]) {
     if (side.fixed !== undefined && side.fixed !== null) continue;
     for (const t of transitionsInYear(side.tz, year)) {
-      if (t.at > yStart && t.at < yEnd) cuts.add(t.at);
+      if (t.at > yStart && t.at < yEnd && !cuts.has(t.at)) cuts.set(t.at, side);
     }
   }
-  const points = [...cuts].sort((a, b) => a - b);
+  const points = [...cuts.keys()].sort((a, b) => a - b);
 
   type Seg = { start: number; end: number; minutes: number };
   const raw: Seg[] = [];
@@ -192,9 +203,20 @@ export function diffPeriods(from: Side, to: Side, year: number): Period[] {
     else final.push({ ...seg });
   }
 
-  return final.map((s) => {
-    const startWall = wallOf(from, s.start);
-    const endWall = wallOf(from, s.end - 86_400_000);
+  // Calendar date (as a Wall at 00:00) on which a segment starting at `at` begins.
+  const DAY = 86_400_000;
+  const calendar = (y: number, m: number, d: number): Wall => wallTime("UTC", Date.UTC(y, m - 1, d));
+  const startDay = (at: number): Wall => {
+    const side = cuts.get(at);
+    if (!side) return calendar(year, 1, 1);
+    const w = wallOf(side, at);
+    return calendar(w.year, w.month, w.day);
+  };
+  const dayBefore = (w: Wall): Wall => wallTime("UTC", Date.UTC(w.year, w.month - 1, w.day) - DAY);
+
+  return final.map((s, i) => {
+    const startWall = startDay(s.start);
+    const endWall = i === final.length - 1 ? calendar(year, 12, 31) : dayBefore(startDay(final[i + 1].start));
     return {
       start: s.start,
       end: s.end,

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { abbrFor } from "@/engine/side";
 import {
+  fmtShift,
   fmtClock,
   fmtDate,
   fmtDuration,
@@ -61,7 +62,7 @@ export function MyZone() {
         : nt
           ? `Next change ${fmtDate(wallTime(tz, nt.at - 60_000), true)} — clocks go ${
               nt.to > nt.from ? "forward" : "back"
-            } one hour to ${abbrFor(tz, nt.at + 60_000)}`
+            } ${fmtShift(nt.from, nt.to)} to ${abbrFor(tz, nt.at + 60_000)}`
           : "Observed",
     ],
   ];

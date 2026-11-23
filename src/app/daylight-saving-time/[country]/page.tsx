@@ -5,7 +5,7 @@ import { dstCountries } from "@/seo/gate";
 import { pageMeta, graph, ld } from "@/seo/meta";
 import { Answer, Crumbs, Faq, JsonLd, Related, Updated } from "@/components/Blocks";
 import { Ad } from "@/components/Ad";
-import { fmtOffset } from "@/engine/tz";
+import { fmtOffset, fmtShift } from "@/engine/tz";
 import { contentDate, contentDateLabel } from "@/seo/content-dates";
 
 export const revalidate = 86400;
@@ -48,7 +48,7 @@ export default async function DstCountryPage({ params }: Params) {
               <ul>
                 {y.changes.map((ch, i) => (
                   <li key={i}>
-                    <strong>{ch.dateText}:</strong> clocks go {ch.direction} 1 hour at {ch.localHour} local time, from{" "}
+                    <strong>{ch.dateText}:</strong> clocks go {ch.direction} {fmtShift(ch.fromOffset, ch.toOffset, false)} at {ch.localHour} local time, from{" "}
                     {ch.fromAbbr} ({fmtOffset(ch.fromOffset)}) to {ch.toAbbr} ({fmtOffset(ch.toOffset)}). Rule: the{" "}
                     {ch.rule}.
                   </li>

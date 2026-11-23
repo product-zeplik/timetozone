@@ -14,6 +14,7 @@ import {
   zonedToUtc,
   transitionWall,
   fmtDate,
+  fmtShift,
 } from "@/engine/tz";
 import { abbrFor, applySameRegionRule, zoneSide } from "@/engine/side";
 import { convertAt, diffMinutes, diffPeriods, table24, workOverlap, aheadBehind, directionPhrase, wallOf } from "@/engine/pair";
@@ -29,6 +30,22 @@ const pair = (slug: string) => {
   if (!p) throw new Error(`no pair: ${slug}`);
   return p;
 };
+
+describe("tz.ts — size of a clock change", () => {
+  it("is one hour almost everywhere", () => {
+    expect(fmtShift(-300, -240)).toBe("one hour");
+    expect(fmtShift(-240, -300, false)).toBe("1 hour");
+  });
+  it("is 30 minutes on Lord Howe Island (UTC+10:30 <-> UTC+11)", () => {
+    const ts = transitionsInYear("Australia/Lord_Howe", 2026);
+    expect(ts.length).toBe(2);
+    for (const t of ts) {
+      expect(Math.abs(t.to - t.from)).toBe(30);
+      expect(fmtShift(t.from, t.to)).toBe("30 minutes");
+      expect(fmtShift(t.from, t.to, false)).toBe("30 minutes");
+    }
+  });
+});
 
 describe("tz.ts — offsets", () => {
   it("America/New_York winter/summer", () => {
@@ -262,6 +279,29 @@ describe("pair.ts — conversions", () => {
   it("PST -> EST has no 2 AM slivers", () => {
     const p = pair("pst-to-est");
     expect(diffPeriods(p.from, p.to, 2027).length).toBe(1);
+  });
+  it("EST -> CET 2026 periods are dated on the day each side changes", () => {
+    // US DST 8 Mar 2026 (07:00 UTC), EU DST 29 Mar 2026 (01:00 UTC), EU back 25 Oct (01:00 UTC),
+    // US back 1 Nov (06:00 UTC). The EU changes fall on the previous evening in New York; the
+    // answer is still the European date. Labelling them in New York time printed every edge a day early.
+    const p = pair("est-to-cet");
+    const got = diffPeriods(p.from, p.to, 2026).map((x) => [x.startText, x.endText, x.minutes]);
+    expect(got).toEqual([
+      ["1 Jan 2026", "7 Mar 2026", 360],
+      ["8 Mar 2026", "28 Mar 2026", 300],
+      ["29 Mar 2026", "24 Oct 2026", 360],
+      ["25 Oct 2026", "31 Oct 2026", 300],
+      ["1 Nov 2026", "31 Dec 2026", 360],
+    ]);
+  });
+  it("PST -> AEST periods use each side's own change date", () => {
+    // Sydney goes back on 5 Apr 2026 at 03:00 local, which is 16:00 UTC and 09:00 PDT on 4 Apr.
+    // LA goes forward on 8 Mar 2026 (10:00 UTC). Seen from LA, the Sydney change used to print as 4 Apr.
+    const p = pair("pst-to-aest");
+    const starts = diffPeriods(p.from, p.to, 2026).map((x) => x.startText);
+    expect(starts[0]).toBe("1 Jan 2026");
+    expect(starts).toContain("8 Mar 2026");
+    expect(starts).toContain("5 Apr 2026");
   });
   it("EST -> GMT varies across the year", () => {
     const p = pair("est-to-gmt");

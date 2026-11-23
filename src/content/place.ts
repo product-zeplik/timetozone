@@ -22,6 +22,7 @@ import {
   type Region,
 } from "@/engine/entities";
 import {
+  fmtShift,
   fmtClock,
   fmtDate,
   fmtDuration,
@@ -424,7 +425,7 @@ export function dstChangesFor(tz: string, year: number): DstChange[] {
       toAbbr,
       fromOffset: t.from,
       toOffset: t.to,
-      text: `Clocks go ${direction} 1 hour at ${localHour} local time, from ${fromAbbr} (${fmtOffset(
+      text: `Clocks go ${direction} ${fmtShift(t.from, t.to, false)} at ${localHour} local time, from ${fromAbbr} (${fmtOffset(
         t.from
       )}) to ${toAbbr} (${fmtOffset(t.to)}).`,
     };
@@ -743,7 +744,7 @@ export function buildPlace(t: PlaceTarget, now: number = Date.now()): PlaceConte
     {
       q: `Does ${names.name} observe daylight saving time?`,
       a: observesDst && info.next
-        ? `Yes. The next change is on ${info.next.dateText}, when clocks go ${info.next.direction} one hour from ${info.next.fromAbbr} to ${info.next.toAbbr}.`
+        ? `Yes. The next change is on ${info.next.dateText}, when clocks go ${info.next.direction} ${fmtShift(info.next.fromOffset, info.next.toOffset)} from ${info.next.fromAbbr} to ${info.next.toAbbr}.`
         : partial
           ? partial.faq
           : `No. ${names.name} stays on ${fmtOffset(off)} all year.`,
@@ -1253,7 +1254,7 @@ export function buildZone(zone: Zone, now: number = Date.now()): ZoneContent {
             before.hour,
             before.minute,
             false
-          )} local time: clocks go ${nt.to > nt.from ? "forward" : "back"} one hour, from ${abbrFor(
+          )} local time: clocks go ${nt.to > nt.from ? "forward" : "back"} ${fmtShift(nt.from, nt.to)}, from ${abbrFor(
             zone.iana,
             nt.at - 60_000
           )} (${fmtOffset(nt.from)}) to ${abbrFor(zone.iana, nt.at + 60_000)} (${fmtOffset(nt.to)}).`;
