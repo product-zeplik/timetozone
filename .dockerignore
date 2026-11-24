@@ -7,3 +7,5 @@ extension/dist
 .env
 .env.local
 *.log
+.static-carry
+public/static-assets.json

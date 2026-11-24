@@ -10,3 +10,7 @@ extension/dist
 tsconfig.tsbuildinfo
 next-env.d.ts
 .vercel
+
+# Earlier deploys' /_next/static files, fetched at build (scripts/static-carry.mjs)
+.static-carry
+public/static-assets.json

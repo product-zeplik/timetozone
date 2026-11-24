@@ -1,6 +1,25 @@
+import { fileURLToPath } from "node:url";
+import { stableBuildId } from "./scripts/build-id.mjs";
+import { fetchPrevious } from "./scripts/static-carry.mjs";
+
 /** @type {import('next').NextConfig} */
 const config = {
   output: "standalone",
+  /**
+   * Deploy skew: edge- and browser-cached HTML names the chunks of the build it
+   * came from, and each deploy is a fresh image holding only its own
+   * .next/static. Next calls this exactly once per `next build` (never in dev
+   * or start), so it is where the build fetches the previous deploys' files the
+   * live site still lists (scripts/static-carry.mjs; Railway production only,
+   * fail-open). The Dockerfile merges them into the image.
+   *
+   * The id itself comes from the commit and the build inputs
+   * (scripts/build-id.mjs), so two builds of one commit agree on it.
+   */
+  async generateBuildId() {
+    await fetchPrevious(fileURLToPath(new URL(".", import.meta.url)));
+    return stableBuildId();
+  },
   poweredByHeader: false,
   reactStrictMode: true,
   trailingSlash: false,
@@ -42,6 +61,13 @@ const config = {
       {
         source: "/icon.svg",
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        // The deploy's asset index (scripts/static-carry.mjs), read by the next
+        // build. Never cached: a stale copy would hide this deploy's chunks
+        // from the build that follows it.
+        source: "/static-assets.json",
+        headers: [{ key: "Cache-Control", value: "no-store" }],
       },
       {
         source: "/brand/:path*",
